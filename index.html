@@ -1,26 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-    // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyCjw124Pc1wGpG1iNYGuKR9DmXo_OHCab8",
-  authDomain: "winwave-b3ed4.firebaseapp.com",
-  projectId: "winwave-b3ed4",
-  storageBucket: "winwave-b3ed4.firebasestorage.app",
-  messagingSenderId: "501831087781",
-  appId: "1:501831087781:web:ea52d559bcb1429b9a3f4c",
-  measurementId: "G-WQM3HS90CL"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -601,24 +580,24 @@ const analytics = getAnalytics(app);
 
                 <div id="registerForm" style="display: none;">
                     <div class="form-group">
-                        <label>Phone Number</label>
+                        <label>Email Address</label>
                         <div class="input-wrapper">
-                            <i class="fa-solid fa-phone"></i>
-                            <input type="text" placeholder="Enter mobile number">
+                            <i class="fa-solid fa-envelope"></i>
+                            <input type="email" id="regEmail" placeholder="Enter your email">
                         </div>
                     </div>
                     <div class="form-group">
                         <label>Set Password</label>
                         <div class="input-wrapper">
                             <i class="fa-solid fa-lock"></i>
-                            <input type="password" placeholder="Password (Min 6 characters)">
+                            <input type="password" id="regPassword" placeholder="Password (Min 6 characters)">
                         </div>
                     </div>
                     <div class="form-group">
                         <label>Confirm Password</label>
                         <div class="input-wrapper">
                             <i class="fa-solid fa-shield"></i>
-                            <input type="password" placeholder="Re-enter password">
+                            <input type="password" id="regConfirmPassword" placeholder="Re-enter password">
                         </div>
                     </div>
                     <div class="form-group">
@@ -628,7 +607,7 @@ const analytics = getAnalytics(app);
                             <input type="text" placeholder="Enter referral code">
                         </div>
                     </div>
-                    <button class="submit-btn" onclick="handleAuthSuccess()">CREATE ACCOUNT</button>
+                    <button class="submit-btn" onclick="registerUser()">CREATE ACCOUNT</button>
                     <div class="switch-prompt">Already have an account? <span onclick="switchTab('login')">Login</span></div>
                 </div>
 
@@ -692,60 +671,71 @@ const analytics = getAnalytics(app);
             walletBox.style.display = 'flex';
             userProfile.style.display = 'flex';
         }
-    </script>
-    <script type="module">
 
-import {
-  createUserWithEmailAndPassword
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        async function registerUser() {
+            const email = document.getElementById("regEmail").value;
+            const password = document.getElementById("regPassword").value;
+            const confirmPassword = document.getElementById("regConfirmPassword").value;
 
-import {
-  doc,
-  setDoc
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+            if (!email || !password || !confirmPassword) {
+                alert("Sab fields fill karo");
+                return;
+            }
 
-window.registerUser = async function() {
+            if (password !== confirmPassword) {
+                alert("Passwords match nahi karte");
+                return;
+            }
 
-  const phone = document.getElementById("regPhone").value;
-  const password = document.getElementById("regPassword").value;
-  const confirmPassword =
-    document.getElementById("regConfirmPassword").value;
+            try {
+                await createUserWithEmailAndPassword(auth, email, password);
 
-  if(password !== confirmPassword){
-      alert("Passwords do not match");
-      return;
-  }
+                alert("Account Successfully Created!");
 
-  try {
+                closeAuthModal();
+                authButtons.style.display = "none";
+                walletBox.style.display = "flex";
+                userProfile.style.display = "flex";
 
-      const fakeEmail = phone + "@winwave.com";
-
-      const userCredential =
-      await createUserWithEmailAndPassword(
-        window.auth,
-        fakeEmail,
-        password
-      );
-
-      await setDoc(
-        doc(window.db,"users",userCredential.user.uid),
-        {
-          phone: phone,
-          uid: userCredential.user.uid,
-          createdAt: new Date().toISOString()
+            } catch (error) {
+                alert(error.message);
+            }
         }
-      );
+    </script>
 
-      alert("Registration Successful");
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-analytics.js";
+        import {
+          getAuth,
+          createUserWithEmailAndPassword,
+          signInWithEmailAndPassword
+        } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        
+        // TODO: Add SDKs for Firebase products that you want to use
+        // https://firebase.google.com/docs/web/setup#available-libraries
 
-      handleAuthSuccess();
+        // Your web app's Firebase configuration
+        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+        const firebaseConfig = {
+          apiKey: "AIzaSyCjw124Pc1wGpG1iNYGuKR9DmXo_OHCab8",
+          authDomain: "winwave-b3ed4.firebaseapp.com",
+          projectId: "winwave-b3ed4",
+          storageBucket: "winwave-b3ed4.firebasestorage.app",
+          messagingSenderId: "501831087781",
+          appId: "1:501831087781:web:ea52d559bcb1429b9a3f4c",
+          measurementId: "G-WQM3HS90CL"
+        };
 
-  } catch(error) {
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const auth = getAuth(app);
 
-      alert(error.message);
-
-  }
-}
-</script>
+        window.auth = auth;
+        window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
+        window.signInWithEmailAndPassword = signInWithEmailAndPassword;
+    </script>
 </body>
 </html>
