@@ -20,6 +20,7 @@
             justify-content: center;
         }
 
+        /* Mobile Responsive Container */
         .app-container {
             width: 100%;
             max-width: 450px;
@@ -29,6 +30,7 @@
             padding-bottom: 70px;
         }
 
+        /* Top Header */
         .header {
             display: flex;
             justify-content: space-between;
@@ -52,12 +54,14 @@
             letter-spacing: 1px;
         }
 
+        /* Header Right Section */
         .header-right {
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
+        /* Wallet Info Box */
         .wallet-info {
             background-color: #2a2a2a;
             padding: 6px 12px;
@@ -71,6 +75,7 @@
             text-decoration: none;
         }
 
+        /* User Profile Section */
         .user-profile {
             display: none; 
             position: relative;
@@ -100,6 +105,7 @@
             border: 1px solid #1e1e1e;
         }
 
+        /* Auth Buttons Style */
         .auth-buttons {
             display: flex;
             gap: 8px;
@@ -126,6 +132,7 @@
             color: #ffffff;
         }
 
+        /* Auto Sliding Banner Style */
         .slider-container {
             margin: 15px;
             border-radius: 12px;
@@ -153,6 +160,7 @@
             object-fit: cover;
         }
 
+        /* Main Categories */
         .categories-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -193,6 +201,7 @@
             font-weight: 500;
         }
 
+        /* Games Section Label */
         .section-title {
             display: flex;
             justify-content: space-between;
@@ -214,6 +223,7 @@
             font-size: 13px;
         }
 
+        /* Games Grid */
         .games-section {
             padding: 0 15px;
             margin-bottom: 25px;
@@ -262,6 +272,7 @@
             z-index: 2;
         }
 
+        /* Bottom Navigation */
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -293,6 +304,7 @@
             font-size: 18px;
         }
 
+        /* Auth Modal */
         .modal-overlay {
             position: absolute;
             top: 0;
@@ -571,14 +583,14 @@
                         <label>Phone Number</label>
                         <div class="input-wrapper">
                             <i class="fa-solid fa-phone"></i>
-                            <input type="text" placeholder="Enter mobile number">
+                            <input type="text" id="regEmail" placeholder="Enter mobile number">
                         </div>
                     </div>
                     <div class="form-group">
                         <label>Set Password</label>
                         <div class="input-wrapper">
                             <i class="fa-solid fa-lock"></i>
-                            <input type="password" placeholder="Password (Min 6 characters)">
+                            <input type="password" id="regPass" placeholder="Password (Min 6 characters)">
                         </div>
                     </div>
                     <div class="form-group">
@@ -595,7 +607,7 @@
                             <input type="text" placeholder="Enter referral code">
                         </div>
                     </div>
-                    <button class="submit-btn" onclick="handleAuthSuccess()">CREATE ACCOUNT</button>
+                    <button class="submit-btn" onclick="registerUser(document.getElementById('regEmail').value, document.getElementById('regPass').value)">CREATE ACCOUNT</button>
                     <div class="switch-prompt">Already have an account? <span onclick="switchTab('login')">Login</span></div>
                 </div>
 
@@ -610,28 +622,31 @@
 
         // Yahan wo "config" object daalein jo Step 1 mein mila tha
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_PROJECT_ID.appspot.com",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
+          apiKey: "YOUR_API_KEY",
+          authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+          projectId: "YOUR_PROJECT_ID",
+          storageBucket: "YOUR_PROJECT_ID.appspot.com",
+          messagingSenderId: "YOUR_SENDER_ID",
+          appId: "YOUR_APP_ID"
         };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth();
 
         // Register Function
-        function registerUser(email, password) {
+        window.registerUser = function(email, password) {
             createUserWithEmailAndPassword(auth, email, password)
-            .then((userCredential) => {
+              .then((userCredential) => {
                 alert("Registration Successful!");
-            })
-            .catch((error) => {
+                handleAuthSuccess();
+              })
+              .catch((error) => {
                 alert("Error: " + error.message);
-            });
+              });
         }
+    </script>
 
+    <script>
         // --- Auto Slider Script ---
         const sliderWrapper = document.getElementById('sliderWrapper');
         let currentIndex = 0;
