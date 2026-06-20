@@ -1,7 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+ // Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyBSUgw5C278miOXSQWKGMp6bDFSzCOGnwk",
+  authDomain: "winwave-f6fe3.firebaseapp.com",
+  databaseURL: "https://winwave-f6fe3-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "winwave-f6fe3",
+  storageBucket: "winwave-f6fe3.firebasestorage.app",
+  messagingSenderId: "194332413933",
+  appId: "1:194332413933:web:43d022d3f4f37b8c0a61e4",
+  measurementId: "G-3TSRLDFB82"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+    
+<meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Winwave Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
