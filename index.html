@@ -694,5 +694,40 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
     </script>
+    <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyBSUgw5C278miOXSQWKGMp6bDFSzCOGnwk",
+        authDomain: "winwave-f6fe3.firebaseapp.com",
+        databaseURL: "https://winwave-f6fe3-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "winwave-f6fe3",
+        storageBucket: "winwave-f6fe3.firebasestorage.app",
+        messagingSenderId: "194332413933",
+        appId: "1:194332413933:web:43d022d3f4f37b8c0a61e4",
+        measurementId: "G-3TSRLDFB82"
+    };
+
+    // Firebase Initialize
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    // Function ko window se attach karein taake buttons ise dhoond sakein
+    window.registerUser = function() {
+        const email = document.getElementById('regEmail').value;
+        const password = document.getElementById('regPass').value;
+        
+        createUserWithEmailAndPassword(auth, email, password)
+          .then((userCredential) => {
+            alert("Registration Successful!");
+            // Yahan wahi function call karein jo login hone ke baad dashboard dikhata hai
+            handleAuthSuccess(); 
+          })
+          .catch((error) => {
+            alert("Error: " + error.message);
+          });
+    };
+</script>
 </body>
 </html>
