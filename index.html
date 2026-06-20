@@ -710,7 +710,8 @@
         import {
           getAuth,
           createUserWithEmailAndPassword,
-          signInWithEmailAndPassword
+          signInWithEmailAndPassword,
+          onAuthStateChanged
         } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
         
         // TODO: Add SDKs for Firebase products that you want to use
@@ -732,6 +733,18 @@
         const app = initializeApp(firebaseConfig);
         const analytics = getAnalytics(app);
         const auth = getAuth(app);
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById("authButtons").style.display = "none";
+                document.getElementById("walletBox").style.display = "flex";
+                document.getElementById("userProfile").style.display = "flex";
+            } else {
+                document.getElementById("authButtons").style.display = "flex";
+                document.getElementById("walletBox").style.display = "none";
+                document.getElementById("userProfile").style.display = "none";
+            }
+        });
 
         window.auth = auth;
         window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
