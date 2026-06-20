@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Promotion - Winwave</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: #121212; color: #ffffff; display: flex; justify-content: center; }
+        .app-container { width: 100%; max-width: 450px; background-color: #1a1a1a; min-height: 100vh; padding-bottom: 80px; }
+
+        /* Header */
+        .header { background: #1e1e1e; padding: 15px; text-align: center; font-weight: bold; font-size: 18px; border-bottom: 1px solid #333; }
+        
+        /* Stats Section */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; }
+        .stat-card { background: #262626; padding: 15px; border-radius: 12px; text-align: center; border: 1px solid #333; }
+        .stat-val { font-size: 20px; color: #10b981; font-weight: bold; margin-bottom: 5px; }
+        .stat-label { font-size: 12px; color: #a3a3a3; }
+
+        /* Referral Link Section */
+        .referral-box { background: #262626; margin: 0 20px 20px 20px; padding: 20px; border-radius: 12px; border: 1px solid #333; }
+        .ref-input { width: 100%; background: #121212; border: 1px solid #444; padding: 12px; color: white; border-radius: 8px; margin-top: 10px; text-align: center; }
+        
+        /* Promotion Action Buttons */
+        .action-btns { display: flex; flex-direction: column; gap: 10px; padding: 0 20px; }
+        .btn-green { background: #10b981; padding: 15px; border-radius: 8px; text-align: center; font-weight: bold; cursor: pointer; text-decoration: none; color: white; }
+        
+        /* Bottom Nav (Consistent) */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 450px; background-color: #1e1e1e; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #2a2a2a; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #a3a3a3; text-decoration: none; font-size: 11px; gap: 4px; }
+        .nav-item.active { color: #10b981; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <header class="header">Promotion</header>
+
+        <div class="stats-grid">
+            <div class="stat-card"><div class="stat-val">RS 0.00</div><div class="stat-label">Total Bonus</div></div>
+            <div class="stat-card"><div class="stat-val">0</div><div class="stat-label">Total Referrals</div></div>
+        </div>
+
+        <div class="referral-box">
+            <div style="font-size: 14px; text-align: center;">Your Invite Link:</div>
+            <input type="text" class="ref-input" value="winwave.com/ref/user123" readonly>
+        </div>
+
+        <div class="action-btns">
+            <div class="btn-green">Copy Invite Link</div>
+            <div class="btn-green" style="background: #3b82f6;">History</div>
+        </div>
+
+        <nav class="bottom-nav">
+            <a href="index.html" class="nav-item">
+                <i class="fa-solid fa-house"></i> <span>Home</span>
+            </a>
+            <a href="promotion.html" class="nav-item active">
+                <i class="fa-solid fa-gift"></i> <span>Promotion</span>
+            </a>
+            <a href="earn.html" class="nav-item">
+                <i class="fa-solid fa-circle-dollar-to-slot" style="font-size: 22px; color: #10b981;"></i> <span>Earn</span>
+            </a>
+            <a href="#" class="nav-item">
+                <i class="fa-solid fa-volleyball"></i> <span>Sports</span>
+            </a>
+            <a href="deposit.html" class="nav-item">
+                <i class="fa-solid fa-wallet"></i> <span>Wallet</span>
+            </a>
+        </nav>
+    </div>
+
+</body>
+</html>

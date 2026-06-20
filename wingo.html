@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Winwave - Wingo Game Professional</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 450px;
+            background-color: #1a1a1a;
+            min-height: 100vh;
+            position: relative;
+            padding-bottom: 90px;
+        }
+
+        /* Top Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            background-color: #1e1e1e;
+            border-bottom: 1px solid #2a2a2a;
+        }
+
+        .back-btn {
+            color: #a3a3a3;
+            font-size: 18px;
+            text-decoration: none;
+        }
+
+        .game-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #10b981;
+        }
+
+        .wallet-display {
+            font-size: 14px;
+            color: #f59e0b;
+            font-weight: 600;
+        }
+
+        /* Time Tabs */
+        .time-tabs {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            padding: 15px;
+        }
+
+        .time-tab {
+            background-color: #262626;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 10px 5px;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .time-tab.active {
+            background-color: #10b981;
+            border-color: #10b981;
+        }
+
+        .time-tab .mode-time {
+            font-size: 14px;
+            font-weight: bold;
+            display: block;
+        }
+
+        .time-tab .mode-title {
+            font-size: 11px;
+            color: #a3a3a3;
+        }
+
+        .time-tab.active .mode-title {
+            color: #e2e8f0;
+        }
+
+        /* Period & Timer Display */
+        .game-info-board {
+            margin: 0 15px;
+            background: linear-gradient(135deg, #1e3a8a, #0f172a);
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .period-id {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 4px;
+        }
+
+        .timer-display {
+            font-size: 26px;
+            font-weight: 800;
+            color: #f59e0b;
+            font-family: monospace;
+        }
+
+        /* Betting Area */
+        .bet-section {
+            padding: 15px;
+        }
+
+        .color-row, .size-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .size-row {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .bet-btn {
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 14px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+        }
+
+        .btn-green { background-color: #10b981; }
+        .btn-violet { background-color: #8b5cf6; }
+        .btn-red { background-color: #ef4444; }
+        .btn-big { background-color: #f59e0b; }
+        .btn-small { background-color: #3b82f6; }
+
+        /* Numbers */
+        .numbers-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            background-color: #212121;
+            padding: 12px;
+            border-radius: 12px;
+        }
+
+        .num-btn {
+            aspect-ratio: 1;
+            border-radius: 50%;
+            border: none;
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+        }
+
+        .num-0 { background: linear-gradient(135deg, #ef4444, #8b5cf6); }
+        .num-5 { background: linear-gradient(135deg, #10b981, #8b5cf6); }
+        .num-even { background-color: #ef4444; }
+        .num-odd { background-color: #10b981; }
+
+        /* ================= DETAILED BET POPUP SHEET ================= */
+        .bet-sheet-overlay {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%) translateY(100%);
+            width: 100%;
+            max-width: 450px;
+            background-color: #1e1e1e;
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+            border-top: 2px solid #10b981;
+            z-index: 999;
+            transition: transform 0.3s ease-in-out;
+            padding: 20px;
+            box-shadow: 0 -5px 25px rgba(0,0,0,0.8);
+        }
+
+        .bet-sheet-overlay.open {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .sheet-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .selected-target-badge {
+            padding: 5px 15px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 15px;
+        }
+
+        .amount-selector, .multiplier-selector {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .amt-chip, .mult-chip {
+            flex: 1;
+            background-color: #2a2a2a;
+            border: 1px solid #444;
+            color: #fff;
+            padding: 8px;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 13px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .amt-chip.active, .mult-chip.active {
+            background-color: #10b981;
+            border-color: #10b981;
+        }
+
+        .total-bet-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            margin-bottom: 15px;
+            color: #a3a3a3;
+        }
+
+        .sheet-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-cancel { background-color: #444; color: white; }
+        .btn-confirm { background-color: #10b981; color: white; }
+
+        /* History Nav Tabs */
+        .history-tabs {
+            display: flex;
+            margin: 15px;
+            border-bottom: 1px solid #333;
+        }
+
+        .hist-tab-btn {
+            flex: 1;
+            padding: 10px;
+            background: none;
+            border: none;
+            color: #a3a3a3;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .hist-tab-btn.active {
+            color: #10b981;
+            border-bottom: 2px solid #10b981;
+        }
+
+        /* History Lists */
+        .table-container {
+            padding: 0 15px;
+        }
+
+        .history-table {
+            width: 100%;
+            background-color: #1e1e1e;
+            border-collapse: collapse;
+            font-size: 12px;
+            border-radius: 8px;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        .history-table th, .history-table td {
+            padding: 8px;
+            border-bottom: 1px solid #2a2a2a;
+        }
+
+        .history-table th { background-color: #262626; color: #a3a3a3; }
+
+        .ball-result {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            line-height: 20px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .badge-win { background-color: rgba(16, 185, 129, 0.2); color: #10b981; padding: 2px 6px; border-radius: 4px; font-weight: bold;}
+        .badge-lose { background-color: rgba(239, 68, 68, 0.2); color: #ef4444; padding: 2px 6px; border-radius: 4px; font-weight: bold;}
+
+        /* ================= NEW REAL LIVE WIN/LOSS POPUP OVERLAYS ================= */
+        .result-popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0,0,0,0.75);
+            z-index: 10000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .result-popup-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .result-card {
+            width: 85%;
+            max-width: 340px;
+            background-color: #1e1e1e;
+            border-radius: 20px;
+            padding: 30px 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transform: scale(0.7);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .result-popup-overlay.show .result-card {
+            transform: scale(1);
+        }
+
+        .result-icon {
+            font-size: 60px;
+            margin-bottom: 15px;
+            animation: pulseIcon 1.5s infinite ease-in-out;
+        }
+
+        .result-title {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .result-amount {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .result-details {
+            font-size: 13px;
+            color: #a3a3a3;
+            background-color: rgba(255,255,255,0.05);
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        /* Color profiles for outcomes */
+        .card-win { border: 3px solid #10b981; background: linear-gradient(180deg, #1e1e1e 60%, #064e3b 100%); }
+        .card-win .result-icon, .card-win .result-title { color: #10b981; }
+        .card-win .result-amount { color: #f59e0b; }
+
+        .card-loss { border: 3px solid #ef4444; background: linear-gradient(180deg, #1e1e1e 60%, #7f1d1d 100%); }
+        .card-loss .result-icon, .card-loss .result-title { color: #ef4444; }
+        .card-loss .result-amount { color: #ffffff; }
+
+        @keyframes pulseIcon {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.12); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <header class="header">
+            <a href="index.html" class="back-btn"><i class="fa-solid fa-chevron-left"></i></a>
+            <div class="game-title">Wingo Game</div>
+            <div class="wallet-display"><i class="fa-solid fa-wallet"></i> RS <span id="userBalance">0.00</span></div>
+        </header>
+
+        <div class="time-tabs">
+            <div class="time-tab active" onclick="switchTimeMode(15, this)">
+                <span class="mode-time">15s</span>
+                <span class="mode-title">Wingo</span>
+            </div>
+            <div class="time-tab" onclick="switchTimeMode(30, this)">
+                <span class="mode-time">30s</span>
+                <span class="mode-title">Wingo</span>
+            </div>
+            <div class="time-tab" onclick="switchTimeMode(60, this)">
+                <span class="mode-time">1 Min</span>
+                <span class="mode-title">Wingo</span>
+            </div>
+            <div class="time-tab" onclick="switchTimeMode(180, this)">
+                <span class="mode-time">3 Min</span>
+                <span class="mode-title">Wingo</span>
+            </div>
+        </div>
+
+        <div class="game-info-board">
+            <div>
+                <div style="font-size:11px; color:#a3a3a3;">Period ID</div>
+                <div class="period-id" id="periodDisplay">20260620001</div>
+            </div>
+            <div style="text-align: right;">
+                <div style="font-size:11px; color:#a3a3a3;">Time Left</div>
+                <div class="timer-display" id="timerDisplay">00:15</div>
+            </div>
+        </div>
+
+        <div class="bet-section">
+            <div class="color-row">
+                <button class="bet-btn btn-green" onclick="openBetSheet('Green')">Green</button>
+                <button class="bet-btn btn-violet" onclick="openBetSheet('Violet')">Violet</button>
+                <button class="bet-btn btn-red" onclick="openBetSheet('Red')">Red</button>
+            </div>
+
+            <div class="size-row">
+                <button class="bet-btn btn-big" onclick="openBetSheet('Big')">Big</button>
+                <button class="bet-btn btn-small" onclick="openBetSheet('Small')">Small</button>
+            </div>
+
+            <div class="numbers-grid">
+                <button class="num-btn num-0" onclick="openBetSheet('0')">0</button>
+                <button class="num-btn num-odd" onclick="openBetSheet('1')">1</button>
+                <button class="num-btn num-even" onclick="openBetSheet('2')">2</button>
+                <button class="num-btn num-odd" onclick="openBetSheet('3')">3</button>
+                <button class="num-btn num-even" onclick="openBetSheet('4')">4</button>
+                <button class="num-btn num-5" onclick="openBetSheet('5')">5</button>
+                <button class="num-btn num-even" onclick="openBetSheet('6')">6</button>
+                <button class="num-btn num-odd" onclick="openBetSheet('7')">7</button>
+                <button class="num-btn num-even" onclick="openBetSheet('8')">8</button>
+                <button class="num-btn num-odd" onclick="openBetSheet('9')">9</button>
+            </div>
+        </div>
+
+        <div class="history-tabs">
+            <button class="hist-tab-btn active" id="tabGameHistory" onclick="switchHistoryTab('game')">Game History</button>
+            <button class="hist-tab-btn" id="tabMyHistory" onclick="switchHistoryTab('my')">My Bets</button>
+        </div>
+
+        <div class="table-container" id="gameHistoryBox">
+            <table class="history-table">
+                <thead>
+                    <tr><th>Period</th><th>Number</th><th>Size</th><th>Color</th></tr>
+                </thead>
+                <tbody id="gameHistoryBody">
+                    </tbody>
+            </table>
+        </div>
+
+        <div class="table-container" id="myHistoryBox" style="display: none;">
+            <table class="history-table">
+                <thead>
+                    <tr><th>Period</th><th>Your Selection</th><th>Amount</th><th>Status</th></tr>
+                </thead>
+                <tbody id="myHistoryBody">
+                    <tr><td colspan="4" style="color:#666; padding:20px;">No bets placed yet in this session</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="bet-sheet-overlay" id="betSheet">
+            <div class="sheet-header">
+                <h3>Place Your Bet</h3>
+                <span class="selected-target-badge" id="sheetTargetBadge">Green</span>
+            </div>
+            
+            <div style="font-size:12px; margin-bottom:6px; color:#a3a3a3;">Select Contract Amount:</div>
+            <div class="amount-selector">
+                <div class="amt-chip active" onclick="selectAmount(10, this)">10</div>
+                <div class="amt-chip" onclick="selectAmount(50, this)">50</div>
+                <div class="amt-chip" onclick="selectAmount(100, this)">100</div>
+                <div class="amt-chip" onclick="selectAmount(500, this)">500</div>
+            </div>
+
+            <div style="font-size:12px; margin-bottom:6px; color:#a3a3a3;">Select Multiplier:</div>
+            <div class="multiplier-selector">
+                <div class="mult-chip active" onclick="selectMultiplier(1, this)">x1</div>
+                <div class="mult-chip" onclick="selectMultiplier(5, this)">x5</div>
+                <div class="mult-chip" onclick="selectMultiplier(10, this)">x10</div>
+            </div>
+
+            <div class="total-bet-info">
+                <span>Total Payable Amount:</span>
+                <span style="color:#f59e0b; font-weight:bold;">RS <span id="totalBetValueDisplay">10</span></span>
+            </div>
+
+            <div class="sheet-actions">
+                <button class="action-btn btn-cancel" onclick="closeBetSheet()">Cancel</button>
+                <button class="action-btn btn-confirm" onclick="confirmBet()">Confirm Bet</button>
+            </div>
+        </div>
+
+        <div class="result-popup-overlay" id="resultPopup">
+            <div class="result-card" id="resultCard">
+                <div class="result-icon" id="resultIcon"></div>
+                <div class="result-title" id="resultTitle"></div>
+                <div class="result-amount" id="resultAmount"></div>
+                <div class="result-details" id="resultDetails"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Game Logic State Variables
+        let balance = 0.00; // Balance initialized to 0.00 as requested
+        let currentIntervalTime = 15;
+        let timeRemaining = 15;
+        let currentPeriod = 20260620001;
+        let timerEngine = null;
+
+        // Current Active Active Betting State
+        let selectedBetTarget = '';
+        let selectedBaseAmount = 10;
+        let selectedMultiplierMultiplier = 1;
+        let currentActiveUserBet = null;
+
+        // Elements caching
+        const timerDisplay = document.getElementById('timerDisplay');
+        const periodDisplay = document.getElementById('periodDisplay');
+        const userBalanceDisplay = document.getElementById('userBalance');
+        const betSheet = document.getElementById('betSheet');
+        const sheetTargetBadge = document.getElementById('sheetTargetBadge');
+        const totalBetValueDisplay = document.getElementById('totalBetValueDisplay');
+
+        // Startup functions
+        initGameHistoryData();
+        startTimerEngine();
+
+        function startTimerEngine() {
+            clearInterval(timerEngine);
+            timerEngine = setInterval(() => {
+                timeRemaining--;
+                if (timeRemaining < 0) {
+                    timeRemaining = currentIntervalTime;
+                    resolveRoundResults();
+                    currentPeriod++;
+                    periodDisplay.innerText = currentPeriod;
+                }
+                updateTimerText();
+            }, 1000);
+        }
+
+        function updateTimerText() {
+            let mins = Math.floor(timeRemaining / 60);
+            let secs = timeRemaining % 60;
+            timerDisplay.innerText = `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+
+        function switchTimeMode(seconds, element) {
+            document.querySelectorAll('.time-tab').forEach(t => t.classList.remove('active'));
+            element.classList.add('active');
+            currentIntervalTime = seconds;
+            timeRemaining = seconds;
+            currentPeriod = Math.floor(Math.random() * 100000) + 20260600001;
+            periodDisplay.innerText = currentPeriod;
+            currentActiveUserBet = null;
+            startTimerEngine();
+        }
+
+        /* Bet Sheet Logic Controls */
+        function openBetSheet(target) {
+            selectedBetTarget = target;
+            sheetTargetBadge.innerText = target;
+            
+            // Background Badge Color Setup
+            sheetTargetBadge.style.background = '#444';
+            if(target === 'Green') sheetTargetBadge.style.background = '#10b981';
+            if(target === 'Violet') sheetTargetBadge.style.background = '#8b5cf6';
+            if(target === 'Red') sheetTargetBadge.style.background = '#ef4444';
+            if(target === 'Big') sheetTargetBadge.style.background = '#f59e0b';
+            if(target === 'Small') sheetTargetBadge.style.background = '#3b82f6';
+
+            calculateTotalBetCost();
+            betSheet.classList.add('open');
+        }
+
+        function closeBetSheet() {
+            betSheet.classList.remove('open');
+        }
+
+        function selectAmount(val, element) {
+            document.querySelectorAll('.amt-chip').forEach(c => c.classList.remove('active'));
+            element.classList.add('active');
+            selectedBaseAmount = val;
+            calculateTotalBetCost();
+        }
+
+        function selectMultiplier(val, element) {
+            document.querySelectorAll('.mult-chip').forEach(c => c.classList.remove('active'));
+            element.classList.add('active');
+            selectedMultiplierMultiplier = val;
+            calculateTotalBetCost();
+        }
+
+        function calculateTotalBetCost() {
+            totalBetValueDisplay.innerText = selectedBaseAmount * selectedMultiplierMultiplier;
+        }
+
+        function confirmBet() {
+            let cost = selectedBaseAmount * selectedMultiplierMultiplier;
+            if(balance < cost) {
+                alert("Insufficient Balance!");
+                return;
+            }
+            if(currentActiveUserBet !== null) {
+                alert("Aap is round mein pehle hi bet laga chuke hain!");
+                return;
+            }
+
+            // Deduct Balance
+            balance -= cost;
+            userBalanceDisplay.innerText = balance.toFixed(2);
+
+            // Record Current Bet Data locally
+            currentActiveUserBet = {
+                period: currentPeriod,
+                target: selectedBetTarget,
+                amount: cost
+            };
+
+            closeBetSheet();
+            alert(`Bet Placed Successfully for target: ${selectedBetTarget}`);
+        }
+
+        /* Settlement Logic Engine */
+        function resolveRoundResults() {
+            const randomNum = Math.floor(Math.random() * 10);
+            let sizeText = randomNum >= 5 ? 'Big' : 'Small';
+            let colors = [];
+            let colorString = '';
+            let ballClass = '';
+
+            if (randomNum === 0) { colors = ['Red', 'Violet']; colorString = 'Red/Violet'; ballClass = 'num-0'; }
+            else if (randomNum === 5) { colors = ['Green', 'Violet']; colorString = 'Green/Violet'; ballClass = 'num-5'; }
+            else if (randomNum % 2 === 0) { colors = ['Red']; colorString = 'Red'; ballClass = 'num-even'; }
+            else { colors = ['Green']; colorString = 'Green'; ballClass = 'num-odd'; }
+
+            // Insert into Game History list
+            const gameBody = document.getElementById('gameHistoryBody');
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td>...${String(currentPeriod).slice(-4)}</td>
+                <td><span class="ball-result ${ballClass}">${randomNum}</span></td>
+                <td style="color:${sizeText === 'Big' ? '#f59e0b' : '#3b82f6'}; font-weight:bold;">${sizeText}</td>
+                <td style="color:#10b981; font-weight:600;">${colorString}</td>
+            `;
+            gameBody.insertBefore(newRow, gameBody.firstChild);
+
+            // Process Personal User Bet if shamil tha
+            if(currentActiveUserBet && currentActiveUserBet.period === currentPeriod) {
+                let didWin = false;
+                let target = currentActiveUserBet.target;
+
+                if (target === sizeText) didWin = true;
+                else if (colors.includes(target)) didWin = true;
+                else if (target === String(randomNum)) didWin = true;
+
+                let returns = 0;
+                if(didWin) {
+                    if(['Big','Small','Green','Red'].includes(target)) returns = currentActiveUserBet.amount * 1.96;
+                    else if(target === 'Violet') returns = currentActiveUserBet.amount * 4.5;
+                    else returns = currentActiveUserBet.amount * 9;
+
+                    balance += returns;
+                    userBalanceDisplay.innerText = balance.toFixed(2);
+                }
+
+                // Append into My History Records
+                const myBody = document.getElementById('myHistoryBody');
+                if(myBody.innerText.includes("No bets placed")) myBody.innerHTML = '';
+                
+                const myRow = document.createElement('tr');
+                myRow.innerHTML = `
+                    <td>...${String(currentPeriod).slice(-4)}</td>
+                    <td><span style="font-weight:bold;">${target}</span></td>
+                    <td>RS ${currentActiveUserBet.amount}</td>
+                    <td><span class="${didWin ? 'badge-win' : 'badge-lose'}">${didWin ? 'WIN (+'+returns.toFixed(1)+')' : 'LOSE'}</span></td>
+                `;
+                myBody.insertBefore(myRow, myBody.firstChild);
+
+                // TRIGGER DYNAMIC CASINO POPUP
+                showResultPopup(didWin, returns, currentActiveUserBet.amount, target, randomNum, sizeText, colorString);
+            }
+
+            // Reset round parameters
+            currentActiveUserBet = null;
+        }
+
+        /* NEW FUNCTION: DISPLAY WIN/LOSS OVERLAYS */
+        function showResultPopup(didWin, winAmt, betAmt, selected, num, size, colors) {
+            const overlay = document.getElementById('resultPopup');
+            const card = document.getElementById('resultCard');
+            const icon = document.getElementById('resultIcon');
+            const title = document.getElementById('resultTitle');
+            const amount = document.getElementById('resultAmount');
+            const details = document.getElementById('resultDetails');
+
+            // Reset dynamic layout states
+            card.className = "result-card";
+
+            if(didWin) {
+                card.classList.add('card-win');
+                icon.innerHTML = '<i class="fa-solid fa-trophy"></i>';
+                title.innerText = "Congratulations!";
+                amount.innerText = `+ RS ${winAmt.toFixed(2)}`;
+            } else {
+                card.classList.add('card-loss');
+                icon.innerHTML = '<i class="fa-solid fa-heart-crack"></i>';
+                title.innerText = "Better Luck Next Time";
+                amount.innerText = `- RS ${betAmt.toFixed(2)}`;
+            }
+
+            details.innerHTML = `
+                <div style="margin-bottom:4px;">Period ID: <span style="color:#fff;">...${String(currentPeriod).slice(-4)}</span></div>
+                <div>Your Selection: <span style="color:#fff; font-weight:600;">${selected}</span></div>
+                <div style="margin-top:6px; border-top:1px dashed #444; padding-top:6px;">
+                    Result: <span style="color:#f59e0b; font-weight:bold;">${num}</span> (${size} / ${colors})
+                </div>
+            `;
+
+            overlay.classList.add('show');
+
+            // Automatically close the pop-up after 3 seconds
+            setTimeout(() => {
+                overlay.classList.remove('show');
+            }, 3000);
+        }
+
+        /* UI Tab Nav Switcher Setup */
+        function switchHistoryTab(type) {
+            if(type === 'game') {
+                document.getElementById('tabGameHistory').classList.add('active');
+                document.getElementById('tabMyHistory').classList.remove('active');
+                document.getElementById('gameHistoryBox').style.display = 'block';
+                document.getElementById('myHistoryBox').style.display = 'none';
+            } else {
+                document.getElementById('tabMyHistory').classList.add('active');
+                document.getElementById('tabGameHistory').classList.remove('active');
+                document.getElementById('myHistoryBox').style.display = 'block';
+                document.getElementById('gameHistoryBox').style.display = 'none';
+            }
+        }
+
+        function initGameHistoryData() {
+            const gameBody = document.getElementById('gameHistoryBody');
+            gameBody.innerHTML = `
+                <tr><td>...9942</td><td><span class="ball-result num-even">4</span></td><td style="color:#3b82f6;font-weight:bold;">Small</td><td style="color:#ef4444;font-weight:600;">Red</td></tr>
+                <tr><td>...9941</td><td><span class="ball-result num-odd">7</span></td><td style="color:#f59e0b;font-weight:bold;">Big</td><td style="color:#10b981;font-weight:600;">Green</td></tr>
+            `;
+        }
+    </script>
+</body>
+</html>

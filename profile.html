@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Winwave - User Profile</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Mobile Container (Dashboard Aur Deposit Page Ke Same Size Ka) */
+        .app-container {
+            width: 100%;
+            max-width: 450px;
+            background-color: #1a1a1a;
+            min-height: 100vh;
+            position: relative;
+            padding-bottom: 80px; /* Space for bottom navigation if needed */
+        }
+
+        /* Header Layout */
+        .profile-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            background-color: #1e1e1e;
+            border-bottom: 1px solid #2a2a2a;
+        }
+
+        .back-btn {
+            color: #a3a3a3;
+            font-size: 18px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .settings-btn {
+            color: #a3a3a3;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        /* User Card Main Info Section */
+        .user-info-card {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            margin: 15px;
+            padding: 20px;
+            border-radius: 16px;
+            border: 1px solid #334155;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .avatar-wrapper {
+            position: relative;
+        }
+
+        .user-avatar {
+            width: 70px;
+            height: 70px;
+            background-color: #10b981;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 28px;
+            color: #fff;
+            border: 3px solid #1e293b;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .verified-badge {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            background-color: #10b981;
+            color: #fff;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid #0f172a;
+        }
+
+        .user-meta {
+            flex-grow: 1;
+        }
+
+        .user-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+
+        /* UID Container Box Style */
+        .uid-container {
+            display: inline-flex;
+            align-items: center;
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            color: #cbd5e1;
+            gap: 6px;
+        }
+
+        .uid-label {
+            font-weight: 600;
+            color: #10b981;
+        }
+
+        .copy-uid-icon {
+            cursor: pointer;
+            color: #94a3b8;
+            transition: 0.2s;
+        }
+
+        .copy-uid-icon:hover {
+            color: #10b981;
+        }
+
+        /* Wallet Statistics Quick Panel */
+        .wallet-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            padding: 0 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-box {
+            background-color: #262626;
+            border: 1px solid #333;
+            padding: 12px;
+            border-radius: 12px;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #a3a3a3;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        /* Profile Menu List Container */
+        .menu-section {
+            margin-bottom: 20px;
+        }
+
+        .menu-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #6b7280;
+            padding: 0 20px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .menu-list {
+            background-color: #1e1e1e;
+            border-top: 1px solid #2a2a2a;
+            border-bottom: 1px solid #2a2a2a;
+        }
+
+        /* Menu Item Anchor Row link row */
+        .menu-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 20px;
+            text-decoration: none;
+            color: #e5e7eb;
+            border-bottom: 1px solid #2a2a2a;
+            transition: background-color 0.2s;
+            cursor: pointer;
+        }
+
+        .menu-item:last-child {
+            border-bottom: none;
+        }
+
+        .menu-item:hover {
+            background-color: #262626;
+        }
+
+        .menu-item-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .menu-item-left i {
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .menu-item-right {
+            color: #6b7280;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Log out Button Row styling */
+        .logout-box {
+            padding: 10px 15px;
+            margin-top: 10px;
+        }
+
+        .logout-btn {
+            width: 100%;
+            background-color: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+
+        .logout-btn:hover {
+            background-color: #ef4444;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+
+        <div class="profile-header">
+            <a href="index.html" class="back-btn">
+                <i class="fa-solid fa-chevron-left"></i>
+            </a>
+            <div class="header-title">Account Profile</div>
+            <div class="settings-btn" onclick="openSettings()">
+                <i class="fa-solid fa-gear"></i>
+            </div>
+        </div>
+
+        <div class="user-info-card">
+            <div class="avatar-wrapper">
+                <div class="user-avatar" id="userAvatar">W</div>
+                <div class="verified-badge"><i class="fa-solid fa-check"></i></div>
+            </div>
+            <div class="user-meta">
+                <div class="user-name" id="userNameText">Winwave User</div>
+                <div class="uid-container">
+                    <span class="uid-label">UID:</span>
+                    <span id="userUID">WW8927401</span>
+                    <i class="fa-solid fa-copy copy-uid-icon" onclick="copyUID()" title="Copy UID"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="wallet-stats-grid">
+            <div class="stat-box">
+                <div class="stat-label"><i class="fa-solid fa-wallet" style="color: #10b981;"></i> Current Balance</div>
+                <div class="stat-value" style="color: #10b981;">RS 0.00</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label"><i class="fa-solid fa-chart-line" style="color: #3b82f6;"></i> Total Profit</div>
+                <div class="stat-value" style="color: #3b82f6;">RS 0.00</div>
+            </div>
+        </div>
+
+        <div class="menu-section">
+            <div class="menu-title">Finance Management</div>
+            <div class="menu-list">
+                
+                <a href="deposit.html" class="menu-item">
+                    <div class="menu-item-left">
+                        <i class="fa-solid fa-circle-arrow-down" style="color: #10b981;"></i>
+                        <span>Deposit Funds</span>
+                    </div>
+                    <div class="menu-item-right"><i class="fa-solid fa-chevron-right"></i></div>
+                </a>
+
+                <div class="menu-item" onclick="navigateMenu('Withdraw')">
+                    <div class="menu-item-left">
+                        <i class="fa-solid fa-circle-arrow-up" style="color: #ef4444;"></i>
+                        <span>Withdraw Cash</span>
+                    </div>
+                    <div class="menu-item-right"><i class="fa-solid fa-chevron-right"></i></div>
+                </div>
+
+                <div class="menu-item" onclick="navigateMenu('Transaction History')">
+                    <div class="menu-item-left">
+                        <i class="fa-solid fa-clock-rotate-left" style="color: #eab308;"></i>
+                        <span>Transaction History</span>
+                    </div>
+                    <div class="menu-item-right"><span style="color:#6b7280; font-size:11px; margin-right:5px;">All Records</span><i class="fa-solid fa-chevron-right"></i></div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="menu-section">
+            <div class="menu-title">Personal Settings</div>
+            <div class="menu-list">
+
+                <div class="menu-item" onclick="editProfileDetails()">
+                    <div class="menu-item-left">
+                        <i class="fa-solid fa-user-pen" style="color: #3b82f6;"></i>
+                        <span>Edit Personal Info</span>
+                    </div>
+                    <div class="menu-item-right"><i class="fa-solid fa-chevron-right"></i></div>
+                </div>
+
+                <div class="menu-item" onclick="navigateMenu('Security Center')">
+                    <div class="menu-item-left">
+                        <i class="fa-solid fa-shield-halved" style="color: #14b8a6;"></i>
+                        <span>Security & Password</span>
+                    </div>
+                    <div class="menu-item-right"><i class="fa-solid fa-chevron-right"></i></div>
+                </div>
+
+                <div class="menu-item" onclick="navigateMenu('My Team Referral')">
+                    <div class="menu-item-left">
+                        <i class="fa-solid fa-users" style="color: #a855f7;"></i>
+                        <span>My Team & Referrals</span>
+                    </div>
+                    <div class="menu-item-right"><span style="color:#10b981; font-size:11px; margin-right:5px;">Earn Commission</span><i class="fa-solid fa-chevron-right"></i></div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="menu-section">
+            <div class="menu-title">Support Channel</div>
+            <div class="menu-list">
+
+                <div class="menu-item" onclick="window.open('https://telegram.org', '_blank')">
+                    <div class="menu-item-left">
+                        <i class="fa-brands fa-telegram" style="color: #0088cc;"></i>
+                        <span>Telegram Support Group</span>
+                    </div>
+                    <div class="menu-item-right"><i class="fa-solid fa-arrow-up-right-from-square"></i></div>
+                </div>
+
+                <div class="menu-item" onclick="navigateMenu('App Rules')">
+                    <div class="menu-item-left">
+                        <i class="fa-solid fa-circle-info" style="color: #9ca3af;"></i>
+                        <span>Terms & Platform Rules</span>
+                    </div>
+                    <div class="menu-item-right"><i class="fa-solid fa-chevron-right"></i></div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="logout-box">
+            <button class="logout-btn" onclick="processLogOut()">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                <span>Log Out Account</span>
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        // Automatic Dynamic UID Generator Initializer Setup On Page Load
+        document.addEventListener("DOMContentLoaded", function() {
+            initializeUserProfile();
+        });
+
+        function initializeUserProfile() {
+            // Agar localStorage me UID pehle se save nahi h, to random generate karega
+            if (!localStorage.getItem('winwave_uid')) {
+                const randomDigits = Math.floor(100000 + Math.random() * 900000); // 6 Digit Unique No
+                const dynamicUID = "WW" + randomDigits;
+                localStorage.setItem('winwave_uid', dynamicUID);
+            }
+            
+            // Default Save Name Setup 
+            if (!localStorage.getItem('winwave_username')) {
+                localStorage.setItem('winwave_username', 'Winwave User');
+            }
+
+            // Render details from localStorage onto UI components
+            const finalUID = localStorage.getItem('winwave_uid');
+            const finalName = localStorage.getItem('winwave_username');
+            
+            document.getElementById('userUID').innerText = finalUID;
+            document.getElementById('userNameText').innerText = finalName;
+            
+            // First Character Avatar setup
+            document.getElementById('userAvatar').innerText = finalName.charAt(0).toUpperCase();
+        }
+
+        // Copy User ID UID To Mobile Clipboards Operation
+        function copyUID() {
+            const uidString = document.getElementById('userUID').innerText;
+            navigator.clipboard.writeText(uidString);
+            alert("Your Profile UID Copied Successfully: " + uidString);
+        }
+
+        // Edit Account Info Prompt Functionality Modals Triggers
+        function editProfileDetails() {
+            const currentName = localStorage.getItem('winwave_username');
+            const newName = prompt("Enter your new Username:", currentName);
+            
+            if (newName && newName.trim() !== "") {
+                localStorage.setItem('winwave_username', newName.trim());
+                document.getElementById('userNameText').innerText = newName.trim();
+                document.getElementById('userAvatar').innerText = newName.trim().charAt(0).toUpperCase();
+                alert("Username updated successfully!");
+            }
+        }
+
+        // Top Corner Icon Quick Settings Alert Layout 
+        function openSettings() {
+            alert("App Settings Panel: All systems optimized.");
+        }
+
+        // Universal Dummy Route Menu Handlers Actions
+        function navigateMenu(featureName) {
+            alert(featureName + " option under configuration process. Will update soon!");
+        }
+
+        // Destroy Session Logs Mock Out Procedures
+        function processLogOut() {
+            if (confirm("Are you sure you want to log out from Winwave?")) {
+                alert("Logged out successfully.");
+                // Redirect user back login screen index window view routing 
+                window.location.href = "index.html";
+            }
+        }
+    </script>
+</body>
+</html>

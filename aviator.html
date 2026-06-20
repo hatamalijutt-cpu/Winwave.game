@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Winwave - Real Aviator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: #0f0f10;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* Mobile Container (Dashboard Matching) */
+        .app-container {
+            width: 100%;
+            max-width: 450px;
+            background-color: #141518;
+            min-height: 100vh;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #272a31;
+            overflow-x: hidden;
+        }
+
+        /* Game Top Header */
+        .game-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 15px;
+            background-color: #1b1c21;
+            border-bottom: 1px solid #272a31;
+        }
+
+        .back-btn {
+            color: #94a3b8;
+            font-size: 16px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .game-title {
+            font-size: 15px;
+            font-weight: 800;
+            color: #cb0e33;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .balance-box {
+            background-color: #101114;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #22c55e;
+            border: 1px solid #272a31;
+        }
+
+        /* Previous History Ribbon with Three Dots (...) */
+        .history-section {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #18191d;
+            padding: 6px 12px;
+            border-bottom: 1px solid #272a31;
+            position: relative;
+        }
+
+        .history-ribbon {
+            display: flex;
+            gap: 5px;
+            overflow-x: hidden;
+            white-space: nowrap;
+            width: 85%;
+        }
+
+        .history-badge {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 10px;
+        }
+        .mult-blue { color: #3b82f6; background: rgba(59, 130, 246, 0.15); }
+        .mult-purple { color: #a855f7; background: rgba(168, 85, 247, 0.15); }
+        .mult-red { color: #ef4444; background: rgba(239, 68, 68, 0.15); }
+
+        .three-dots-btn {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 4px 8px;
+        }
+
+        /* History Dropdown Modal */
+        .history-dropdown {
+            display: none;
+            position: absolute;
+            top: 35px;
+            right: 10px;
+            width: 260px;
+            background: #1b1c21;
+            border: 1px solid #272a31;
+            border-radius: 8px;
+            z-index: 100;
+            padding: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+
+        .history-dropdown h4 {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #272a31;
+            padding-bottom: 4px;
+        }
+
+        .grid-history {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        /* Main Live Graph Screen View */
+        .graph-display-arena {
+            background-color: #0a0b0d;
+            margin: 10px;
+            height: 180px;
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #272a31;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* SVG Line Trail */
+        .graph-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .flight-path {
+            fill: none;
+            stroke: #cb0e33;
+            stroke-width: 3;
+            stroke-dasharray: 600;
+            stroke-dashoffset: 600;
+        }
+
+        /* Plane Engine View */
+        .aviator-plane {
+            position: absolute;
+            bottom: 15px;
+            left: 15px;
+            width: 28px;
+            height: 28px;
+            color: #cb0e33;
+            font-size: 24px;
+            z-index: 2;
+            display: none;
+            transform: rotate(-15deg);
+        }
+
+        /* Main Screen Displays Text */
+        .live-counter-box {
+            text-align: center;
+            z-index: 3;
+        }
+
+        .live-multiplier {
+            font-size: 38px;
+            font-weight: 900;
+            color: #fff;
+        }
+
+        .game-status-alert {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 4px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .countdown-timer-text {
+            color: #eab308 !important;
+            font-size: 16px;
+        }
+
+        /* Double Bet Boxes Layout Matrix */
+        .double-bet-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            padding: 0 10px;
+            margin-bottom: 10px;
+        }
+
+        .bet-control-panel {
+            background-color: #18191d;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #272a31;
+        }
+
+        .selector-row {
+            display: flex;
+            background: #0f0f10;
+            border-radius: 6px;
+            border: 1px solid #272a31;
+            height: 34px;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 5px;
+            margin-bottom: 6px;
+        }
+
+        .adjust-btn {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 20px;
+        }
+
+        .bet-input-field {
+            width: 100%;
+            background: none;
+            border: none;
+            color: #fff;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 700;
+            outline: none;
+        }
+
+        .action-button-trigger {
+            width: 100%;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 800;
+            text-transform: uppercase;
+            cursor: pointer;
+            height: 38px;
+        }
+
+        .btn-bet-state { background-color: #22c55e; color: white; }
+        .btn-cashout-state { background-color: #d97706; color: white; }
+        .btn-disabled-state { background-color: #2d3139 !important; color: #64748b !important; cursor: not-allowed; }
+
+        /* Dynamic Real-time Users Logs Section */
+        .live-bets-section {
+            flex-grow: 1;
+            padding: 0 10px 10px 10px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .bets-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #94a3b8;
+            margin-bottom: 6px;
+            font-weight: 700;
+            background: #18191d;
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid #272a31;
+        }
+
+        .live-dot {
+            height: 7px;
+            width: 7px;
+            background-color: #22c55e;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 4px;
+        }
+
+        .bets-log-container {
+            background-color: #101114;
+            border-radius: 6px;
+            border: 1px solid #1b1c21;
+            height: 160px;
+            overflow-y: auto;
+        }
+
+        .bet-log-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 10px;
+            font-size: 11px;
+            border-bottom: 1px solid #18191d;
+        }
+
+        .bet-log-user {
+            color: #cbd5e1;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .bet-log-user i { color: #64748b; }
+
+        .bet-log-amount {
+            font-weight: 700;
+            color: #cbd5e1;
+        }
+
+        .bet-log-multiplier {
+            background-color: rgba(34, 197, 94, 0.12);
+            color: #22c55e;
+            padding: 1px 5px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 10px;
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+
+        <div class="game-header">
+            <a href="index.html" class="back-btn">
+                <i class="fa-solid fa-chevron-left"></i>
+            </a>
+            <div class="game-title">
+                <i class="fa-solid fa-plane-departure"></i> Aviator
+            </div>
+            <div class="balance-box">
+                RS <span id="userBalanceText">0.00</span>
+            </div>
+        </div>
+
+        <div class="history-section">
+            <div class="history-ribbon" id="historyRibbonContainer">
+                <div class="history-badge mult-blue">1.20x</div>
+                <div class="history-badge mult-purple">4.50x</div>
+                <div class="history-badge mult-blue">2.10x</div>
+                <div class="history-badge mult-red">1.02x</div>
+                <div class="history-badge mult-purple">18.40x</div>
+                <div class="history-badge mult-blue">1.65x</div>
+                <div class="history-badge mult-blue">3.11x</div>
+            </div>
+            <button class="three-dots-btn" onclick="toggleHistoryDropdown()">
+                <i class="fa-solid fa-ellipsis-vertical"></i>
+            </button>
+
+            <div class="history-dropdown" id="historyDropdown">
+                <h4>Round History (Last 20)</h4>
+                <div class="grid-history" id="fullHistoryGrid">
+                    </div>
+            </div>
+        </div>
+
+        <div class="graph-display-arena">
+            <svg class="graph-svg">
+                <path id="graphPath" class="flight-path" d="M 10,170 Q 140,160 380,25 L 420 25" />
+            </svg>
+
+            <div class="aviator-plane" id="planeObject">
+                <i class="fa-solid fa-plane"></i>
+            </div>
+
+            <div class="live-counter-box">
+                <div class="live-multiplier" id="multiplierLiveCounter">8.0s</div>
+                <div class="game-status-alert countdown-timer-text" id="gameStatusLabel">PLACE YOUR BETS</div>
+            </div>
+        </div>
+
+        <div class="double-bet-wrapper">
+            
+            <div class="bet-control-panel">
+                <div class="selector-row">
+                    <button class="adjust-btn" onclick="adjustBet(1, -50)">-</button>
+                    <input type="number" class="bet-input-field" id="betAmountField1" value="100" min="10" readonly>
+                    <button class="adjust-btn" onclick="adjustBet(1, 50)">+</button>
+                </div>
+                <button class="action-button-trigger btn-bet-state" id="actionBtn1" onclick="handleBetClick(1)">Place Bet</button>
+            </div>
+
+            <div class="bet-control-panel">
+                <div class="selector-row">
+                    <button class="adjust-btn" onclick="adjustBet(2, -50)">-</button>
+                    <input type="number" class="bet-input-field" id="betAmountField2" value="100" min="10" readonly>
+                    <button class="adjust-btn" onclick="adjustBet(2, 50)">+</button>
+                </div>
+                <button class="action-button-trigger btn-bet-state" id="actionBtn2" onclick="handleBetClick(2)">Place Bet</button>
+            </div>
+
+        </div>
+
+        <div class="live-bets-section">
+            <div class="bets-header">
+                <span><span class="live-dot"></span> All Bets</span>
+                <span id="liveMembersCounter">524 Players Live</span>
+            </div>
+            <div class="bets-log-container" id="liveBetsLogContainer">
+                </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Game states tracking engine parameters
+        let currentGameState = "countdown"; 
+        let liveMultiplierVal = 1.00;
+        let userCurrentBalanceVal = 0.00; // Balance set to 0.00 by default
+        let countdownTimeLeft = 8.0;
+        let gameLoopTimerRef = null;
+        let logsGenerationTimerRef = null;
+        let crashPointTargetVal = 0;
+        const maxPathStrokeOffset = 600;
+
+        let betBox1 = { amount: 100, state: "idle" }; 
+        let betBox2 = { amount: 100, state: "idle" };
+
+        const counterText = document.getElementById('multiplierLiveCounter');
+        const statusLabel = document.getElementById('gameStatusLabel');
+        const planeObject = document.getElementById('planeObject');
+        const svgPathStroke = document.getElementById('graphPath');
+        const userBalanceDOM = document.getElementById('userBalanceText');
+        const liveMembersDOM = document.getElementById('liveMembersCounter');
+        const logsContainerDOM = document.getElementById('liveBetsLogContainer');
+
+        const btn1 = document.getElementById('actionBtn1');
+        const btn2 = document.getElementById('actionBtn2');
+
+        let pastRoundsArray = [1.50, 2.44, 1.05, 5.20, 1.80, 12.30, 1.15, 3.40, 2.10, 1.01, 8.50, 1.34, 4.12, 1.95, 24.50];
+
+        document.addEventListener("DOMContentLoaded", function() {
+            loadLocalWalletBalance();
+            renderDropdownHistoryGrid();
+            startCountdownTimerSequence();
+            startLiveLogsSimulations();
+        });
+
+        function loadLocalWalletBalance() {
+            let balance = localStorage.getItem('winwave_balance');
+            if (balance) {
+                userCurrentBalanceVal = parseFloat(balance);
+            } else {
+                localStorage.setItem('winwave_balance', '0.00'); // Force save 0 balance if not exists
+                userCurrentBalanceVal = 0.00;
+            }
+            userBalanceDOM.innerText = userCurrentBalanceVal.toFixed(2);
+        }
+
+        function toggleHistoryDropdown() {
+            const dropdown = document.getElementById('historyDropdown');
+            dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
+        }
+
+        function renderDropdownHistoryGrid() {
+            const grid = document.getElementById('fullHistoryGrid');
+            grid.innerHTML = "";
+            pastRoundsArray.forEach(val => {
+                const node = document.createElement('div');
+                let colorClass = val < 1.5 ? 'mult-blue' : (val < 4 ? 'mult-purple' : 'mult-red');
+                node.className = `history-badge ${colorClass}`;
+                node.style.textAlign = "center";
+                node.innerText = val.toFixed(2) + "x";
+                grid.appendChild(node);
+            });
+        }
+
+        function adjustBet(boxIndex, offset) {
+            let currentBox = boxIndex === 1 ? betBox1 : betBox2;
+            let field = document.getElementById(`betAmountField${boxIndex}`);
+            
+            if (currentBox.state !== "idle") return; 
+            
+            currentBox.amount += offset;
+            if (currentBox.amount < 10) currentBox.amount = 10;
+            if (currentBox.amount > userCurrentBalanceVal && userCurrentBalanceVal > 10) {
+                currentBox.amount = Math.floor(userCurrentBalanceVal);
+            }
+            field.value = currentBox.amount;
+        }
+
+        function handleBetClick(boxIndex) {
+            let currentBox = boxIndex === 1 ? betBox1 : betBox2;
+            let currentBtn = boxIndex === 1 ? btn1 : btn2;
+
+            if (currentGameState === "countdown" && currentBox.state === "idle") {
+                if (userCurrentBalanceVal >= currentBox.amount) {
+                    userCurrentBalanceVal -= currentBox.amount;
+                    localStorage.setItem('winwave_balance', userCurrentBalanceVal);
+                    userBalanceDOM.innerText = userCurrentBalanceVal.toFixed(2);
+
+                    currentBox.state = "booked";
+                    currentBtn.className = "action-button-trigger btn-cashout-state";
+                    currentBtn.innerText = "Cancel Bet";
+                } else {
+                    alert("Insufficient Balance! Please deposit first.");
+                }
+            } else if (currentBox.state === "booked") {
+                userCurrentBalanceVal += currentBox.amount;
+                localStorage.setItem('winwave_balance', userCurrentBalanceVal);
+                userBalanceDOM.innerText = userCurrentBalanceVal.toFixed(2);
+
+                currentBox.state = "idle";
+                currentBtn.className = "action-button-trigger btn-bet-state";
+                currentBtn.innerText = "Place Bet";
+            } else if (currentGameState === "running" && currentBox.state === "active") {
+                let prize = currentBox.amount * liveMultiplierVal;
+                userCurrentBalanceVal += prize;
+                localStorage.setItem('winwave_balance', userCurrentBalanceVal);
+                userBalanceDOM.innerText = userCurrentBalanceVal.toFixed(2);
+
+                currentBox.state = "cashed";
+                currentBtn.className = "action-button-trigger btn-disabled-state";
+                currentBtn.innerText = `Won RS ${prize.toFixed(0)}`;
+            }
+        }
+
+        function startCountdownTimerSequence() {
+            currentGameState = "countdown";
+            countdownTimeLeft = 8.0;
+            liveMultiplierVal = 1.00;
+
+            statusLabel.innerText = "PLACE YOUR BETS";
+            statusLabel.className = "game-status-alert countdown-timer-text";
+            planeObject.style.display = "none";
+            planeObject.style.bottom = "15px";
+            planeObject.style.left = "15px";
+            svgPathStroke.style.strokeDashoffset = maxPathStrokeOffset;
+
+            resetBetButtonsForNextRound(btn1, betBox1);
+            resetBetButtonsForNextRound(btn2, betBox2);
+
+            gameLoopTimerRef = setInterval(() => {
+                countdownTimeLeft -= 0.1;
+                if (countdownTimeLeft <= 0) {
+                    clearInterval(gameLoopTimerRef);
+                    launchFlightSimulationEngine();
+                } else {
+                    counterText.innerText = countdownTimeLeft.toFixed(1) + "s";
+                }
+            }, 100);
+        }
+
+        function resetBetButtonsForNextRound(btn, box) {
+            if (box.state === "booked") {
+                box.state = "active";
+                btn.className = "action-button-trigger btn-cashout-state";
+                btn.innerText = "Cash Out";
+            } else if (box.state === "cashed" || box.state === "idle") {
+                box.state = "idle";
+                btn.className = "action-button-trigger btn-bet-state";
+                btn.innerText = "Place Bet";
+            }
+        }
+
+        function launchFlightSimulationEngine() {
+            currentGameState = "running";
+            statusLabel.innerText = "The Plane Is Flying";
+            statusLabel.className = "game-status-alert";
+            planeObject.style.display = "block";
+
+            if (betBox1.state !== "active") btn1.className = "action-button-trigger btn-disabled-state";
+            if (betBox2.state !== "active") btn2.className = "action-button-trigger btn-disabled-state";
+
+            let rand = Math.random();
+            crashPointTargetVal = rand < 0.15 ? 1.05 + Math.random()*0.3 : (rand < 0.75 ? 1.4 + Math.random()*2.5 : 4.0 + Math.random()*12.0);
+
+            gameLoopTimerRef = setInterval(() => {
+                let acceleration = 0.003 * Math.pow(liveMultiplierVal, 0.65);
+                liveMultiplierVal += acceleration;
+                counterText.innerText = liveMultiplierVal.toFixed(2) + "x";
+
+                let factor = (liveMultiplierVal - 1) / (crashPointTargetVal - 1 || 1);
+                if (factor > 1) factor = 1;
+
+                let x = 15 + (factor * 340);
+                let y = 15 + (Math.pow(factor, 1.4) * 120);
+                planeObject.style.left = x + "px";
+                planeObject.style.bottom = y + "px";
+
+                svgPathStroke.style.strokeDashoffset = maxPathStrokeOffset - (factor * maxPathStrokeOffset);
+
+                if (liveMultiplierVal >= crashPointTargetVal) {
+                    triggerCrashOutcome();
+                }
+            }, 40);
+        }
+
+        function triggerCrashOutcome() {
+            clearInterval(gameLoopTimerRef);
+            currentGameState = "crashed";
+            statusLabel.innerText = "FLEW AWAY";
+            statusLabel.className = "game-status-alert mult-red";
+            counterText.innerText = "Crashed @ " + liveMultiplierVal.toFixed(2) + "x";
+            planeObject.style.display = "none";
+
+            pastRoundsArray.unshift(liveMultiplierVal);
+            renderDropdownHistoryGrid();
+
+            const ribbon = document.getElementById('historyRibbonContainer');
+            const badge = document.createElement('div');
+            let colorClass = liveMultiplierVal < 1.5 ? 'mult-blue' : (liveMultiplierVal < 4 ? 'mult-purple' : 'mult-red');
+            badge.className = `history-badge ${colorClass}`;
+            badge.innerText = liveMultiplierVal.toFixed(2) + "x";
+            ribbon.insertBefore(badge, ribbon.firstChild);
+
+            setTimeout(startCountdownTimerSequence, 3500);
+        }
+
+        function startLiveLogsSimulations() {
+            const usersList = ["shani_dx", "malik_44", "imran_khan", "zain_shah", "rana_99", "asif_jatt", "bilal_vibe", "hamza_77", "nomi_w", "umer_farooq", "ali_reza"];
+            
+            logsGenerationTimerRef = setInterval(() => {
+                let randomLiveMembers = Math.floor(500 + Math.random() * 85);
+                liveMembersDOM.innerText = `${randomLiveMembers} Players Live`;
+
+                if (currentGameState === "countdown") {
+                    let amountOptions = [15000, 13500, 8000, 20000, 5000, 12000, 18500];
+                    let chosenAmount = amountOptions[Math.floor(Math.random() * amountOptions.length)];
+                    let chosenUser = usersList[Math.floor(Math.random() * usersList.length)] + "_" + Math.floor(Math.random()*99);
+
+                    const logRow = document.createElement('div');
+                    logRow.className = "bet-log-row";
+                    logRow.innerHTML = `
+                        <div class="bet-log-user"><i class="fa-solid fa-user-circle"></i> ${chosenUser}</div>
+                        <div class="bet-log-amount">RS ${chosenAmount} <span style="color: #eab308; font-size:10px;">Ready</span></div>
+                    `;
+                    logsContainerDOM.insertBefore(logRow, logsContainerDOM.firstChild);
+
+                    if (logsContainerDOM.children.length > 25) {
+                        logsContainerDOM.removeChild(logsContainerDOM.lastChild);
+                    }
+                } else if (currentGameState === "running" && Math.random() < 0.4) {
+                    if (logsContainerDOM.children.length > 0) {
+                        let randomRow = logsContainerDOM.children[Math.floor(Math.random() * Math.min(8, logsContainerDOM.children.length))];
+                        if (randomRow && !randomRow.innerHTML.includes('class="bet-log-multiplier"')) {
+                            randomRow.innerHTML += `<span class="bet-log-multiplier">${liveMultiplierVal.toFixed(2)}x</span>`;
+                        }
+                    }
+                }
+            }, 450);
+        }
+    </script>
+</body>
+</html>

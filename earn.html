@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Winwave - Earn & Referrals</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Mobile Container (Dashboard Aur Profile Page Ke Same Size Ka) */
+        .app-container {
+            width: 100%;
+            max-width: 450px;
+            background-color: #1a1a1a;
+            min-height: 100vh;
+            position: relative;
+            padding-bottom: 20px;
+        }
+
+        /* Header Section */
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            background-color: #1e1e1e;
+            border-bottom: 1px solid #2a2a2a;
+        }
+
+        .back-btn {
+            color: #a3a3a3;
+            font-size: 18px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .header-placeholder {
+            width: 18px;
+        }
+
+        /* Top Commission Invitation Box */
+        .invite-banner {
+            background: linear-gradient(135deg, #065f46 0%, #0f172a 100%);
+            margin: 15px;
+            padding: 20px;
+            border-radius: 16px;
+            border: 1px solid #047857;
+            text-align: center;
+        }
+
+        .invite-banner h2 {
+            font-size: 20px;
+            color: #10b981;
+            margin-bottom: 5px;
+        }
+
+        .invite-banner p {
+            font-size: 12px;
+            color: #cbd5e1;
+            margin-bottom: 15px;
+        }
+
+        /* Share Link & Code Container */
+        .share-box {
+            background-color: rgba(0, 0, 0, 0.3);
+            border: 1px solid #2a2a2a;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            text-align: left;
+        }
+
+        .share-details {
+            flex-grow: 1;
+            overflow: hidden;
+        }
+
+        .share-label {
+            font-size: 11px;
+            color: #a3a3a3;
+            text-transform: uppercase;
+        }
+
+        .share-value {
+            font-size: 13px;
+            font-weight: 600;
+            color: #fff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-top: 2px;
+        }
+
+        .copy-btn {
+            background-color: #10b981;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-left: 10px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: 0.2s;
+        }
+
+        .copy-btn:hover {
+            background-color: #059669;
+        }
+
+        /* Referral Stats Matrix Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            padding: 0 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background-color: #262626;
+            border: 1px solid #333;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-icon {
+            font-size: 20px;
+            margin-bottom: 6px;
+        }
+
+        .stat-num {
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .stat-title {
+            font-size: 11px;
+            color: #a3a3a3;
+            margin-top: 2px;
+        }
+
+        /* Team Level Tabs Layout */
+        .team-section {
+            padding: 0 15px;
+        }
+
+        .section-heading {
+            font-size: 15px;
+            font-weight: 600;
+            color: #f3f4f6;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .level-tabs {
+            display: flex;
+            background-color: #1e1e1e;
+            border-radius: 10px;
+            padding: 4px;
+            margin-bottom: 15px;
+            border: 1px solid #2a2a2a;
+        }
+
+        .level-tab-btn {
+            flex: 1;
+            background: none;
+            border: none;
+            color: #a3a3a3;
+            padding: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 8px;
+            text-align: center;
+            transition: 0.2s;
+        }
+
+        .level-tab-btn.active {
+            background-color: #2a2a2a;
+            color: #10b981;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* Referral Members Data List Table */
+        .member-list-box {
+            background-color: #1e1e1e;
+            border-radius: 12px;
+            border: 1px solid #2a2a2a;
+            overflow: hidden;
+            min-height: 150px;
+        }
+
+        .table-header {
+            display: flex;
+            background-color: #262626;
+            padding: 10px 15px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #a3a3a3;
+            text-transform: uppercase;
+            border-bottom: 1px solid #333;
+        }
+
+        .col-user { flex: 2; text-align: left; }
+        .col-date { flex: 2; text-align: center; }
+        .col-comm { flex: 1.5; text-align: right; }
+
+        .member-rows-container {
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        .no-data i {
+            font-size: 30px;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        /* Member Row styling dynamic design */
+        .member-row {
+            display: flex;
+            padding: 12px 15px;
+            font-size: 13px;
+            border-bottom: 1px solid #2a2a2a;
+            align-items: center;
+        }
+
+        .member-row:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+
+        <div class="page-header">
+            <a href="index.html" class="back-btn">
+                <i class="fa-solid fa-chevron-left"></i>
+            </a>
+            <div class="header-title">Invite & Earn</div>
+            <div class="header-placeholder"></div>
+        </div>
+
+        <div class="invite-banner">
+            <h2>Invite Friends</h2>
+            <p>Share your link with friends to earn up to 3 Levels of Commission instantly!</p>
+            
+            <div class="share-box">
+                <div class="share-details">
+                    <div class="share-label">My Referral Code</div>
+                    <div class="share-value" id="referralCodeText">WINWAVE58</div>
+                </div>
+                <button class="copy-btn" onclick="copyValue('referralCodeText', 'Referral Code')">
+                    <i class="fa-solid fa-copy"></i> Copy
+                </button>
+            </div>
+
+            <div class="share-box">
+                <div class="share-details">
+                    <div class="share-label">My Unique Invite Link</div>
+                    <div class="share-value" id="referralLinkText">https://winwave.app/register?ref=WINWAVE58</div>
+                </div>
+                <button class="copy-btn" onclick="copyValue('referralLinkText', 'Referral Link')">
+                    <i class="fa-solid fa-copy"></i> Copy
+                </button>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon" style="color: #3b82f6;"><i class="fa-solid fa-users"></i></div>
+                <div class="stat-num" id="totalTeamCount">0</div>
+                <div class="stat-title">Total Team Members</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="color: #eab308;"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+                <div class="stat-num">RS 0.00</div>
+                <div class="stat-title">Total Team Commission</div>
+            </div>
+        </div>
+
+        <div class="team-section">
+            <div class="section-heading">
+                <i class="fa-solid fa-sitemap" style="color: #10b981;"></i>
+                <span>My Team Breakdowns</span>
+            </div>
+
+            <div class="level-tabs">
+                <button class="level-tab-btn active" onclick="switchLevelTab(1, this)">Level 1</button>
+                <button class="level-tab-btn" onclick="switchLevelTab(2, this)">Level 2</button>
+                <button class="level-tab-btn" onclick="switchLevelTab(3, this)">Level 3</button>
+            </div>
+
+            <div class="member-list-box">
+                <div class="table-header">
+                    <div class="col-user">Username</div>
+                    <div class="col-date">Join Date</div>
+                    <div class="col-comm">Commission</div>
+                </div>
+
+                <div class="member-rows-container" id="memberRowsContainer">
+                    <div class="no-data">
+                        <i class="fa-solid fa-folder-open"></i>
+                        No team records found at Level 1 yet.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Synchronize UID or User codes dynamically from localStorage 
+        document.addEventListener("DOMContentLoaded", function() {
+            setupReferralDetails();
+        });
+
+        function setupReferralDetails() {
+            // Dashboard or Profile page's generated identity code integration
+            let userUID = localStorage.getItem('winwave_uid');
+            if (!userUID) {
+                // If user hasn't logged in, use temporary generic sequence
+                userUID = "WW" + Math.floor(100000 + Math.random() * 900000);
+            }
+            
+            // Clean code visualization assignment
+            document.getElementById('referralCodeText').innerText = userUID;
+            document.getElementById('referralLinkText').innerText = window.location.origin + "/register.html?ref=" + userUID;
+        }
+
+        // Global Copy Handlers clipboards operations
+        function copyValue(elementId, labelName) {
+            const textToCopy = document.getElementById(elementId).innerText;
+            navigator.clipboard.writeText(textToCopy);
+            alert(labelName + " successfully copied to clipboard!");
+        }
+
+        // Dynamic multi level tab renderer mock structures layout logic
+        function switchLevelTab(levelNum, targetBtn) {
+            // Remove active classes inside tab groups
+            const tabs = document.querySelectorAll('.level-tab-btn');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Activate selected option button structure
+            targetBtn.classList.add('active');
+
+            // Inject mock view list representation rules mapping levels structures
+            const container = document.getElementById('memberRowsContainer');
+            
+            if (levelNum === 1) {
+                container.innerHTML = `
+                    <div class="no-data">
+                        <i class="fa-solid fa-folder-open"></i>
+                        No team records found at Level 1 yet.
+                    </div>
+                `;
+            } else if (levelNum === 2) {
+                container.innerHTML = `
+                    <div class="no-data">
+                        <i class="fa-solid fa-folder-open"></i>
+                        No team records found at Level 2 yet.
+                    </div>
+                `;
+            } else if (levelNum === 3) {
+                container.innerHTML = `
+                    <div class="no-data">
+                        <i class="fa-solid fa-folder-open"></i>
+                        No team records found at Level 3 yet.
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

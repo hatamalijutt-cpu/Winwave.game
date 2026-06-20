@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Winwave - Deposit</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Mobile Container (Dashboard Ke Same Size Ka) */
+        .app-container {
+            width: 100%;
+            max-width: 450px;
+            background-color: #1a1a1a;
+            min-height: 100vh;
+            position: relative;
+            padding-bottom: 30px;
+        }
+
+        /* Header Layout */
+        .deposit-header {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background-color: #1e1e1e;
+            border-bottom: 1px solid #2a2a2a;
+        }
+
+        .back-btn {
+            color: #a3a3a3;
+            font-size: 18px;
+            cursor: pointer;
+            text-decoration: none;
+            margin-right: 15px;
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        /* Balance Section */
+        .current-balance-box {
+            background-color: #262626;
+            margin: 15px;
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .balance-label {
+            font-size: 13px;
+            color: #a3a3a3;
+        }
+
+        .balance-amount {
+            font-size: 18px;
+            font-weight: 700;
+            color: #10b981;
+        }
+
+        /* Section Headings */
+        .section-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #f3f4f6;
+            padding: 5px 15px;
+            margin-top: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Payment Methods Grid */
+        .payment-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            padding: 10px 15px;
+        }
+
+        .payment-card {
+            background-color: #262626;
+            border: 2px solid #333;
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+            position: relative;
+        }
+
+        .payment-card:hover, .payment-card.active {
+            border-color: #10b981;
+            background-color: #1e293b;
+        }
+
+        .payment-card i {
+            font-size: 24px;
+        }
+
+        .method-info .method-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .method-info .method-desc {
+            font-size: 11px;
+            color: #a3a3a3;
+            margin-top: 2px;
+        }
+
+        /* Active Check Icon */
+        .payment-card .check-icon {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            color: #10b981;
+            font-size: 12px;
+            display: none;
+        }
+
+        .payment-card.active .check-icon {
+            display: block;
+        }
+
+        /* Deposit Form Settings */
+        .deposit-form {
+            padding: 10px 15px;
+        }
+
+        /* Quick Amount Selection Grid */
+        .amount-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .amount-btn {
+            background-color: #262626;
+            border: 1px solid #333;
+            color: #fff;
+            padding: 10px 5px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            transition: 0.2s;
+        }
+
+        .amount-btn:hover, .amount-btn.active {
+            background-color: #10b981;
+            border-color: #10b981;
+            color: #fff;
+        }
+
+        /* Custom Input Styling */
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 12px;
+            color: #a3a3a3;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+
+        .input-box-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-box-wrapper .currency-tag {
+            position: absolute;
+            left: 12px;
+            color: #10b981;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .input-box-wrapper input {
+            width: 100%;
+            background-color: #262626;
+            border: 1px solid #333;
+            padding: 12px 12px 12px 42px;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 15px;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        .input-box-wrapper input:focus {
+            border-color: #10b981;
+        }
+
+        /* Account Details Box */
+        .account-details-box {
+            background-color: #1e1e1e;
+            border: 1px dashed #444;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 13px;
+        }
+
+        .detail-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .detail-label {
+            color: #a3a3a3;
+        }
+
+        .detail-value {
+            color: #fff;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            word-break: break-all; /* Taki lamba account number screen se bahar na jaye */
+        }
+
+        .copy-icon {
+            color: #10b981;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        /* Action Buttons */
+        .submit-deposit-btn {
+            width: 100%;
+            background-color: #10b981;
+            color: #fff;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            transition: 0.2s;
+        }
+
+        .submit-deposit-btn:hover {
+            background-color: #059669;
+        }
+
+        /* Notice Notes */
+        .deposit-notice {
+            margin-top: 15px;
+            background-color: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        .deposit-notice p {
+            font-size: 11px;
+            color: #f59e0b;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+
+        <div class="deposit-header">
+            <a href="index.html" class="back-btn">
+                <i class="fa-solid fa-chevron-left"></i>
+            </a>
+            <div class="header-title">Deposit Funds</div>
+        </div>
+
+        <div class="current-balance-box">
+            <span class="balance-label">Current Wallet Balance</span>
+            <span class="balance-amount">RS 0.00</span>
+        </div>
+
+        <div class="section-label">1. Select Payment Method</div>
+        <div class="payment-grid">
+            
+            <div class="payment-card active" onclick="selectMethod(this, 'EasyPaisa', 'PK02TMFB0000000043289073')">
+                <i class="fa-solid fa-money-bill-transfer" style="color: #22c55e;"></i>
+                <div class="method-info">
+                    <div class="method-name">EasyPaisa</div>
+                    <div class="method-desc">Auto / Manual</div>
+                </div>
+                <i class="fa-solid fa-circle-check check-icon"></i>
+            </div>
+
+            <div class="payment-card" onclick="selectMethod(this, 'JazzCash', 'PK65JCMA2702923230736754')">
+                <i class="fa-solid fa-building-columns" style="color: #eab308;"></i>
+                <div class="method-info">
+                    <div class="method-name">JazzCash</div>
+                    <div class="method-desc">Instant Fast</div>
+                </div>
+                <i class="fa-solid fa-circle-check check-icon"></i>
+            </div>
+
+            <div class="payment-card" onclick="selectMethod(this, 'Meezan Bank', 'PK36MEZN0009810110611723')">
+                <i class="fa-solid fa-building" style="color: #3b82f6;"></i>
+                <div class="method-info">
+                    <div class="method-name">Bank</div>
+                    <div class="method-desc">Meezan Bank</div>
+                </div>
+                <i class="fa-solid fa-circle-check check-icon"></i>
+            </div>
+
+            <div class="payment-card" onclick="selectMethod(this, 'USDT (TRC20)', 'T9xXX...CryptoAddress')">
+                <i class="fa-solid fa-coins" style="color: #14b8a6;"></i>
+                <div class="method-info">
+                    <div class="method-name">USDT</div>
+                    <div class="method-desc">Crypto Wallet</div>
+                </div>
+                <i class="fa-solid fa-circle-check check-icon"></i>
+            </div>
+
+        </div>
+
+        <div class="section-label">2. Deposit Details</div>
+        <div class="deposit-form">
+            
+            <div class="amount-grid">
+                <button class="amount-btn" onclick="setAmount(500)">500</button>
+                <button class="amount-btn" onclick="setAmount(1000)">1K</button>
+                <button class="amount-btn" onclick="setAmount(5000)">5K</button>
+                <button class="amount-btn" onclick="setAmount(10000)">10K</button>
+            </div>
+
+            <div class="input-group">
+                <label>Deposit Amount</label>
+                <div class="input-box-wrapper">
+                    <span class="currency-tag">RS</span>
+                    <input type="number" id="depositAmount" placeholder="Enter amount (Min 500)" min="500">
+                </div>
+            </div>
+
+            <div class="account-details-box">
+                <div class="detail-row">
+                    <span class="detail-label">Transfer To Method:</span>
+                    <span class="detail-value" id="targetMethodName">EasyPaisa</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Admin Account No:</span>
+                    <span class="detail-value">
+                        <span id="targetAccountNo">PK02TMFB0000000043289073</span>
+                        <i class="fa-solid fa-copy copy-icon" onclick="copyAccountNumber()"></i>
+                    </span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Account Name:</span>
+                    <span class="detail-value" style="color: #f59e0b;">WINWAVE ADMIN</span>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Transaction ID / TRX ID</label>
+                <div class="input-box-wrapper" style="padding-left: 0;">
+                    <i class="fa-solid fa-receipt" style="position: absolute; left: 12px; color: #666;"></i>
+                    <input type="text" id="trxId" placeholder="Enter 11 or 12 digit TRX ID" style="padding-left: 38px;">
+                </div>
+            </div>
+
+            <button class="submit-deposit-btn" onclick="submitDepositForm()">Submit Deposit</button>
+
+            <div class="deposit-notice">
+                <p><i class="fa-solid fa-circle-exclamation"></i> <b>Note:</b> Pehle ooper diye gaye admin account par paise bhejein, phir uski Transaction ID (TRX ID) yahan likh kar submit karein. Deposit balance 5 se 15 mint mein verify ho kar add ho jayega.</p>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        // Set Quick Amount Box Selection Input Text
+        function setAmount(value) {
+            document.getElementById('depositAmount').value = value;
+            
+            // Add Active Color Highlights Buttons
+            const buttons = document.querySelectorAll('.amount-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        // Handle Method Switching Layout Cards Actions
+        function selectMethod(element, methodName, accountNo) {
+            // Remove selection class layers
+            const cards = document.querySelectorAll('.payment-card');
+            cards.forEach(card => card.classList.remove('active'));
+            
+            // Mark Current Selection Box Active Status
+            element.classList.add('active');
+            
+            // Render Update Box Content Values Labels Dynamically
+            document.getElementById('targetMethodName').innerText = methodName;
+            document.getElementById('targetAccountNo').innerText = accountNo;
+        }
+
+        // Copy Account Data To User Clipboards Actions 
+        function copyAccountNumber() {
+            const accountNoText = document.getElementById('targetAccountNo').innerText;
+            navigator.clipboard.writeText(accountNoText);
+            alert("Admin account number copied successfully: " + accountNoText);
+        }
+
+        // Form Validations Final Response Alerts Mock Up Triggers
+        function submitDepositForm() {
+            const amount = document.getElementById('depositAmount').value;
+            const trxId = document.getElementById('trxId').value;
+
+            if (!amount || amount < 500) {
+                alert("Please enter a valid amount (Minimum RS 500).");
+                return;
+            }
+            if (!trxId.trim()) {
+                alert("Please enter the Transaction TRX ID proof.");
+                return;
+            }
+
+            alert("Deposit Request Submitted Successfully!\nAmount: RS " + amount + "\nTRX ID: " + trxId + "\nStatus: Pending Verification");
+            
+            // Redirect user back home dashboard index view safely
+            window.location.href = "index.html";
+        }
+    </script>
+</body>
+</html>
