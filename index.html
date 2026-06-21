@@ -704,7 +704,8 @@
                     balance: 0,
                     vip: "VIP1",
                     referralCode: user.uid.substring(0,6),
-                    referredBy: referralUid || inviteCode || ""
+                    referredBy: referralUid || inviteCode || "",
+                    firstDepositBonusGiven: false
                 });
 
                 if(referralUid){
@@ -775,64 +776,6 @@
                                         }
                                     );
 
-                                }
-                            }
-                        }
-                    }
-                }
-
-                if(referralUid){
-                    const bonusSnapshot = await get(ref(db,"users/" + referralUid));
-                    if(bonusSnapshot.exists()){
-                        const bonusData = bonusSnapshot.val();
-                        const currentBonus = bonusData.referralBonus || 0;
-                        await set(
-                            ref(db,"users/" + referralUid + "/referralBonus"),
-                            currentBonus + 100
-                        );
-                    }
-                }
-                
-                // NEWLY ADDED CODE FOR LEVEL 2 & 3 BONUS
-                const parentSnap = await get(ref(db,"users/" + referralUid));
-
-                if(parentSnap.exists()){
-
-                    const parentData = parentSnap.val();
-
-                    if(parentData.referredBy){
-
-                        const level2Uid = parentData.referredBy;
-
-                        const level2Snap =
-                        await get(ref(db,"users/" + level2Uid));
-
-                        if(level2Snap.exists()){
-
-                            const level2Data = level2Snap.val();
-
-                            await set(
-                                ref(db,"users/" + level2Uid + "/referralBonus"),
-                                (level2Data.referralBonus || 0) + 50
-                            );
-
-                            if(level2Data.referredBy){
-
-                                const level3Uid =
-                                level2Data.referredBy;
-
-                                const level3Snap =
-                                await get(ref(db,"users/" + level3Uid));
-
-                                if(level3Snap.exists()){
-
-                                    const level3Data =
-                                    level3Snap.val();
-
-                                    await set(
-                                        ref(db,"users/" + level3Uid + "/referralBonus"),
-                                        (level3Data.referralBonus || 0) + 25
-                                    );
                                 }
                             }
                         }
