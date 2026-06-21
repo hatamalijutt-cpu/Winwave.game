@@ -20,7 +20,7 @@
             justify-content: center;
         }
 
-        /* Mobile Container (Dashboard Ke Same Size Ka) */
+        /* Mobile Container */
         .app-container {
             width: 100%;
             max-width: 450px;
@@ -249,7 +249,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            word-break: break-all; /* Taki lamba account number screen se bahar na jaye */
+            word-break: break-all;
         }
 
         .copy-icon {
@@ -407,56 +407,101 @@
     </div>
 
     <script>
-        // Set Quick Amount Box Selection Input Text
         function setAmount(value) {
             document.getElementById('depositAmount').value = value;
             
-            // Add Active Color Highlights Buttons
             const buttons = document.querySelectorAll('.amount-btn');
             buttons.forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
         }
 
-        // Handle Method Switching Layout Cards Actions
         function selectMethod(element, methodName, accountNo) {
-            // Remove selection class layers
             const cards = document.querySelectorAll('.payment-card');
             cards.forEach(card => card.classList.remove('active'));
             
-            // Mark Current Selection Box Active Status
             element.classList.add('active');
             
-            // Render Update Box Content Values Labels Dynamically
             document.getElementById('targetMethodName').innerText = methodName;
             document.getElementById('targetAccountNo').innerText = accountNo;
         }
 
-        // Copy Account Data To User Clipboards Actions 
         function copyAccountNumber() {
             const accountNoText = document.getElementById('targetAccountNo').innerText;
             navigator.clipboard.writeText(accountNoText);
             alert("Admin account number copied successfully: " + accountNoText);
         }
 
-        // Form Validations Final Response Alerts Mock Up Triggers
-        function submitDepositForm() {
+        // NEW ASYNC FIREBASE DEPOSIT FUNCTION
+        async function submitDepositForm() {
             const amount = document.getElementById('depositAmount').value;
             const trxId = document.getElementById('trxId').value;
 
             if (!amount || amount < 500) {
-                alert("Please enter a valid amount (Minimum RS 500).");
-                return;
-            }
-            if (!trxId.trim()) {
-                alert("Please enter the Transaction TRX ID proof.");
+                alert("Minimum Deposit 500");
                 return;
             }
 
-            alert("Deposit Request Submitted Successfully!\nAmount: RS " + amount + "\nTRX ID: " + trxId + "\nStatus: Pending Verification");
-            
-            // Redirect user back home dashboard index view safely
-            window.location.href = "index.html";
+            if (!trxId.trim()) {
+                alert("Enter TRX ID");
+                return;
+            }
+
+            // Using global 'auth' provided by the module script below
+            const user = auth.currentUser;
+
+            if(!user){
+                alert("Please Login First");
+                return;
+            }
+
+            // Using global 'push', 'ref', 'db' provided by the module script below
+            await push(
+                ref(db,"depositRequests"),
+                {
+                    uid:user.uid,
+                    amount:Number(amount),
+                    trxId:trxId,
+                    status:"pending",
+                    createdAt:Date.now()
+                }
+            );
+
+            alert("Deposit Request Submitted");
+            window.location.href="index.html";
         }
+    </script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        
+        import {
+            getDatabase,
+            ref,
+            push
+        } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+        
+        import {
+            getAuth
+        } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCjw124Pc1wGpG1iNYGuKR9DmXo_OHCab8",
+            authDomain: "winwave-b3ed4.firebaseapp.com",
+            projectId: "winwave-b3ed4",
+            storageBucket: "winwave-b3ed4.firebasestorage.app",
+            messagingSenderId: "501831087781",
+            appId: "1:501831087781:web:ea52d559bcb1429b9a3f4c"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const auth = getAuth(app);
+
+        // Making Firebase objects globally available for the script above
+        window.db = db;
+        window.auth = auth;
+        window.ref = ref;
+        window.push = push;
     </script>
 </body>
 </html>
