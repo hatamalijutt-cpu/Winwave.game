@@ -350,7 +350,7 @@
         }
 
         // --- Game Logics & State Mechanics ---
-        let balance = 0;
+        let balance = parseFloat(localStorage.getItem("winwave_balance")) || 0;
         let betAmount = 100;
         let totalMines = 3;
         let gameActive = false;
@@ -517,11 +517,13 @@
         }
 
         function updateUI() {
+            localStorage.setItem("winwave_balance", balance);
             userBalanceEl.innerText = "RS " + balance.toFixed(2);
         }
 
         // Core Initialize Call
         createGrid();
+        updateUI();
     </script>
 </body>
 </html>
