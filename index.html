@@ -676,7 +676,10 @@
             const email = document.getElementById("regEmail").value;
             const password = document.getElementById("regPassword").value;
             const confirmPassword = document.getElementById("regConfirmPassword").value;
+            
             const inviteCode = document.getElementById("inviteCode").value;
+            // STEP 2: registerUser() function modify kiya
+            const referralId = localStorage.getItem("referralId");
 
             if (!email || !password || !confirmPassword) {
                 alert("Sab fields fill karo");
@@ -689,22 +692,37 @@
             }
 
             try {
-                // Step 3 Implementation
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
 
-                // Step 3 Replace applied here
+                // STEP 3: user create hone ke baad Replace kiya
                 await set(ref(db, 'users/' + user.uid), {
                     email: email,
                     balance: 0,
                     vip: "VIP1",
                     referralCode: user.uid.substring(0,6),
-                    referredBy: inviteCode || "",
-                    referrals: 0,
-                    referralBonus: 0
+                    referredBy: referralId || ""
                 });
 
-                // Step 5 Implementation
+                // STEP 4: referral bonus add kiya
+                if(referralId){
+                    const bonusRef = ref(db, "users/" + referralId);
+                    get(bonusRef).then((snapshot)=>{
+                        if(snapshot.exists()){
+                            const data = snapshot.val();
+                            const currentBonus = data.referralBonus || 0;
+
+                            set(ref(db, "users/" + referralId + "/referrals/" + user.uid), {
+                                email: email,
+                                joinedAt: Date.now()
+                            });
+
+                            set(ref(db, "users/" + referralId + "/referralBonus"), currentBonus + 100);
+                        }
+                    });
+                }
+
+                // Existing logic for inviteCode 
                 if(inviteCode){
                     const usersRef = ref(db, "users");
                     const snapshot = await get(usersRef);
@@ -742,7 +760,6 @@
     </script>
 
     <script type="module">
-        // Import the functions you need from the SDKs you need
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-analytics.js";
         import {
@@ -752,13 +769,13 @@
           onAuthStateChanged
         } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
         
-        // Step 4 Implementation
+        // STEP 5: get function verify/import kiya
         import {
           getDatabase,
           ref,
           set,
-          onValue,
           get,
+          onValue,
           update
         } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
@@ -772,17 +789,20 @@
           measurementId: "G-WQM3HS90CL"
         };
 
-        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const analytics = getAnalytics(app);
         const auth = getAuth(app);
-        
-        // Step 2 Implementation
         const db = getDatabase(app);
+
+        // STEP 1: Firebase initialize hone ke baad ye code add kiya
+        const urlParams = new URLSearchParams(window.location.search);
+        const referralId = urlParams.get("ref");
+        if(referralId){
+            localStorage.setItem("referralId", referralId);
+        }
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
-
                 document.getElementById("authButtons").style.display = "none";
                 document.getElementById("walletBox").style.display = "flex";
                 document.getElementById("userProfile").style.display = "flex";
@@ -791,19 +811,15 @@
 
                 onValue(balanceRef, (snapshot) => {
                     const data = snapshot.val();
-
                     if (data) {
                         document.querySelector("#walletBox span").innerText =
                             "RS " + data.balance;
                     }
                 });
-
             } else {
-
                 document.getElementById("authButtons").style.display = "flex";
                 document.getElementById("walletBox").style.display = "none";
                 document.getElementById("userProfile").style.display = "none";
-
             }
         });
 
@@ -811,7 +827,6 @@
         window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
         window.signInWithEmailAndPassword = signInWithEmailAndPassword;
         
-        // Exposing db functions to window so registerUser() can use them
         window.db = db;
         window.ref = ref;
         window.set = set;
