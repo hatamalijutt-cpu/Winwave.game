@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Referral History</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Segoe UI',sans-serif;
+}
+
+body{
+    background:#121212;
+    color:white;
+    display:flex;
+    justify-content:center;
+}
+
+.app-container{
+    width:100%;
+    max-width:450px;
+    min-height:100vh;
+    background:#1a1a1a;
+}
+
+.header{
+    background:#1e1e1e;
+    padding:15px;
+    text-align:center;
+    font-size:18px;
+    font-weight:bold;
+    border-bottom:1px solid #333;
+}
+
+.total-box{
+    margin:15px;
+    background:#262626;
+    border-radius:12px;
+    padding:15px;
+    text-align:center;
+    border:1px solid #333;
+}
+
+.total-box h2{
+    color:#10b981;
+    margin-top:5px;
+}
+
+.history-list{
+    padding:15px;
+}
+
+.history-item{
+    background:#262626;
+    border:1px solid #333;
+    border-radius:12px;
+    padding:15px;
+    margin-bottom:10px;
+}
+
+.user-email{
+    color:#10b981;
+    font-weight:bold;
+}
+
+.user-date{
+    color:#aaa;
+    font-size:12px;
+    margin-top:5px;
+}
+
+.no-data{
+    text-align:center;
+    color:#999;
+    margin-top:40px;
+}
+</style>
+</head>
+<body>
+
+<div class="app-container">
+
+    <div class="header">
+        Referral History
+    </div>
+
+    <div class="total-box">
+        <div>Total Referrals</div>
+        <h2 id="totalReferrals">0</h2>
+    </div>
+
+    <div class="history-list" id="historyList">
+        <div class="no-data">
+            Loading...
+        </div>
+    </div>
+
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+
+import {
+getAuth,
+onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+
+import {
+getDatabase,
+ref,
+onValue
+} from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+const firebaseConfig = {
+ apiKey: "AIzaSyCjw124Pc1wGpG1iNYGuKR9DmXo_OHCab8",
+ authDomain: "winwave-b3ed4.firebaseapp.com",
+ projectId: "winwave-b3ed4",
+ storageBucket: "winwave-b3ed4.firebasestorage.app",
+ messagingSenderId: "501831087781",
+ appId: "1:501831087781:web:ea52d559bcb1429b9a3f4c"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+onAuthStateChanged(auth,(user)=>{
+
+    if(!user){
+        alert("Please Login First");
+        return;
+    }
+
+    const referralsRef = ref(db,"users/" + user.uid + "/referrals");
+
+    onValue(referralsRef,(snapshot)=>{
+
+        const data = snapshot.val();
+
+        const historyList =
+        document.getElementById("historyList");
+
+        historyList.innerHTML = "";
+
+        if(!data){
+
+            historyList.innerHTML =
+            '<div class="no-data">No Referrals Found</div>';
+
+            document.getElementById(
+            "totalReferrals").innerText = "0";
+
+            return;
+        }
+
+        const keys = Object.keys(data);
+
+        document.getElementById(
+        "totalReferrals").innerText = keys.length;
+
+        keys.forEach(key=>{
+
+            const item = data[key];
+
+            historyList.innerHTML += `
+            <div class="history-item">
+                <div class="user-email">
+                    ${item.email || "User"}
+                </div>
+
+                <div class="user-date">
+                    UID: ${key}
+                </div>
+            </div>
+            `;
+
+        });
+
+    });
+
+});
+
+</script>
+
+</body>
+</html>
