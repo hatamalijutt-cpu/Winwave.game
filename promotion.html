@@ -116,7 +116,7 @@ onAuthStateChanged(auth, (user) => {
     const uid = user.uid;
 
     // Step 1 Applied
-    document.getElementById("inviteLink").value = window.location.origin + "/index.html?ref=" + uid;
+    document.getElementById("inviteLink").value = "https://hatamalijutt-cpu.github.io/Winwave.game/index.html?ref=" + uid;
 
     const referralsRef = ref(db, "users/" + uid + "/referrals");
 
