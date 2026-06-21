@@ -371,6 +371,7 @@
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 const uid = user.uid;
+                loadLevel1(uid);
 
                 // Referral link ko replace kiya hai
                 document.getElementById("referralLinkText").innerText = 
@@ -414,38 +415,55 @@
             alert(labelName + " successfully copied to clipboard!");
         };
 
-        // Dynamic multi level tab renderer mock structures layout logic
-        window.switchLevelTab = function(levelNum, targetBtn) {
-            const tabs = document.querySelectorAll('.level-tab-btn');
-            tabs.forEach(tab => tab.classList.remove('active'));
-            
-            targetBtn.classList.add('active');
+        function loadLevel1(uid){
 
-            const container = document.getElementById('memberRowsContainer');
-            
-            if (levelNum === 1) {
-                container.innerHTML = `
+            const referralsRef = ref(db,"users/"+uid+"/referrals");
+
+            onValue(referralsRef,(snapshot)=>{
+
+                const container =
+                document.getElementById("memberRowsContainer");
+
+                if(!snapshot.exists()){
+                    container.innerHTML = `
                     <div class="no-data">
-                        <i class="fa-solid fa-folder-open"></i>
-                        No team records found at Level 1 yet.
-                    </div>
-                `;
-            } else if (levelNum === 2) {
-                container.innerHTML = `
-                    <div class="no-data">
-                        <i class="fa-solid fa-folder-open"></i>
-                        No team records found at Level 2 yet.
-                    </div>
-                `;
-            } else if (levelNum === 3) {
-                container.innerHTML = `
-                    <div class="no-data">
-                        <i class="fa-solid fa-folder-open"></i>
-                        No team records found at Level 3 yet.
-                    </div>
-                `;
-            }
-        };
+                        No Level 1 Members
+                    </div>`;
+                    return;
+                }
+
+                let html = "";
+
+                snapshot.forEach((child)=>{
+
+                    const data = child.val();
+
+                    const date =
+                    new Date(data.joinedAt)
+                    .toLocaleDateString();
+
+                    html += `
+                    <div class="member-row">
+
+                        <div class="col-user">
+                            ${data.email}
+                        </div>
+
+                        <div class="col-date">
+                            ${date}
+                        </div>
+
+                        <div class="col-comm">
+                            RS 100
+                        </div>
+
+                    </div>`;
+                });
+
+                container.innerHTML = html;
+
+            });
+        }
     </script>
 </body>
 </html>
