@@ -51,6 +51,58 @@ cursor:pointer;
 Add Balance
 </button>
 </div>
+<script type="module">
 
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+
+import {
+getDatabase,
+ref,
+get,
+update
+} from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCjw124Pc1wGpG1iNYGuKR9DmXo_OHCab8",
+  authDomain: "winwave-b3ed4.firebaseapp.com",
+  projectId: "winwave-b3ed4",
+  storageBucket: "winwave-b3ed4.firebasestorage.app",
+  messagingSenderId: "501831087781",
+  appId: "1:501831087781:web:ea52d559bcb1429b9a3f4c"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+window.addBalance = async function(){
+
+    const uid =
+    document.getElementById("userUid").value;
+
+    const amount =
+    Number(document.getElementById("amount").value);
+
+    const snap =
+    await get(ref(db,"users/"+uid));
+
+    if(!snap.exists()){
+        alert("User Not Found");
+        return;
+    }
+
+    const currentBalance =
+    snap.val().balance || 0;
+
+    await update(
+        ref(db,"users/"+uid),
+        {
+            balance: currentBalance + amount
+        }
+    );
+
+    alert("Balance Added Successfully");
+}
+
+</script>
 </body>
 </html>
