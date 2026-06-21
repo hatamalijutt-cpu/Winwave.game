@@ -693,13 +693,40 @@
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
 
+                // Step 3 Replace applied here
                 await set(ref(db, 'users/' + user.uid), {
                     email: email,
                     balance: 0,
                     vip: "VIP1",
                     referralCode: user.uid.substring(0,6),
-                    referredBy: inviteCode || ""
+                    referredBy: inviteCode || "",
+                    referrals: 0,
+                    referralBonus: 0
                 });
+
+                // Step 5 Implementation
+                if(inviteCode){
+                    const usersRef = ref(db, "users");
+                    const snapshot = await get(usersRef);
+                    if(snapshot.exists()){
+                        const users = snapshot.val();
+                        for(let uid in users){
+                            if(users[uid].referralCode === inviteCode){
+                                let totalRefs = users[uid].referrals || 0;
+                                let totalBonus = users[uid].referralBonus || 0;
+                                
+                                await update(
+                                    ref(db,"users/"+uid),
+                                    {
+                                        referrals: totalRefs + 1,
+                                        referralBonus: totalBonus + 100
+                                    }
+                                );
+                                break;
+                            }
+                        }
+                    }
+                }
 
                 alert("Account Successfully Created!");
 
@@ -725,12 +752,14 @@
           onAuthStateChanged
         } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
         
-        // Step 1 Implementation
+        // Step 4 Implementation
         import {
           getDatabase,
           ref,
           set,
-          onValue
+          onValue,
+          get,
+          update
         } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
         const firebaseConfig = {
@@ -786,6 +815,8 @@
         window.db = db;
         window.ref = ref;
         window.set = set;
+        window.get = get;
+        window.update = update;
     </script>
 </body>
 </html>
