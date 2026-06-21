@@ -245,6 +245,13 @@
         input, select { width: 100%; padding: 12px; background: #262626; border: 1px solid #333; border-radius: 8px; color: #fff; }
         .withdraw-btn { width: 100%; background-color: #10b981; color: white; padding: 14px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px; }
         .info-box { background: #262626; padding: 15px; border-radius: 10px; font-size: 12px; color: #a3a3a3; line-height: 1.6; margin-top: 20px; }
+        
+        #historyBox .card{
+            background:#222;
+            padding:15px;
+            margin-bottom:10px;
+            border-radius:10px;
+        }
     </style>
 </head>
 <body>
@@ -476,7 +483,10 @@
             else if (featureName === 'Transaction History') {
 
                 document.getElementById('profileScreen').style.display = 'none';
+
                 document.getElementById('historyScreen').style.display = 'block';
+
+                loadHistory();
 
             }
 
@@ -518,7 +528,8 @@
             onValue,
             push,
             set,
-            update
+            update,
+            get
         }
         from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
         
@@ -607,6 +618,75 @@
 
             btn.disabled = false;
             btn.innerText = "SUBMIT REQUEST";
+        }
+        
+        window.loadHistory = async function(){
+
+            const user = auth.currentUser;
+
+            if(!user) return;
+
+            const historyBox =
+            document.getElementById("historyBox");
+
+            historyBox.innerHTML = "";
+
+            const depositSnap =
+            await get(ref(db,"depositRequests"));
+
+            if(depositSnap.exists()){
+
+                depositSnap.forEach((child)=>{
+
+                    const data = child.val();
+
+                    if(data.uid === user.uid){
+
+                        historyBox.innerHTML += `
+                        <div class="card">
+                            <h4 style="color:#10b981;">
+                            Deposit
+                            </h4>
+
+                            <p>Amount: ${data.amount}</p>
+
+                            <p>Status: ${data.status}</p>
+                        </div>
+                        `;
+                    }
+
+                });
+
+            }
+
+            const withdrawSnap =
+            await get(ref(db,"withdrawRequests"));
+
+            if(withdrawSnap.exists()){
+
+                withdrawSnap.forEach((child)=>{
+
+                    const data = child.val();
+
+                    if(data.uid === user.uid){
+
+                        historyBox.innerHTML += `
+                        <div class="card">
+                            <h4 style="color:#ef4444;">
+                            Withdraw
+                            </h4>
+
+                            <p>Amount: ${data.amount}</p>
+
+                            <p>Status: ${data.status}</p>
+                        </div>
+                        `;
+                    }
+
+                });
+
+            }
+
         }
 
         onAuthStateChanged(auth, (user) => {
