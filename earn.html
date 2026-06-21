@@ -415,6 +415,25 @@
             alert(labelName + " successfully copied to clipboard!");
         };
 
+        window.switchLevelTab = function(level, btn){
+
+            document
+            .querySelectorAll(".level-tab-btn")
+            .forEach(tab => tab.classList.remove("active"));
+
+            btn.classList.add("active");
+
+            const uid = auth.currentUser.uid;
+
+            if(level === 1){
+                loadLevel1(uid);
+            }
+
+            if(level === 2){
+                loadLevel2(uid);
+            }
+        }
+
         function loadLevel1(uid){
 
             const referralsRef = ref(db,"users/"+uid+"/referrals");
@@ -455,6 +474,56 @@
 
                         <div class="col-comm">
                             RS 100
+                        </div>
+
+                    </div>`;
+                });
+
+                container.innerHTML = html;
+
+            });
+        }
+
+        function loadLevel2(uid){
+
+            const level2Ref = ref(db,"users/"+uid+"/level2Referrals");
+
+            onValue(level2Ref,(snapshot)=>{
+
+                const container =
+                document.getElementById("memberRowsContainer");
+
+                if(!snapshot.exists()){
+                    container.innerHTML = `
+                    <div class="no-data">
+                        No Level 2 Members
+                    </div>`;
+                    return;
+                }
+
+                let html = "";
+
+                snapshot.forEach((child)=>{
+
+                    const data = child.val();
+
+                    const date =
+                    new Date(data.joinedAt)
+                    .toLocaleDateString();
+
+                    html += `
+                    <div class="member-row">
+
+                        <div class="col-user">
+                            ${data.email}
+                        </div>
+
+                        <div class="col-date">
+                            ${date}
+                        </div>
+
+                        <div class="col-comm">
+                            RS 50
                         </div>
 
                     </div>`;
