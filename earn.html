@@ -286,7 +286,7 @@
             <div class="share-box">
                 <div class="share-details">
                     <div class="share-label">My Referral Code</div>
-                    <div class="share-value" id="referralCodeText">WINWAVE58</div>
+                    <div class="share-value" id="referralCodeText">Loading...</div>
                 </div>
                 <button class="copy-btn" onclick="copyValue('referralCodeText', 'Referral Code')">
                     <i class="fa-solid fa-copy"></i> Copy
@@ -296,7 +296,7 @@
             <div class="share-box">
                 <div class="share-details">
                     <div class="share-label">My Unique Invite Link</div>
-                    <div class="share-value" id="referralLinkText">https://winwave.app/register?ref=WINWAVE58</div>
+                    <div class="share-value" id="referralLinkText">Loading...</div>
                 </div>
                 <button class="copy-btn" onclick="copyValue('referralLinkText', 'Referral Link')">
                     <i class="fa-solid fa-copy"></i> Copy
@@ -347,106 +347,105 @@
 
     </div>
 
-<script type="module">
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+        // Aapki di hui Firebase config yahan add ki gayi hai
+        const firebaseConfig = {
+          apiKey: "AIzaSyCjw124Pc1wGpG1iNYGuKR9DmXo_OHCab8",
+          authDomain: "winwave-b3ed4.firebaseapp.com",
+          databaseURL: "https://winwave-b3ed4-default-rtdb.firebaseio.com",
+          projectId: "winwave-b3ed4",
+          storageBucket: "winwave-b3ed4.firebasestorage.app",
+          messagingSenderId: "501831087781",
+          appId: "1:501831087781:web:ea52d559bcb1429b9a3f4c",
+          measurementId: "G-WQM3HS90CL"
+        };
 
-const firebaseConfig = {
-   // APNA CONFIG
-};
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getDatabase(app);
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                const uid = user.uid;
 
-window.copyValue = function(elementId,labelName){
-    const textToCopy = document.getElementById(elementId).innerText;
-    navigator.clipboard.writeText(textToCopy);
-    alert(labelName + " copied");
-}
+                // Referral link ko replace kiya hai
+                document.getElementById("referralLinkText").innerText = 
+                "https://hatamalijutt-cpu.github.io/Winwave.game/index.html?ref=" + uid;
 
-onAuthStateChanged(auth,(user)=>{
+                // Referral code update kiya hai
+                document.getElementById("referralCodeText").innerText = uid;
 
-    if(!user) return;
+                // Total referrals calculation
+                const referralsRef = ref(db, "users/" + uid + "/referrals");
+                onValue(referralsRef, (snapshot) => {
+                    if(snapshot.exists()){
+                        const referrals = snapshot.val();
+                        document.getElementById("totalTeamCount").innerText = 
+                        Object.keys(referrals).length;
+                    }else{
+                        document.getElementById("totalTeamCount").innerText = "0";
+                    }
+                });
 
-    const uid = user.uid;
-
-    document.getElementById("referralCodeText").innerText = uid;
-
-    document.getElementById("referralLinkText").innerText =
-        window.location.origin + "/register.html?ref=" + uid;
-
-    const referralsRef = ref(db,"users/" + uid + "/referrals");
-
-    onValue(referralsRef,(snapshot)=>{
-
-        const container =
-        document.getElementById("memberRowsContainer");
-
-        if(!snapshot.exists()){
-
-            document.getElementById("totalTeamCount").innerText = "0";
-
-            container.innerHTML = `
-            <div class="no-data">
-                <i class="fa-solid fa-folder-open"></i>
-                No team records found.
-            </div>
-            `;
-
-            return;
-        }
-
-        const referrals = snapshot.val();
-
-        document.getElementById("totalTeamCount").innerText =
-        Object.keys(referrals).length;
-
-        container.innerHTML = "";
-
-        Object.keys(referrals).forEach(memberUid=>{
-
-            const member = referrals[memberUid];
-
-            const joinDate =
-            new Date(member.joinedAt).toLocaleString();
-
-            container.innerHTML += `
-            <div class="member-row">
-
-                <div class="col-user">
-                    ${memberUid}
-                </div>
-
-                <div class="col-date">
-                    ${joinDate}
-                </div>
-
-                <div class="col-comm">
-                    RS 100
-                </div>
-
-            </div>
-            `;
+                // Team Commission calculation
+                const userRef = ref(db, "users/" + uid);
+                onValue(userRef, (snapshot)=>{
+                    if(snapshot.exists()){
+                        const data = snapshot.val();
+                        document.getElementById("teamCommission").innerText = 
+                        "RS " + (data.referralBonus || 0);
+                    }
+                });
+            } else {
+                // Agar user login nahi hai
+                document.getElementById("referralCodeText").innerText = "Not Logged In";
+                document.getElementById("referralLinkText").innerText = "Please log in first";
+            }
         });
 
-    });
+        // Global Copy Handlers clipboards operations
+        window.copyValue = function(elementId, labelName) {
+            const textToCopy = document.getElementById(elementId).innerText;
+            navigator.clipboard.writeText(textToCopy);
+            alert(labelName + " successfully copied to clipboard!");
+        };
 
-    const userRef = ref(db,"users/" + uid);
+        // Dynamic multi level tab renderer mock structures layout logic
+        window.switchLevelTab = function(levelNum, targetBtn) {
+            const tabs = document.querySelectorAll('.level-tab-btn');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            targetBtn.classList.add('active');
 
-    onValue(userRef,(snapshot)=>{
-
-        const data = snapshot.val();
-
-        document.getElementById("teamCommission").innerText =
-        "RS " + (data.referralBonus || 0);
-
-    });
-
-});
-
-</script>
+            const container = document.getElementById('memberRowsContainer');
+            
+            if (levelNum === 1) {
+                container.innerHTML = `
+                    <div class="no-data">
+                        <i class="fa-solid fa-folder-open"></i>
+                        No team records found at Level 1 yet.
+                    </div>
+                `;
+            } else if (levelNum === 2) {
+                container.innerHTML = `
+                    <div class="no-data">
+                        <i class="fa-solid fa-folder-open"></i>
+                        No team records found at Level 2 yet.
+                    </div>
+                `;
+            } else if (levelNum === 3) {
+                container.innerHTML = `
+                    <div class="no-data">
+                        <i class="fa-solid fa-folder-open"></i>
+                        No team records found at Level 3 yet.
+                    </div>
+                `;
+            }
+        };
+    </script>
 </body>
 </html>
