@@ -52,19 +52,21 @@ Add Balance
 </button>
 </div>
 
-<h2>Deposit Requests</h2>
-<div id="depositRequests"></div>
+<h3 style="margin-top: 30px;">Deposit Requests</h3>
+<div id="requestBox"></div>
 
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 
+// Step 2: onValue aur set import mein add kar diye gaye hain
 import {
 getDatabase,
 ref,
 get,
 update,
-onValue
+onValue,
+set
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
 const firebaseConfig = {
@@ -108,27 +110,87 @@ window.addBalance = async function(){
     alert("Balance Added Successfully");
 }
 
-const requestBox =
-document.getElementById("depositRequests");
+// Step 3: Approve Deposit function
+window.approveDeposit = async function(requestId){
 
-onValue(ref(db,"depositRequests"),(snapshot)=>{
+    const requestSnap =
+    await get(ref(db,"depositRequests/"+requestId));
 
+    if(!requestSnap.exists()) return;
+
+    const request = requestSnap.val();
+
+    if(request.status === "approved"){
+        alert("Already Approved");
+        return;
+    }
+
+    const userSnap =
+    await get(ref(db,"users/"+request.uid));
+
+    if(!userSnap.exists()){
+        alert("User Not Found");
+        return;
+    }
+
+    const balance =
+    userSnap.val().balance || 0;
+
+    await update(
+        ref(db,"users/"+request.uid),
+        {
+            balance: balance + request.amount
+        }
+    );
+
+    await update(
+        ref(db,"depositRequests/"+requestId),
+        {
+            status:"approved"
+        }
+    );
+
+    alert("Deposit Approved");
+}
+
+// Step 4: Reject Deposit function
+window.rejectDeposit = async function(requestId){
+
+    await update(
+        ref(db,"depositRequests/"+requestId),
+        {
+            status:"rejected"
+        }
+    );
+
+    alert("Deposit Rejected");
+}
+
+// Step 1: Code replacing (Deposit requests list with Approve/Reject buttons)
+const requestBox = document.getElementById("requestBox");
+
+onValue(ref(db, "depositRequests"), (snapshot) => {
     requestBox.innerHTML = "";
-
-    snapshot.forEach((child)=>{
-
+    snapshot.forEach((child) => {
         const data = child.val();
-
         requestBox.innerHTML += `
         <div class="card">
             <p><b>UID:</b> ${data.uid}</p>
             <p><b>Amount:</b> ${data.amount}</p>
             <p><b>TRX:</b> ${data.trxId}</p>
             <p><b>Status:</b> ${data.status}</p>
+
+            <button onclick="approveDeposit('${child.key}')">
+                Approve
+            </button>
+
+            <button onclick="rejectDeposit('${child.key}')"
+            style="background:red;margin-top:10px;">
+                Reject
+            </button>
         </div>
         `;
     });
-
 });
 
 </script>
