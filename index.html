@@ -673,6 +673,9 @@
         }
 
         async function registerUser() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const referralUid = urlParams.get("ref");
+
             const email = document.getElementById("regEmail").value;
             const password = document.getElementById("regPassword").value;
             const confirmPassword = document.getElementById("regConfirmPassword").value;
@@ -701,8 +704,18 @@
                     balance: 0,
                     vip: "VIP1",
                     referralCode: user.uid.substring(0,6),
-                    referredBy: referralId || ""
+                    referredBy: referralUid || inviteCode || ""
                 });
+
+                if(referralUid){
+                    await set(
+                        ref(db, "users/" + referralUid + "/referrals/" + user.uid),
+                        {
+                            email: email,
+                            joinedAt: Date.now()
+                        }
+                    );
+                }
 
                 // STEP 4: referral bonus add kiya
                 if(referralId){
