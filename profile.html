@@ -234,10 +234,22 @@
             background-color: #ef4444;
             color: #fff;
         }
+
+        /* --- Withdraw Section Styles (Directly Appended) --- */
+        .header { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; }
+        .balance-card { background: linear-gradient(135deg, #10b981, #059669); padding: 20px; border-radius: 15px; text-align: center; margin-bottom: 25px; }
+        .balance-label { font-size: 14px; opacity: 0.9; }
+        .balance-amount { font-size: 32px; font-weight: bold; margin: 10px 0; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; color: #a3a3a3; font-size: 14px; }
+        input, select { width: 100%; padding: 12px; background: #262626; border: 1px solid #333; border-radius: 8px; color: #fff; }
+        .withdraw-btn { width: 100%; background-color: #10b981; color: white; padding: 14px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px; }
+        .info-box { background: #262626; padding: 15px; border-radius: 10px; font-size: 12px; color: #a3a3a3; line-height: 1.6; margin-top: 20px; }
     </style>
 </head>
 <body>
-    <div class="app-container">
+
+    <div class="app-container" id="profileScreen">
         <div class="profile-header">
             <a href="index.html" class="back-btn">
                 <i class="fa-solid fa-chevron-left"></i>
@@ -350,6 +362,44 @@
             </button>
         </div>
     </div>
+
+    <div class="app-container" id="withdrawScreen" style="display: none; padding: 20px;">
+        <div class="header">
+            <a href="#" class="back-btn" onclick="closeWithdraw(event)"><i class="fas fa-arrow-left"></i></a>
+            <h3>Withdraw Funds</h3>
+        </div>
+
+        <div class="balance-card">
+            <div class="balance-label">Available Balance</div>
+            <div class="balance-amount" id="withdrawBalance">PKR 0.00</div>
+        </div>
+
+        <div class="form-group">
+            <label>Select Payment Method</label>
+            <select id="method">
+                <option>JazzCash</option>
+                <option>EasyPaisa</option>
+                <option>Bank Transfer</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Account Number / IBAN</label>
+            <input type="text" id="accountNumber" placeholder="Enter your account number">
+        </div>
+
+        <div class="form-group">
+            <label>Amount (Min 500)</label>
+            <input type="number" id="withdrawAmount" placeholder="Enter amount">
+        </div>
+
+        <button class="withdraw-btn" onclick="processWithdraw()">SUBMIT REQUEST</button>
+
+        <div class="info-box">
+            <i class="fas fa-info-circle"></i> <b>Note:</b> Withdrawals are processed within 24 hours. Ensure your account details are correct to avoid delays.
+        </div>
+    </div>
+
     <script>
         // Automatic Dynamic UID Generator Initializer Setup On Page Load
         document.addEventListener("DOMContentLoaded", function() {
@@ -401,7 +451,18 @@
         }
         // Universal Dummy Route Menu Handlers Actions
         function navigateMenu(featureName) {
-            alert(featureName + " option under configuration process. Will update soon!");
+            if (featureName === 'Withdraw') {
+                document.getElementById('profileScreen').style.display = 'none';
+                document.getElementById('withdrawScreen').style.display = 'block';
+            } else {
+                alert(featureName + " option under configuration process. Will update soon!");
+            }
+        }
+        // Close Withdraw Section and return to Profile Screen
+        function closeWithdraw(event) {
+            if (event) event.preventDefault();
+            document.getElementById('withdrawScreen').style.display = 'none';
+            document.getElementById('profileScreen').style.display = 'block';
         }
         // Destroy Session Logs Mock Out Procedures
         function processLogOut() {
@@ -414,14 +475,17 @@
     </script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged }
-        from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
         import {
             getDatabase,
             ref,
-            onValue
+            onValue,
+            push,
+            set,
+            update
         }
         from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+        
         const firebaseConfig = {
           apiKey: "AIzaSyCjw124Pc1wGpG1iNYGuKR9DmXo_OHCab8",
           authDomain: "winwave-b3ed4.firebaseapp.com",
@@ -434,18 +498,96 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getDatabase(app);
+        
+        window.processWithdraw = async function() {
+            const user = auth.currentUser;
+
+            if(!user){
+                alert("Login Required");
+                return;
+            }
+
+            const method = document.getElementById("method").value;
+            const accountNumber = document.getElementById("accountNumber").value;
+
+            if(accountNumber.trim() === ""){
+                alert("Enter Account Number");
+                return;
+            }
+
+            const amount = Number(document.getElementById("withdrawAmount").value);
+
+            if(isNaN(amount) || amount <= 0){
+                alert("Enter Valid Amount");
+                return;
+            }
+
+            if(amount < 500){
+                alert("Minimum Withdraw 500");
+                return;
+            }
+
+            const balanceText = document.getElementById("withdrawBalance").innerText
+            .replace("PKR","")
+            .trim();
+
+            const currentBalance = Number(balanceText);
+
+            if(amount > currentBalance){
+                alert("Insufficient Balance");
+                return;
+            }
+
+            const btn = document.querySelector(".withdraw-btn");
+            btn.disabled = true;
+            btn.innerText = "Processing...";
+
+            try {
+                const withdrawRef = push(ref(db,"withdrawRequests"));
+
+                await set(withdrawRef,{
+                    uid:user.uid,
+                    method:method,
+                    accountNumber:accountNumber,
+                    amount:amount,
+                    status:"pending",
+                    createdAt:Date.now()
+                });
+
+                await update(
+                    ref(db, "users/" + user.uid),
+                    {
+                        balance: currentBalance - amount
+                    }
+                );
+
+                alert("Withdraw Request Submitted");
+
+                document.getElementById("accountNumber").value = "";
+                document.getElementById("withdrawAmount").value = "";
+            } catch(error) {
+                alert("Error: " + error.message);
+            }
+
+            btn.disabled = false;
+            btn.innerText = "SUBMIT REQUEST";
+        }
+
         onAuthStateChanged(auth, (user) => {
             if(user){
                 const balanceRef = ref(db, "users/" + user.uid);
                 onValue(balanceRef, (snapshot)=>{
                     const data = snapshot.val();
                     if(data){
-                        document.getElementById("profileBalance").innerText =
-                        "RS " + data.balance;
+                        document.getElementById("profileBalance").innerText = "RS " + data.balance;
+                        // Dynamically syncing the balance to the withdraw view as well
+                        if(document.getElementById("withdrawBalance")) {
+                            document.getElementById("withdrawBalance").innerText = "PKR " + data.balance;
+                        }
                     }
                 });
             }
         });
-        </script>
+    </script>
 </body>
 </html>
