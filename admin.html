@@ -51,6 +51,10 @@ cursor:pointer;
 Add Balance
 </button>
 </div>
+
+<h2>Deposit Requests</h2>
+<div id="depositRequests"></div>
+
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
@@ -59,7 +63,8 @@ import {
 getDatabase,
 ref,
 get,
-update
+update,
+onValue
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
 const firebaseConfig = {
@@ -102,6 +107,29 @@ window.addBalance = async function(){
 
     alert("Balance Added Successfully");
 }
+
+const requestBox =
+document.getElementById("depositRequests");
+
+onValue(ref(db,"depositRequests"),(snapshot)=>{
+
+    requestBox.innerHTML = "";
+
+    snapshot.forEach((child)=>{
+
+        const data = child.val();
+
+        requestBox.innerHTML += `
+        <div class="card">
+            <p><b>UID:</b> ${data.uid}</p>
+            <p><b>Amount:</b> ${data.amount}</p>
+            <p><b>TRX:</b> ${data.trxId}</p>
+            <p><b>Status:</b> ${data.status}</p>
+        </div>
+        `;
+    });
+
+});
 
 </script>
 </body>
