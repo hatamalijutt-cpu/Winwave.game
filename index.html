@@ -561,20 +561,20 @@
 
                 <div id="loginForm">
                     <div class="form-group">
-                        <label>Phone Number / Username</label>
+                        <label>Email / Phone Number</label>
                         <div class="input-wrapper">
                             <i class="fa-solid fa-user"></i>
-                            <input type="text" placeholder="Enter your username or phone">
+                            <input type="text" id="loginEmail" placeholder="Enter your email or phone">
                         </div>
                     </div>
                     <div class="form-group">
                         <label>Password</label>
                         <div class="input-wrapper">
                             <i class="fa-solid fa-lock"></i>
-                            <input type="password" placeholder="Enter your password">
+                            <input type="password" id="loginPassword" placeholder="Enter your password">
                         </div>
                     </div>
-                    <button class="submit-btn" onclick="handleAuthSuccess()">LOG IN</button>
+                    <button class="submit-btn" onclick="loginUser()">LOG IN</button>
                     <div class="switch-prompt">Don't have an account? <span onclick="switchTab('register')">Register</span></div>
                 </div>
 
@@ -665,11 +665,23 @@
             }
         }
 
-        function handleAuthSuccess() {
-            closeAuthModal();
-            authButtons.style.display = 'none';
-            walletBox.style.display = 'flex';
-            userProfile.style.display = 'flex';
+        // Real Firebase Login Function
+        async function loginUser() {
+            const email = document.getElementById("loginEmail").value;
+            const password = document.getElementById("loginPassword").value;
+
+            if (!email || !password) {
+                alert("Sab fields fill karo");
+                return;
+            }
+
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                alert("Logged In Successfully!");
+                closeAuthModal();
+            } catch (error) {
+                alert(error.message);
+            }
         }
 
         async function registerUser() {
@@ -688,7 +700,6 @@
             }
 
             try {
-                // Step 3 Implementation
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
 
@@ -699,11 +710,7 @@
                 });
 
                 alert("Account Successfully Created!");
-
                 closeAuthModal();
-                authButtons.style.display = "none";
-                walletBox.style.display = "flex";
-                userProfile.style.display = "flex";
 
             } catch (error) {
                 alert(error.message);
@@ -722,7 +729,6 @@
           onAuthStateChanged
         } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
         
-        // Step 1 Implementation
         import {
           getDatabase,
           ref,
@@ -744,13 +750,10 @@
         const app = initializeApp(firebaseConfig);
         const analytics = getAnalytics(app);
         const auth = getAuth(app);
-        
-        // Step 2 Implementation
         const db = getDatabase(app);
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
-
                 document.getElementById("authButtons").style.display = "none";
                 document.getElementById("walletBox").style.display = "flex";
                 document.getElementById("userProfile").style.display = "flex";
@@ -759,27 +762,22 @@
 
                 onValue(balanceRef, (snapshot) => {
                     const data = snapshot.val();
-
                     if (data) {
-                        document.querySelector("#walletBox span").innerText =
-                            "RS " + data.balance;
+                        document.querySelector("#walletBox span").innerText = "RS " + data.balance;
                     }
                 });
 
             } else {
-
                 document.getElementById("authButtons").style.display = "flex";
                 document.getElementById("walletBox").style.display = "none";
                 document.getElementById("userProfile").style.display = "none";
-
             }
         });
 
+        // Exposing to window so global functions can access them
         window.auth = auth;
         window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
         window.signInWithEmailAndPassword = signInWithEmailAndPassword;
-        
-        // Exposing db functions to window so registerUser() can use them
         window.db = db;
         window.ref = ref;
         window.set = set;
