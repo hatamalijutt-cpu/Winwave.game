@@ -604,7 +604,7 @@
                         <label>Invite Code (Optional)</label>
                         <div class="input-wrapper">
                             <i class="fa-solid fa-gift"></i>
-                            <input type="text" placeholder="Enter referral code">
+                            <input type="text" id="inviteCode" placeholder="Enter referral code">
                         </div>
                     </div>
                     <button class="submit-btn" onclick="registerUser()">CREATE ACCOUNT</button>
@@ -676,6 +676,7 @@
             const email = document.getElementById("regEmail").value;
             const password = document.getElementById("regPassword").value;
             const confirmPassword = document.getElementById("regConfirmPassword").value;
+            const inviteCode = document.getElementById("inviteCode").value;
 
             if (!email || !password || !confirmPassword) {
                 alert("Sab fields fill karo");
@@ -695,7 +696,9 @@
                 await set(ref(db, 'users/' + user.uid), {
                     email: email,
                     balance: 0,
-                    vip: "VIP1"
+                    vip: "VIP1",
+                    referralCode: user.uid.substring(0,6),
+                    referredBy: inviteCode || ""
                 });
 
                 alert("Account Successfully Created!");
@@ -785,4 +788,4 @@
         window.set = set;
     </script>
 </body>
-</html> 
+</html>
