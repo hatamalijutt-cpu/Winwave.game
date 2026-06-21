@@ -52,11 +52,37 @@ Add Balance
 </button>
 </div>
 
-<h3 style="margin-top: 30px;">Deposit Requests</h3>
+<div style="display:flex;gap:10px;margin:20px 0;">
+    
+    <button onclick="showDeposits()">
+        Deposit Requests
+    </button>
+
+    <button onclick="showWithdraws()">
+        Withdraw Requests
+    </button>
+
+</div>
+
+<div id="depositSection">
+
+<h3 style="margin-top: 30px;">
+Deposit Requests
+</h3>
+
 <div id="requestBox"></div>
 
-<h3 style="margin-top:30px;">Withdraw Requests</h3>
+</div>
+
+<div id="withdrawSection" style="display:none;">
+
+<h3 style="margin-top:30px;">
+Withdraw Requests
+</h3>
+
 <div id="withdrawBox"></div>
+
+</div>
 
 <script type="module">
 
@@ -290,6 +316,26 @@ async function(requestId){
     });
 
     alert("Withdraw Rejected & Balance Returned");
+
+}
+
+window.showDeposits = function(){
+
+    document.getElementById("depositSection")
+    .style.display = "block";
+
+    document.getElementById("withdrawSection")
+    .style.display = "none";
+
+}
+
+window.showWithdraws = function(){
+
+    document.getElementById("depositSection")
+    .style.display = "none";
+
+    document.getElementById("withdrawSection")
+    .style.display = "block";
 
 }
 
