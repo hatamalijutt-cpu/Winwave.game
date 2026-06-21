@@ -417,20 +417,24 @@
 
         window.switchLevelTab = function(level, btn){
 
-            document
-            .querySelectorAll(".level-tab-btn")
+            document.querySelectorAll(".level-tab-btn")
             .forEach(tab => tab.classList.remove("active"));
 
             btn.classList.add("active");
 
-            const uid = auth.currentUser.uid;
+            const user = auth.currentUser;
+            if(!user) return;
 
             if(level === 1){
-                loadLevel1(uid);
+                loadLevel1(user.uid);
             }
 
             if(level === 2){
-                loadLevel2(uid);
+                loadLevel2(user.uid);
+            }
+
+            if(level === 3){
+                loadLevel3(user.uid);
             }
         }
 
@@ -532,6 +536,60 @@
                 container.innerHTML = html;
 
             });
+        }
+
+        function loadLevel3(uid){
+
+            const level3Ref =
+            ref(db,"users/"+uid+"/level3Referrals");
+
+            onValue(level3Ref,(snapshot)=>{
+
+                const container =
+                document.getElementById("memberRowsContainer");
+
+                if(!snapshot.exists()){
+
+                    container.innerHTML = `
+                    <div class="no-data">
+                        No Level 3 Members
+                    </div>`;
+
+                    return;
+                }
+
+                let html = "";
+
+                snapshot.forEach((child)=>{
+
+                    const data = child.val();
+
+                    const date =
+                    new Date(data.joinedAt)
+                    .toLocaleDateString();
+
+                    html += `
+                    <div class="member-row">
+
+                        <div class="col-user">
+                            ${data.email}
+                        </div>
+
+                        <div class="col-date">
+                            ${date}
+                        </div>
+
+                        <div class="col-comm">
+                            RS 25
+                        </div>
+
+                    </div>`;
+                });
+
+                container.innerHTML = html;
+
+            });
+
         }
     </script>
 </body>
