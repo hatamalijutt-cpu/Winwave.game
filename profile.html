@@ -400,6 +400,20 @@
         </div>
     </div>
 
+    <div class="app-container" id="historyScreen" style="display:none;padding:20px;">
+
+        <div class="header">
+            <a href="#" class="back-btn" onclick="closeHistory(event)">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+
+            <h3>Transaction History</h3>
+        </div>
+
+        <div id="historyBox"></div>
+
+    </div>
+
     <script>
         // Automatic Dynamic UID Generator Initializer Setup On Page Load
         document.addEventListener("DOMContentLoaded", function() {
@@ -451,17 +465,39 @@
         }
         // Universal Dummy Route Menu Handlers Actions
         function navigateMenu(featureName) {
+
             if (featureName === 'Withdraw') {
+
                 document.getElementById('profileScreen').style.display = 'none';
                 document.getElementById('withdrawScreen').style.display = 'block';
-            } else {
+
+            }
+
+            else if (featureName === 'Transaction History') {
+
+                document.getElementById('profileScreen').style.display = 'none';
+                document.getElementById('historyScreen').style.display = 'block';
+
+            }
+
+            else {
+
                 alert(featureName + " option under configuration process. Will update soon!");
+
             }
         }
         // Close Withdraw Section and return to Profile Screen
         function closeWithdraw(event) {
             if (event) event.preventDefault();
             document.getElementById('withdrawScreen').style.display = 'none';
+            document.getElementById('profileScreen').style.display = 'block';
+        }
+        function closeHistory(event) {
+
+            if(event) event.preventDefault();
+
+            document.getElementById('historyScreen').style.display = 'none';
+
             document.getElementById('profileScreen').style.display = 'block';
         }
         // Destroy Session Logs Mock Out Procedures
