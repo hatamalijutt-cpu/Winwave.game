@@ -726,7 +726,8 @@
         import {
           getDatabase,
           ref,
-          set
+          set,
+          onValue
         } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
         const firebaseConfig = {
@@ -749,13 +750,28 @@
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
+
                 document.getElementById("authButtons").style.display = "none";
                 document.getElementById("walletBox").style.display = "flex";
                 document.getElementById("userProfile").style.display = "flex";
+
+                const balanceRef = ref(db, "users/" + user.uid);
+
+                onValue(balanceRef, (snapshot) => {
+                    const data = snapshot.val();
+
+                    if (data) {
+                        document.querySelector("#walletBox span").innerText =
+                            "RS " + data.balance;
+                    }
+                });
+
             } else {
+
                 document.getElementById("authButtons").style.display = "flex";
                 document.getElementById("walletBox").style.display = "none";
                 document.getElementById("userProfile").style.display = "none";
+
             }
         });
 
