@@ -659,8 +659,10 @@
                         depositBox.innerHTML += `
                         <div class="card">
                             <h4 style="color:#10b981;">Deposit</h4>
+                            <p>ID: ${child.key}</p>
                             <p>Amount: PKR ${data.amount}</p>
-                            <p>Status: ${data.status}</p>
+                            <p>Status: <span style="color:${data.status === 'approved' ? '#10b981' : data.status === 'rejected' ? '#ef4444' : '#f59e0b'};">${data.status}</span></p>
+                            <p>Date: ${new Date(data.createdAt).toLocaleString()}</p>
                         </div>
                         `;
                     }
@@ -683,8 +685,10 @@
                         withdrawBox.innerHTML += `
                         <div class="card">
                             <h4 style="color:#ef4444;">Withdraw</h4>
+                            <p>ID: ${child.key}</p>
                             <p>Amount: PKR ${data.amount}</p>
-                            <p>Status: ${data.status}</p>
+                            <p>Status: <span style="color:${data.status === 'approved' ? '#10b981' : data.status === 'rejected' ? '#ef4444' : '#f59e0b'};">${data.status}</span></p>
+                            <p>Date: ${new Date(data.createdAt).toLocaleString()}</p>
                         </div>
                         `;
                     }
