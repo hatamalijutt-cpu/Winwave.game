@@ -246,7 +246,7 @@
         .withdraw-btn { width: 100%; background-color: #10b981; color: white; padding: 14px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px; }
         .info-box { background: #262626; padding: 15px; border-radius: 10px; font-size: 12px; color: #a3a3a3; line-height: 1.6; margin-top: 20px; }
         
-        #historyBox .card{
+        #historyBox .card, #depositHistory .card, #withdrawHistory .card {
             background:#222;
             padding:15px;
             margin-bottom:10px;
@@ -417,7 +417,17 @@
             <h3>Transaction History</h3>
         </div>
 
-        <div id="historyBox"></div>
+        <h3 style="color:#10b981;margin-bottom:10px;">
+        Deposit History
+        </h3>
+
+        <div id="depositHistory"></div>
+
+        <h3 style="color:#ef4444;margin:20px 0 10px;">
+        Withdraw History
+        </h3>
+
+        <div id="withdrawHistory"></div>
 
     </div>
 
@@ -626,10 +636,14 @@
 
             if(!user) return;
 
-            const historyBox =
-            document.getElementById("historyBox");
+            const depositBox =
+            document.getElementById("depositHistory");
 
-            historyBox.innerHTML = "";
+            const withdrawBox =
+            document.getElementById("withdrawHistory");
+
+            depositBox.innerHTML = "";
+            withdrawBox.innerHTML = "";
 
             const depositSnap =
             await get(ref(db,"depositRequests"));
@@ -642,14 +656,10 @@
 
                     if(data.uid === user.uid){
 
-                        historyBox.innerHTML += `
+                        depositBox.innerHTML += `
                         <div class="card">
-                            <h4 style="color:#10b981;">
-                            Deposit
-                            </h4>
-
-                            <p>Amount: ${data.amount}</p>
-
+                            <h4 style="color:#10b981;">Deposit</h4>
+                            <p>Amount: PKR ${data.amount}</p>
                             <p>Status: ${data.status}</p>
                         </div>
                         `;
@@ -670,14 +680,10 @@
 
                     if(data.uid === user.uid){
 
-                        historyBox.innerHTML += `
+                        withdrawBox.innerHTML += `
                         <div class="card">
-                            <h4 style="color:#ef4444;">
-                            Withdraw
-                            </h4>
-
-                            <p>Amount: ${data.amount}</p>
-
+                            <h4 style="color:#ef4444;">Withdraw</h4>
+                            <p>Amount: PKR ${data.amount}</p>
                             <p>Status: ${data.status}</p>
                         </div>
                         `;
@@ -685,6 +691,16 @@
 
                 });
 
+            }
+            
+            if(depositBox.innerHTML===""){
+                depositBox.innerHTML =
+                "<p style='color:gray'>No Deposits Found</p>";
+            }
+
+            if(withdrawBox.innerHTML===""){
+                withdrawBox.innerHTML =
+                "<p style='color:gray'>No Withdrawals Found</p>";
             }
 
         }
