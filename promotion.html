@@ -25,7 +25,7 @@
         
         /* Promotion Action Buttons */
         .action-btns { display: flex; flex-direction: column; gap: 10px; padding: 0 20px; }
-        .btn-green { background: #10b981; padding: 15px; border-radius: 8px; text-align: center; font-weight: bold; cursor: pointer; text-decoration: none; color: white; }
+        .btn-green { background: #10b981; padding: 15px; border-radius: 8px; text-align: center; font-weight: bold; cursor: pointer; text-decoration: none; color: white; display: block; }
         
         /* Bottom Nav (Consistent) */
         .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 450px; background-color: #1e1e1e; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #2a2a2a; }
@@ -50,7 +50,7 @@
 
         <div class="action-btns">
             <div class="btn-green" onclick="copyInviteLink()">Copy Invite Link</div>
-            <div class="btn-green" style="background: #3b82f6;">History</div>
+            <a href="history.html" class="btn-green" style="background:#3b82f6;">History</a>
         </div>
 
         <nav class="bottom-nav">
@@ -84,15 +84,17 @@ function copyInviteLink(){
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+// Step 5 Applied
 import {
   getDatabase,
   ref,
   get,
+  set,
   onValue
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCjw124Pc1wGpG1iNYGuKR9DmXo_OHCab8", // Index file se original key laga di hai
+  apiKey: "AIzaSyCjw124Pc1wGpG1iNYGuKR9DmXo_OHCab8", 
   authDomain: "winwave-b3ed4.firebaseapp.com",
   projectId: "winwave-b3ed4",
   storageBucket: "winwave-b3ed4.firebasestorage.app",
@@ -113,7 +115,8 @@ onAuthStateChanged(auth, (user) => {
 
     const uid = user.uid;
 
-    document.getElementById("inviteLink").value = window.location.origin + "/register.html?ref=" + uid;
+    // Step 1 Applied
+    document.getElementById("inviteLink").value = window.location.origin + "/index.html?ref=" + uid;
 
     const referralsRef = ref(db, "users/" + uid + "/referrals");
 
