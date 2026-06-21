@@ -55,18 +55,22 @@ Add Balance
 <h3 style="margin-top: 30px;">Deposit Requests</h3>
 <div id="requestBox"></div>
 
+<h3 style="margin-top:30px;">Withdraw Requests</h3>
+<div id="withdrawBox"></div>
+
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 
-// Step 2: onValue aur set import mein add kar diye gaye hain
+// Step 2: onValue, set aur ab remove import mein add kar diye gaye hain
 import {
 getDatabase,
 ref,
 get,
 update,
 onValue,
-set
+set,
+remove
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
 const firebaseConfig = {
@@ -192,6 +196,102 @@ onValue(ref(db, "depositRequests"), (snapshot) => {
         `;
     });
 });
+
+const withdrawBox =
+document.getElementById("withdrawBox");
+
+onValue(ref(db,"withdrawRequests"),(snapshot)=>{
+
+    withdrawBox.innerHTML = "";
+
+    snapshot.forEach((child)=>{
+
+        const data = child.val();
+
+        withdrawBox.innerHTML += `
+        <div class="card">
+            <p><b>User UID:</b> ${data.uid}</p>
+            <p><b>Amount:</b> ${data.amount}</p>
+            <p><b>Method:</b> ${data.method}</p>
+            <p><b>Account:</b> ${data.accountNumber}</p>
+            <p><b>Status:</b> ${data.status}</p>
+
+            <button
+            onclick="approveWithdraw('${child.key}')">
+            Mark Paid
+            </button>
+
+            <button
+            onclick="rejectWithdraw('${child.key}')"
+            style="background:red;margin-top:10px;">
+            Reject
+            </button>
+
+        </div>
+        `;
+    });
+
+});
+
+window.approveWithdraw =
+async function(requestId){
+
+    await update(
+        ref(db,
+        "withdrawRequests/"+requestId),
+        {
+            status:"paid"
+        }
+    );
+
+    alert("Withdraw Marked Paid");
+
+}
+
+window.rejectWithdraw =
+async function(requestId){
+
+    const requestSnap =
+    await get(
+    ref(db,
+    "withdrawRequests/"+requestId)
+    );
+
+    if(!requestSnap.exists()) return;
+
+    const request =
+    requestSnap.val();
+
+    const userSnap =
+    await get(
+    ref(db,
+    "users/"+request.uid)
+    );
+
+    if(userSnap.exists()){
+
+        const balance =
+        userSnap.val().balance || 0;
+
+        await update(
+        ref(db,
+        "users/"+request.uid),
+        {
+            balance:
+            balance + request.amount
+        });
+    }
+
+    await update(
+    ref(db,
+    "withdrawRequests/"+requestId),
+    {
+        status:"rejected"
+    });
+
+    alert("Withdraw Rejected & Balance Returned");
+
+}
 
 </script>
 </body>
