@@ -717,6 +717,60 @@
                     );
                 }
 
+                const referrerSnapshot = await get(ref(db, "users/" + referralUid));
+
+                if(referrerSnapshot.exists()){
+
+                    const referrerData = referrerSnapshot.val();
+
+                    // LEVEL 2
+                    if(referrerData.referredBy){
+
+                        await set(
+                            ref(
+                                db,
+                                "users/" +
+                                referrerData.referredBy +
+                                "/level2Referrals/" +
+                                user.uid
+                            ),
+                            {
+                                email: email,
+                                joinedAt: Date.now()
+                            }
+                        );
+
+                        const level2Snapshot =
+                        await get(ref(db,
+                        "users/" + referrerData.referredBy));
+
+                        if(level2Snapshot.exists()){
+
+                            const level2Data =
+                            level2Snapshot.val();
+
+                            // LEVEL 3
+                            if(level2Data.referredBy){
+
+                                await set(
+                                    ref(
+                                        db,
+                                        "users/" +
+                                        level2Data.referredBy +
+                                        "/level3Referrals/" +
+                                        user.uid
+                                    ),
+                                    {
+                                        email: email,
+                                        joinedAt: Date.now()
+                                    }
+                                );
+
+                            }
+                        }
+                    }
+                }
+
                 if(referralUid){
                     const bonusSnapshot = await get(ref(db,"users/" + referralUid));
                     if(bonusSnapshot.exists()){
