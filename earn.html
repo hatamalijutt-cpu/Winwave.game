@@ -20,7 +20,7 @@
             justify-content: center;
         }
 
-        /* Mobile Container (Dashboard Aur Profile Page Ke Same Size Ka) */
+        /* Mobile Container */
         .app-container {
             width: 100%;
             max-width: 450px;
@@ -352,59 +352,15 @@
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
         import { getDatabase, ref, get, onValue } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
-        // Step 2: Firebase Config
+        // Yahan par apna exact Firebase Config add karna!
         const firebaseConfig = {
-           // same config
+            // same config
         };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getDatabase(app);
 
-        // Global Copy Handlers clipboards operations (Modified for module scope)
-        window.copyValue = function(elementId, labelName) {
-            const textToCopy = document.getElementById(elementId).innerText;
-            navigator.clipboard.writeText(textToCopy);
-            alert(labelName + " successfully copied to clipboard!");
-        };
-
-        // Dynamic multi level tab renderer (Modified for module scope)
-        window.switchLevelTab = function(levelNum, targetBtn) {
-            // Remove active classes inside tab groups
-            const tabs = document.querySelectorAll('.level-tab-btn');
-            tabs.forEach(tab => tab.classList.remove('active'));
-            
-            // Activate selected option button structure
-            targetBtn.classList.add('active');
-
-            // Inject mock view list representation rules mapping levels structures
-            const container = document.getElementById('memberRowsContainer');
-            
-            if (levelNum === 1) {
-                container.innerHTML = `
-                    <div class="no-data">
-                        <i class="fa-solid fa-folder-open"></i>
-                        No team records found at Level 1 yet.
-                    </div>
-                `;
-            } else if (levelNum === 2) {
-                container.innerHTML = `
-                    <div class="no-data">
-                        <i class="fa-solid fa-folder-open"></i>
-                        No team records found at Level 2 yet.
-                    </div>
-                `;
-            } else if (levelNum === 3) {
-                container.innerHTML = `
-                    <div class="no-data">
-                        <i class="fa-solid fa-folder-open"></i>
-                        No team records found at Level 3 yet.
-                    </div>
-                `;
-            }
-        };
-
-        // Step 3 & 5: onAuthStateChanged Implementation
         onAuthStateChanged(auth, (user) => {
             if(!user) return;
 
@@ -459,13 +415,67 @@
                 });
             });
 
-            // Step 5: Fetch Total Team Commission
-            const userRef = ref(db,"users/" + currentUserUid);
-            onValue(userRef,(snapshot)=>{
+            // Step 5
+            const userRef = ref(db, "users/" + currentUserUid);
+            onValue(userRef, (snapshot) => {
                 const data = snapshot.val();
                 document.getElementById("teamCommission").innerText = "RS " + (data.referralBonus || 0);
             });
         });
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            setupReferralDetails();
+        });
+
+        function setupReferralDetails() {
+            let userUID = localStorage.getItem('winwave_uid');
+            if (!userUID) {
+                userUID = "WW" + Math.floor(100000 + Math.random() * 900000);
+            }
+            
+            document.getElementById('referralCodeText').innerText = userUID;
+            document.getElementById('referralLinkText').innerText = window.location.origin + "/register.html?ref=" + userUID;
+        }
+
+        function copyValue(elementId, labelName) {
+            const textToCopy = document.getElementById(elementId).innerText;
+            navigator.clipboard.writeText(textToCopy);
+            alert(labelName + " successfully copied to clipboard!");
+        }
+
+        function switchLevelTab(levelNum, targetBtn) {
+            const tabs = document.querySelectorAll('.level-tab-btn');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            targetBtn.classList.add('active');
+
+            const container = document.getElementById('memberRowsContainer');
+            
+            if (levelNum === 1) {
+                container.innerHTML = `
+                    <div class="no-data">
+                        <i class="fa-solid fa-folder-open"></i>
+                        No team records found at Level 1 yet.
+                    </div>
+                `;
+            } else if (levelNum === 2) {
+                container.innerHTML = `
+                    <div class="no-data">
+                        <i class="fa-solid fa-folder-open"></i>
+                        No team records found at Level 2 yet.
+                    </div>
+                `;
+            } else if (levelNum === 3) {
+                container.innerHTML = `
+                    <div class="no-data">
+                        <i class="fa-solid fa-folder-open"></i>
+                        No team records found at Level 3 yet.
+                    </div>
+                `;
+            }
+        }
     </script>
 </body>
 </html>
