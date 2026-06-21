@@ -286,7 +286,7 @@
             <div class="share-box">
                 <div class="share-details">
                     <div class="share-label">My Referral Code</div>
-                    <div class="share-value" id="referralCodeText">WINWAVE58</div>
+                    <div class="share-value" id="referralCodeText">Loading...</div>
                 </div>
                 <button class="copy-btn" onclick="copyValue('referralCodeText', 'Referral Code')">
                     <i class="fa-solid fa-copy"></i> Copy
@@ -296,7 +296,7 @@
             <div class="share-box">
                 <div class="share-details">
                     <div class="share-label">My Unique Invite Link</div>
-                    <div class="share-value" id="referralLinkText">https://winwave.app/register?ref=WINWAVE58</div>
+                    <div class="share-value" id="referralLinkText">Loading...</div>
                 </div>
                 <button class="copy-btn" onclick="copyValue('referralLinkText', 'Referral Link')">
                     <i class="fa-solid fa-copy"></i> Copy
@@ -312,7 +312,7 @@
             </div>
             <div class="stat-card">
                 <div class="stat-icon" style="color: #eab308;"><i class="fa-solid fa-hand-holding-dollar"></i></div>
-                <div class="stat-num">RS 0.00</div>
+                <div class="stat-num" id="teamCommission">RS 0.00</div>
                 <div class="stat-title">Total Team Commission</div>
             </div>
         </div>
@@ -339,7 +339,7 @@
                 <div class="member-rows-container" id="memberRowsContainer">
                     <div class="no-data">
                         <i class="fa-solid fa-folder-open"></i>
-                        No team records found at Level 1 yet.
+                        Loading...
                     </div>
                 </div>
             </div>
@@ -347,45 +347,147 @@
 
     </div>
 
-    <script>
-        // Synchronize UID or User codes dynamically from localStorage 
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+
+        import {
+          getAuth,
+          onAuthStateChanged
+        } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+
+        import {
+          getDatabase,
+          ref,
+          get,
+          onValue
+        } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+        // Step 2: Paste your own Firebase config here
+        const firebaseConfig = {
+           // paste your original config here
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+
+        // Step 3 & Step 5 combined logic
+        onAuthStateChanged(auth, (user) => {
+            if(!user) return;
+
+            const currentUserUid = user.uid;
+
+            // Referral Code
+            document.getElementById("referralCodeText").innerText =
+                currentUserUid.substring(0,6);
+
+            // Referral Link
+            document.getElementById("referralLinkText").innerText =
+                window.location.origin +
+                "/register.html?ref=" +
+                currentUserUid;
+
+            // Team Data
+            const referralsRef =
+                ref(db,
+                "users/" +
+                currentUserUid +
+                "/referrals");
+
+            onValue(referralsRef, (snapshot) => {
+                const container =
+                    document.getElementById("memberRowsContainer");
+
+                if(!snapshot.exists()){
+                    document.getElementById(
+                      "totalTeamCount"
+                    ).innerText = "0";
+
+                    container.innerHTML = `
+                    <div class="no-data">
+                      <i class="fa-solid fa-folder-open"></i>
+                      No team records found.
+                    </div>
+                    `;
+                    return;
+                }
+
+                const referrals = snapshot.val();
+
+                const totalMembers =
+                    Object.keys(referrals).length;
+
+                document.getElementById(
+                  "totalTeamCount"
+                ).innerText = totalMembers;
+
+                container.innerHTML = "";
+
+                Object.keys(referrals).forEach(uid => {
+                    const member = referrals[uid];
+
+                    const joinDate =
+                        new Date(member.joinedAt)
+                        .toLocaleDateString();
+
+                    container.innerHTML += `
+                    <div class="member-row">
+                        <div class="col-user">
+                            ${member.email}
+                        </div>
+                        <div class="col-date">
+                            ${joinDate}
+                        </div>
+                        <div class="col-comm">
+                            RS 100
+                        </div>
+                    </div>
+                    `;
+                });
+            });
+
+            // Step 5: Team Commission Read
+            const userRef = ref(db,"users/" + currentUserUid);
+
+            onValue(userRef,(snapshot)=>{
+                const data = snapshot.val();
+                document.getElementById(
+                  "teamCommission"
+                ).innerText =
+                  "RS " +
+                  (data.referralBonus || 0);
+            });
+        });
+
+        // -----------------------------------------------------------------
+        // Old functions attached to window so they work inside a module
+        // -----------------------------------------------------------------
         document.addEventListener("DOMContentLoaded", function() {
             setupReferralDetails();
         });
 
-        function setupReferralDetails() {
-            // Dashboard or Profile page's generated identity code integration
+        window.setupReferralDetails = function() {
             let userUID = localStorage.getItem('winwave_uid');
             if (!userUID) {
-                // If user hasn't logged in, use temporary generic sequence
                 userUID = "WW" + Math.floor(100000 + Math.random() * 900000);
             }
-            
-            // Clean code visualization assignment
-            document.getElementById('referralCodeText').innerText = userUID;
-            document.getElementById('referralLinkText').innerText = window.location.origin + "/register.html?ref=" + userUID;
-        }
+        };
 
-        // Global Copy Handlers clipboards operations
-        function copyValue(elementId, labelName) {
+        window.copyValue = function(elementId, labelName) {
             const textToCopy = document.getElementById(elementId).innerText;
             navigator.clipboard.writeText(textToCopy);
             alert(labelName + " successfully copied to clipboard!");
-        }
+        };
 
-        // Dynamic multi level tab renderer mock structures layout logic
-        function switchLevelTab(levelNum, targetBtn) {
-            // Remove active classes inside tab groups
+        window.switchLevelTab = function(levelNum, targetBtn) {
             const tabs = document.querySelectorAll('.level-tab-btn');
             tabs.forEach(tab => tab.classList.remove('active'));
-            
-            // Activate selected option button structure
             targetBtn.classList.add('active');
 
-            // Inject mock view list representation rules mapping levels structures
             const container = document.getElementById('memberRowsContainer');
             
             if (levelNum === 1) {
+                // Now populated by Firebase instead, but keeping structural mock code as requested
                 container.innerHTML = `
                     <div class="no-data">
                         <i class="fa-solid fa-folder-open"></i>
@@ -407,7 +509,7 @@
                     </div>
                 `;
             }
-        }
+        };
     </script>
 </body>
 </html>
