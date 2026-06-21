@@ -73,43 +73,69 @@
     </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", function(){
-
-    // User UID
-    let uid = localStorage.getItem("winwave_uid");
-
-    if(!uid){
-        uid = "WW" + Math.floor(100000 + Math.random()*900000);
-        localStorage.setItem("winwave_uid", uid);
-    }
-
-    // Invite Link Generate
-    document.getElementById("inviteLink").value =
-    "https://winwave.com/ref/" + uid;
-
-    // Bonus
-    let bonus =
-    parseFloat(localStorage.getItem("winwave_bonus")) || 0;
-
-    document.getElementById("totalBonus").innerText =
-    "RS " + bonus.toFixed(2);
-
-    // Referrals
-    let refs =
-    parseInt(localStorage.getItem("winwave_referrals")) || 0;
-
-    document.getElementById("totalReferrals").innerText = refs;
-});
-
 // Copy Link
 function copyInviteLink(){
-    let link =
-    document.getElementById("inviteLink").value;
-
+    let link = document.getElementById("inviteLink").value;
     navigator.clipboard.writeText(link);
-
     alert("Invite Link Copied Successfully!");
 }
+</script>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+import {
+  getDatabase,
+  ref,
+  get,
+  onValue
+} from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCjw124Pc1wGpG1iNYGuKR9DmXo_OHCab8", // Index file se original key laga di hai
+  authDomain: "winwave-b3ed4.firebaseapp.com",
+  projectId: "winwave-b3ed4",
+  storageBucket: "winwave-b3ed4.firebasestorage.app",
+  messagingSenderId: "501831087781",
+  appId: "1:501831087781:web:ea52d559bcb1429b9a3f4c"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+onAuthStateChanged(auth, (user) => {
+
+    if(!user){
+        alert("Please Login First");
+        return;
+    }
+
+    const uid = user.uid;
+
+    document.getElementById("inviteLink").value = window.location.origin + "/register.html?ref=" + uid;
+
+    const referralsRef = ref(db, "users/" + uid + "/referrals");
+
+    onValue(referralsRef, (snapshot)=>{
+        const data = snapshot.val();
+        if(data){
+            document.getElementById("totalReferrals").innerText = Object.keys(data).length;
+        }else{
+            document.getElementById("totalReferrals").innerText = 0;
+        }
+    });
+
+    const userRef = ref(db, "users/" + uid);
+
+    onValue(userRef, (snapshot)=>{
+        const data = snapshot.val();
+        if(data){
+            document.getElementById("totalBonus").innerText = "RS " + (data.referralBonus || 0);
+        }
+    });
+
+});
 </script>
 </body>
 </html>
