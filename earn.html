@@ -286,7 +286,7 @@
             <div class="share-box">
                 <div class="share-details">
                     <div class="share-label">My Referral Code</div>
-                    <div class="share-value" id="referralCodeText">Loading...</div>
+                    <div class="share-value" id="referralCodeText">WINWAVE58</div>
                 </div>
                 <button class="copy-btn" onclick="copyValue('referralCodeText', 'Referral Code')">
                     <i class="fa-solid fa-copy"></i> Copy
@@ -296,7 +296,7 @@
             <div class="share-box">
                 <div class="share-details">
                     <div class="share-label">My Unique Invite Link</div>
-                    <div class="share-value" id="referralLinkText">Loading...</div>
+                    <div class="share-value" id="referralLinkText">https://winwave.app/register?ref=WINWAVE58</div>
                 </div>
                 <button class="copy-btn" onclick="copyValue('referralLinkText', 'Referral Link')">
                     <i class="fa-solid fa-copy"></i> Copy
@@ -339,7 +339,7 @@
                 <div class="member-rows-container" id="memberRowsContainer">
                     <div class="no-data">
                         <i class="fa-solid fa-folder-open"></i>
-                        Loading...
+                        No team records found at Level 1 yet.
                     </div>
                 </div>
             </div>
@@ -349,145 +349,38 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getDatabase, ref, get, onValue } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
-        import {
-          getAuth,
-          onAuthStateChanged
-        } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-
-        import {
-          getDatabase,
-          ref,
-          get,
-          onValue
-        } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
-
-        // Step 2: Paste your own Firebase config here
+        // Step 2: Firebase Config
         const firebaseConfig = {
-           // paste your original config here
+           // same config
         };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getDatabase(app);
 
-        // Step 3 & Step 5 combined logic
-        onAuthStateChanged(auth, (user) => {
-            if(!user) return;
-
-            const currentUserUid = user.uid;
-
-            // Referral Code
-            document.getElementById("referralCodeText").innerText =
-                currentUserUid.substring(0,6);
-
-            // Referral Link
-            document.getElementById("referralLinkText").innerText =
-                window.location.origin +
-                "/register.html?ref=" +
-                currentUserUid;
-
-            // Team Data
-            const referralsRef =
-                ref(db,
-                "users/" +
-                currentUserUid +
-                "/referrals");
-
-            onValue(referralsRef, (snapshot) => {
-                const container =
-                    document.getElementById("memberRowsContainer");
-
-                if(!snapshot.exists()){
-                    document.getElementById(
-                      "totalTeamCount"
-                    ).innerText = "0";
-
-                    container.innerHTML = `
-                    <div class="no-data">
-                      <i class="fa-solid fa-folder-open"></i>
-                      No team records found.
-                    </div>
-                    `;
-                    return;
-                }
-
-                const referrals = snapshot.val();
-
-                const totalMembers =
-                    Object.keys(referrals).length;
-
-                document.getElementById(
-                  "totalTeamCount"
-                ).innerText = totalMembers;
-
-                container.innerHTML = "";
-
-                Object.keys(referrals).forEach(uid => {
-                    const member = referrals[uid];
-
-                    const joinDate =
-                        new Date(member.joinedAt)
-                        .toLocaleDateString();
-
-                    container.innerHTML += `
-                    <div class="member-row">
-                        <div class="col-user">
-                            ${member.email}
-                        </div>
-                        <div class="col-date">
-                            ${joinDate}
-                        </div>
-                        <div class="col-comm">
-                            RS 100
-                        </div>
-                    </div>
-                    `;
-                });
-            });
-
-            // Step 5: Team Commission Read
-            const userRef = ref(db,"users/" + currentUserUid);
-
-            onValue(userRef,(snapshot)=>{
-                const data = snapshot.val();
-                document.getElementById(
-                  "teamCommission"
-                ).innerText =
-                  "RS " +
-                  (data.referralBonus || 0);
-            });
-        });
-
-        // -----------------------------------------------------------------
-        // Old functions attached to window so they work inside a module
-        // -----------------------------------------------------------------
-        document.addEventListener("DOMContentLoaded", function() {
-            setupReferralDetails();
-        });
-
-        window.setupReferralDetails = function() {
-            let userUID = localStorage.getItem('winwave_uid');
-            if (!userUID) {
-                userUID = "WW" + Math.floor(100000 + Math.random() * 900000);
-            }
-        };
-
+        // Global Copy Handlers clipboards operations (Modified for module scope)
         window.copyValue = function(elementId, labelName) {
             const textToCopy = document.getElementById(elementId).innerText;
             navigator.clipboard.writeText(textToCopy);
             alert(labelName + " successfully copied to clipboard!");
         };
 
+        // Dynamic multi level tab renderer (Modified for module scope)
         window.switchLevelTab = function(levelNum, targetBtn) {
+            // Remove active classes inside tab groups
             const tabs = document.querySelectorAll('.level-tab-btn');
             tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Activate selected option button structure
             targetBtn.classList.add('active');
 
+            // Inject mock view list representation rules mapping levels structures
             const container = document.getElementById('memberRowsContainer');
             
             if (levelNum === 1) {
-                // Now populated by Firebase instead, but keeping structural mock code as requested
                 container.innerHTML = `
                     <div class="no-data">
                         <i class="fa-solid fa-folder-open"></i>
@@ -510,6 +403,69 @@
                 `;
             }
         };
+
+        // Step 3 & 5: onAuthStateChanged Implementation
+        onAuthStateChanged(auth, (user) => {
+            if(!user) return;
+
+            const currentUserUid = user.uid;
+
+            // Referral Code
+            document.getElementById("referralCodeText").innerText = currentUserUid.substring(0,6);
+
+            // Referral Link
+            document.getElementById("referralLinkText").innerText = window.location.origin + "/register.html?ref=" + currentUserUid;
+
+            // Team Data
+            const referralsRef = ref(db, "users/" + currentUserUid + "/referrals");
+
+            onValue(referralsRef, (snapshot) => {
+                const container = document.getElementById("memberRowsContainer");
+
+                if(!snapshot.exists()){
+                    document.getElementById("totalTeamCount").innerText = "0";
+                    container.innerHTML = `
+                    <div class="no-data">
+                      <i class="fa-solid fa-folder-open"></i>
+                      No team records found.
+                    </div>
+                    `;
+                    return;
+                }
+
+                const referrals = snapshot.val();
+                const totalMembers = Object.keys(referrals).length;
+
+                document.getElementById("totalTeamCount").innerText = totalMembers;
+                container.innerHTML = "";
+
+                Object.keys(referrals).forEach(uid => {
+                    const member = referrals[uid];
+                    const joinDate = new Date(member.joinedAt).toLocaleDateString();
+
+                    container.innerHTML += `
+                    <div class="member-row">
+                        <div class="col-user">
+                            ${member.email}
+                        </div>
+                        <div class="col-date">
+                            ${joinDate}
+                        </div>
+                        <div class="col-comm">
+                            RS 100
+                        </div>
+                    </div>
+                    `;
+                });
+            });
+
+            // Step 5: Fetch Total Team Commission
+            const userRef = ref(db,"users/" + currentUserUid);
+            onValue(userRef,(snapshot)=>{
+                const data = snapshot.val();
+                document.getElementById("teamCommission").innerText = "RS " + (data.referralBonus || 0);
+            });
+        });
     </script>
 </body>
 </html>
