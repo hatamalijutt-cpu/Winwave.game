@@ -711,6 +711,7 @@
 
         onAuthStateChanged(auth, (user) => {
             if(user){
+                document.getElementById("userUID").innerText = user.uid;
                 const balanceRef = ref(db, "users/" + user.uid);
                 onValue(balanceRef, (snapshot)=>{
                     const data = snapshot.val();
