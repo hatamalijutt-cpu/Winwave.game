@@ -708,64 +708,74 @@
                 });
 
                 if(referralUid){
+
+                    // Level 1 save
                     await set(
-                        ref(db, "users/" + referralUid + "/referrals/" + user.uid),
+                        ref(db,"users/" + referralUid + "/referrals/" + user.uid),
                         {
                             email: email,
                             joinedAt: Date.now()
                         }
                     );
-                }
 
-                const referrerSnapshot = await get(ref(db, "users/" + referralUid));
+                    // Referrer data
+                    const parentSnap =
+                    await get(ref(db,"users/" + referralUid));
 
-                if(referrerSnapshot.exists()){
+                    if(parentSnap.exists()){
 
-                    const referrerData = referrerSnapshot.val();
+                        const parentData =
+                        parentSnap.val();
 
-                    // LEVEL 2
-                    if(referrerData.referredBy){
+                        // Level 2 save
+                        if(parentData.referredBy){
 
-                        await set(
-                            ref(
-                                db,
-                                "users/" +
-                                referrerData.referredBy +
-                                "/level2Referrals/" +
-                                user.uid
-                            ),
-                            {
-                                email: email,
-                                joinedAt: Date.now()
-                            }
-                        );
+                            await set(
+                                ref(
+                                    db,
+                                    "users/" +
+                                    parentData.referredBy +
+                                    "/level2Referrals/" +
+                                    user.uid
+                                ),
+                                {
+                                    email: email,
+                                    joinedAt: Date.now()
+                                }
+                            );
 
-                        const level2Snapshot =
-                        await get(ref(db,
-                        "users/" + referrerData.referredBy));
+                            const grandSnap =
+                            await get(
+                                ref(
+                                    db,
+                                    "users/" +
+                                    parentData.referredBy
+                                )
+                            );
 
-                        if(level2Snapshot.exists()){
+                            if(grandSnap.exists()){
 
-                            const level2Data =
-                            level2Snapshot.val();
+                                const grandData =
+                                grandSnap.val();
 
-                            // LEVEL 3
-                            if(level2Data.referredBy){
+                                // Level 3 save
+                                if(grandData.referredBy){
 
-                                await set(
-                                    ref(
-                                        db,
-                                        "users/" +
-                                        level2Data.referredBy +
-                                        "/level3Referrals/" +
-                                        user.uid
-                                    ),
-                                    {
-                                        email: email,
-                                        joinedAt: Date.now()
-                                    }
-                                );
+                                    await set(
+                                        ref(
+                                            db,
+                                            "users/" +
+                                            grandData.referredBy +
+                                            "/level3Referrals/" +
+                                            user.uid
+                                        ),
+                                        {
+                                            email: email,
+                                            joinedAt: Date.now()
+                                        }
+                                    );
 
+                                }
                             }
                         }
                     }
