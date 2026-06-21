@@ -173,6 +173,43 @@ window.approveDeposit = async function(requestId){
         }
     );
 
+    // --- NEW CODE ADDED HERE ---
+    const userData = userSnap.val();
+
+    if (
+        userData.referredBy &&
+        !userData.firstDepositBonusGiven
+    ) {
+
+        const referrerSnap = await get(
+            ref(db, "users/" + userData.referredBy)
+        );
+
+        if (referrerSnap.exists()) {
+
+            const referrerData = referrerSnap.val();
+
+            const referralBonus = 100; // commission amount
+
+            await update(
+                ref(db, "users/" + userData.referredBy),
+                {
+                    balance:
+                        (referrerData.balance || 0) +
+                        referralBonus
+                }
+            );
+
+            await update(
+                ref(db, "users/" + request.uid),
+                {
+                    firstDepositBonusGiven: true
+                }
+            );
+        }
+    }
+    // --- END OF NEW CODE ---
+
     await update(
         ref(db,"depositRequests/"+requestId),
         {
