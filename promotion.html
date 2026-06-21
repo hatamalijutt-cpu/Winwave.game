@@ -39,17 +39,17 @@
         <header class="header">Promotion</header>
 
         <div class="stats-grid">
-            <div class="stat-card"><div class="stat-val">RS 0.00</div><div class="stat-label">Total Bonus</div></div>
-            <div class="stat-card"><div class="stat-val">0</div><div class="stat-label">Total Referrals</div></div>
+            <div class="stat-card"><div class="stat-val" id="totalBonus">RS 0.00</div><div class="stat-label">Total Bonus</div></div>
+            <div class="stat-card"><div class="stat-val" id="totalReferrals">0</div><div class="stat-label">Total Referrals</div></div>
         </div>
 
         <div class="referral-box">
             <div style="font-size: 14px; text-align: center;">Your Invite Link:</div>
-            <input type="text" class="ref-input" value="winwave.com/ref/user123" readonly>
+            <input type="text" class="ref-input" id="inviteLink" readonly>
         </div>
 
         <div class="action-btns">
-            <div class="btn-green">Copy Invite Link</div>
+            <div class="btn-green" onclick="copyInviteLink()">Copy Invite Link</div>
             <div class="btn-green" style="background: #3b82f6;">History</div>
         </div>
 
@@ -72,5 +72,44 @@
         </nav>
     </div>
 
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+
+    // User UID
+    let uid = localStorage.getItem("winwave_uid");
+
+    if(!uid){
+        uid = "WW" + Math.floor(100000 + Math.random()*900000);
+        localStorage.setItem("winwave_uid", uid);
+    }
+
+    // Invite Link Generate
+    document.getElementById("inviteLink").value =
+    "https://winwave.com/ref/" + uid;
+
+    // Bonus
+    let bonus =
+    parseFloat(localStorage.getItem("winwave_bonus")) || 0;
+
+    document.getElementById("totalBonus").innerText =
+    "RS " + bonus.toFixed(2);
+
+    // Referrals
+    let refs =
+    parseInt(localStorage.getItem("winwave_referrals")) || 0;
+
+    document.getElementById("totalReferrals").innerText = refs;
+});
+
+// Copy Link
+function copyInviteLink(){
+    let link =
+    document.getElementById("inviteLink").value;
+
+    navigator.clipboard.writeText(link);
+
+    alert("Invite Link Copied Successfully!");
+}
+</script>
 </body>
 </html>
