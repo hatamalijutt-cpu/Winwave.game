@@ -210,6 +210,19 @@ window.approveDeposit = async function(requestId){
                     firstDepositBonusGiven: true
                 }
             );
+
+            await update(
+                ref(
+                    db,
+                    "users/" +
+                    userData.referredBy +
+                    "/referrals/" +
+                    request.uid
+                ),
+                {
+                    commission: referralBonus
+                }
+            );
         }
     }
     // --- END OF NEW CODE ---
