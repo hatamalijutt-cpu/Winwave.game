@@ -196,6 +196,10 @@ window.approveDeposit = async function(requestId){
                 {
                     balance:
                         (referrerData.balance || 0) +
+                        referralBonus,
+
+                    referralBonus:
+                        (referrerData.referralBonus || 0) +
                         referralBonus
                 }
             );
