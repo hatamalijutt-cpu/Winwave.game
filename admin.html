@@ -169,7 +169,10 @@ window.approveDeposit = async function(requestId){
     await update(
         ref(db,"users/"+request.uid),
         {
-            balance: balance + request.amount
+            balance: balance + request.amount,
+            totalDeposit:
+            (userSnap.val().totalDeposit || 0)
+            + request.amount
         }
     );
 
