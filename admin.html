@@ -175,6 +175,9 @@ window.approveDeposit = async function(requestId){
 
     // --- NEW CODE ADDED HERE ---
     const userData = userSnap.val();
+    console.log("Depositor UID:", request.uid);
+    console.log("User Data:", userData);
+    console.log("Level1 Referrer:", userData.referredBy);
 
     if (
         userData.referredBy &&
@@ -197,6 +200,8 @@ window.approveDeposit = async function(requestId){
 
             const level1Data =
             level1Snap.val();
+            console.log("Level1 Data:", level1Data);
+            console.log("Level2 Referrer:", level1Data.referredBy);
 
             await update(
                 ref(db,"users/"+level1Id),
