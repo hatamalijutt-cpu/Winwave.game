@@ -176,54 +176,125 @@ window.approveDeposit = async function(requestId){
     // --- NEW CODE ADDED HERE ---
     const userData = userSnap.val();
 
-    if (
+    if(
         userData.referredBy &&
         !userData.firstDepositBonusGiven
-    ) {
+    ){
 
-        const referrerSnap = await get(
-            ref(db, "users/" + userData.referredBy)
+        const depositAmount = Number(request.amount);
+
+        const level1Bonus = depositAmount * 0.10;
+        const level2Bonus = depositAmount * 0.05;
+        const level3Bonus = depositAmount * 0.02;
+
+        // LEVEL 1
+
+        const level1Snap =
+        await get(
+            ref(db,"users/"+userData.referredBy)
         );
 
-        if (referrerSnap.exists()) {
+        if(level1Snap.exists()){
 
-            const referrerData = referrerSnap.val();
-
-            const referralBonus = 100; // commission amount
+            const level1Data =
+            level1Snap.val();
 
             await update(
-                ref(db, "users/" + userData.referredBy),
+                ref(db,"users/"+userData.referredBy),
                 {
                     balance:
-                        (referrerData.balance || 0) +
-                        referralBonus,
+                    (level1Data.balance || 0)
+                    + level1Bonus,
 
                     referralBonus:
-                        (referrerData.referralBonus || 0) +
-                        referralBonus
+                    (level1Data.referralBonus || 0)
+                    + level1Bonus
                 }
             );
 
-            await update(
-                ref(db, "users/" + request.uid),
-                {
-                    firstDepositBonusGiven: true
-                }
-            );
+            // LEVEL 2
 
-            await update(
-                ref(
-                    db,
-                    "users/" +
-                    userData.referredBy +
-                    "/referrals/" +
-                    request.uid
-                ),
-                {
-                    commission: referralBonus
+            if(level1Data.referredBy){
+
+                const level2Snap =
+                await get(
+                    ref(
+                        db,
+                        "users/"+level1Data.referredBy
+                    )
+                );
+
+                if(level2Snap.exists()){
+
+                    const level2Data =
+                    level2Snap.val();
+
+                    await update(
+                        ref(
+                            db,
+                            "users/"+level1Data.referredBy
+                        ),
+                        {
+                            balance:
+                            (level2Data.balance || 0)
+                            + level2Bonus,
+
+                            referralBonus:
+                            (level2Data.referralBonus || 0)
+                            + level2Bonus
+                        }
+                    );
+
+                    // LEVEL 3
+
+                    if(level2Data.referredBy){
+
+                        const level3Snap =
+                        await get(
+                            ref(
+                                db,
+                                "users/"+level2Data.referredBy
+                            )
+                        );
+
+                        if(level3Snap.exists()){
+
+                            const level3Data =
+                            level3Snap.val();
+
+                            await update(
+                                ref(
+                                    db,
+                                    "users/"+level2Data.referredBy
+                                ),
+                                {
+                                    balance:
+                                    (level3Data.balance || 0)
+                                    + level3Bonus,
+
+                                    referralBonus:
+                                    (level3Data.referralBonus || 0)
+                                    + level3Bonus
+                                }
+                            );
+
+                        }
+
+                    }
+
                 }
-            );
+
+            }
+
         }
+
+        await update(
+            ref(db,"users/"+request.uid),
+            {
+                firstDepositBonusGiven:true
+            }
+        );
+
     }
     // --- END OF NEW CODE ---
 
