@@ -39,8 +39,27 @@
         <header class="header">Promotion</header>
 
         <div class="stats-grid">
-            <div class="stat-card"><div class="stat-val" id="totalBonus">RS 0.00</div><div class="stat-label">Total Bonus</div></div>
-            <div class="stat-card"><div class="stat-val" id="totalReferrals">0</div><div class="stat-label">Total Referrals</div></div>
+
+            <div class="stat-card">
+                <div class="stat-val" id="totalBonus">RS 0.00</div>
+                <div class="stat-label">Total Bonus</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-val" id="totalReferrals">0</div>
+                <div class="stat-label">Total Referrals</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-val" id="validMembers">0</div>
+                <div class="stat-label">Valid Members</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-val" id="invalidMembers">0</div>
+                <div class="stat-label">Invalid Members</div>
+            </div>
+
         </div>
 
         <div class="referral-box">
@@ -120,13 +139,54 @@ onAuthStateChanged(auth, (user) => {
 
     const referralsRef = ref(db, "users/" + uid + "/referrals");
 
-    onValue(referralsRef, (snapshot)=>{
+    onValue(referralsRef, async (snapshot)=>{
+
         const data = snapshot.val();
-        if(data){
-            document.getElementById("totalReferrals").innerText = Object.keys(data).length;
-        }else{
+
+        if(!data){
+
             document.getElementById("totalReferrals").innerText = 0;
+            document.getElementById("validMembers").innerText = 0;
+            document.getElementById("invalidMembers").innerText = 0;
+
+            return;
         }
+
+        const referralIds = Object.keys(data);
+
+        document.getElementById("totalReferrals").innerText =
+        referralIds.length;
+
+        let validCount = 0;
+        let invalidCount = 0;
+
+        for(const referralUid of referralIds){
+
+            const memberSnap =
+            await get(ref(db,"users/"+referralUid));
+
+            if(memberSnap.exists()){
+
+                const memberData =
+                memberSnap.val();
+
+                if(memberData.firstDepositBonusGiven){
+
+                    validCount++;
+
+                }else{
+
+                    invalidCount++;
+                }
+            }
+        }
+
+        document.getElementById("validMembers").innerText =
+        validCount;
+
+        document.getElementById("invalidMembers").innerText =
+        invalidCount;
+
     });
 
     const userRef = ref(db, "users/" + uid);
