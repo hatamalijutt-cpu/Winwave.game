@@ -60,6 +60,16 @@
                 <div class="stat-label">Invalid Members</div>
             </div>
 
+            <div class="stat-card">
+                <div class="stat-val" id="firstDepositTotal">RS 0</div>
+                <div class="stat-label">First Deposit Total</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-val" id="teamDepositTotal">RS 0</div>
+                <div class="stat-label">Team Deposit Total</div>
+            </div>
+
         </div>
 
         <div class="referral-box">
@@ -202,6 +212,61 @@ onAuthStateChanged(auth, (user) => {
 
             document.getElementById("totalBonus").innerText =
                 "RS " + totalBonus;
+                
+            let firstDepositTotal = 0;
+            let teamDepositTotal = 0;
+
+            if(data.referrals){
+
+                Object.keys(data.referrals).forEach(refUid=>{
+
+                    get(ref(db,"users/"+refUid))
+                    .then(snap=>{
+
+                        if(snap.exists()){
+
+                            const refUser = snap.val();
+
+                            if(refUser.totalDeposit){
+
+                                firstDepositTotal +=
+                                Number(refUser.totalDeposit);
+
+                                document.getElementById(
+                                "firstDepositTotal"
+                                ).innerText =
+                                "RS " + firstDepositTotal;
+                            }
+                        }
+                    });
+
+                });
+
+            }
+
+            get(ref(db,"users"))
+            .then(allUsers=>{
+
+                if(!allUsers.exists()) return;
+
+                allUsers.forEach(child=>{
+
+                    const member = child.val();
+
+                    if(member.totalDeposit){
+
+                        teamDepositTotal +=
+                        Number(member.totalDeposit);
+                    }
+
+                });
+
+                document.getElementById(
+                "teamDepositTotal"
+                ).innerText =
+                "RS " + teamDepositTotal;
+
+            });
         }
     });
 
