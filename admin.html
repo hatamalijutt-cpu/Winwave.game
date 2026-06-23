@@ -187,6 +187,9 @@ window.approveDeposit = async function(requestId){
         const depositAmount = request.amount;
 
         const level1Commission = depositAmount * 0.10; // 10%
+        console.log("=== COMMISSION DEBUG ===");
+        console.log("Depositor:", request.uid);
+        console.log("User referredBy:", userData.referredBy);
         const level2Commission = depositAmount * 0.05; // 5%
         const level3Commission = depositAmount * 0.02; // 2%
 
@@ -217,6 +220,9 @@ window.approveDeposit = async function(requestId){
             );
 
             // LEVEL 2
+            console.log("Level1 User:", level1Id);
+            console.log("Level1 referredBy:", level1Data.referredBy);
+
             if(level1Data.referredBy){
 
                 const level2Id =
