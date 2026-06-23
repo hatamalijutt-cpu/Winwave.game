@@ -134,7 +134,7 @@ onAuthStateChanged(auth, (user) => {
     onValue(userRef, (snapshot)=>{
         const data = snapshot.val();
         if(data){
-            document.getElementById("totalBonus").innerText = "RS " + (data.referralBonus || 0);
+            document.getElementById("totalBonus").innerText = "RS " + (data.totalCommission || 0);
         }
     });
 
