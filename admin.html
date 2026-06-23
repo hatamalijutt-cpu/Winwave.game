@@ -166,6 +166,12 @@ window.approveDeposit = async function(requestId){
     const balance =
     userSnap.val().balance || 0;
 
+    alert(
+    "Balance=" + balance +
+    "\nAmount=" + request.amount +
+    "\nOld Deposit=" + (userSnap.val().totalDeposit || 0)
+    );
+
     await update(
         ref(db,"users/"+request.uid),
         {
