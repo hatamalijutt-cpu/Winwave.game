@@ -782,30 +782,6 @@
                     }
                 }
 
-                // Existing logic for inviteCode 
-                if(inviteCode){
-                    const usersRef = ref(db, "users");
-                    const snapshot = await get(usersRef);
-                    if(snapshot.exists()){
-                        const users = snapshot.val();
-                        for(let uid in users){
-                            if(users[uid].referralCode === inviteCode){
-                                let totalRefs = users[uid].referrals || 0;
-                                let totalBonus = users[uid].referralBonus || 0;
-                                
-                                await update(
-                                    ref(db,"users/"+uid),
-                                    {
-                                        referrals: totalRefs + 1,
-                                        referralBonus: totalBonus + 100
-                                    }
-                                );
-                                break;
-                            }
-                        }
-                    }
-                }
-
                 alert("Account Successfully Created!");
 
                 closeAuthModal();
