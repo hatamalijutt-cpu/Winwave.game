@@ -546,6 +546,9 @@ window.checkReferralDeposits = async function(){
 
     resultBox.innerHTML = "Loading...";
 
+    // Yahan define kiya hai "today" variable taake error na aaye
+    const today = new Date().toLocaleDateString("en-CA");
+
     const referralsSnap =
     await get(
         ref(db,"users/"+uid+"/referrals")
@@ -592,10 +595,6 @@ window.checkReferralDeposits = async function(){
 
                     const depositDate =
                     new Date(item.date)
-                    .toLocaleDateString("en-CA");
-
-                    const today =
-                    new Date()
                     .toLocaleDateString("en-CA");
 
                     if(depositDate === today){
