@@ -627,6 +627,7 @@
                 let acceleration = 0.003 * Math.pow(liveMultiplierVal, 0.65);
                 liveMultiplierVal += acceleration;
                 counterText.innerText = liveMultiplierVal.toFixed(2) + "x";
+                
                 // Live Bet Amount Update
                 if (betBox1.state === "active") {
                     let liveAmount1 = betBox1.amount * liveMultiplierVal;
@@ -638,10 +639,19 @@
                     document.getElementById("liveProfit2").innerText =
                         "RS " + liveAmount2.toFixed(0);
                 }
-                let factor = (liveMultiplierVal - 1) / (crashPointTargetVal - 1 || 1);
-                if (factor > 1) factor = 1;
+
+                // NEW ANIMATION LOGIC:
+                // Ye equation animation ko crash point se completely azaad kar deti hai.
+                // Ab plane hamesha shuru mein same speed se uday ga, aur phir screen ke top right par smooth hover karega.
+                let factor = 1 - (1 / liveMultiplierVal); 
+                
+                // Plane ko div ke andar hi rakhne ke liye limit
+                if (factor > 0.98) factor = 0.98; 
+
                 let x = 15 + (factor * 340);
-                let y = 15 + (Math.pow(factor, 1.4) * 120);
+                // Math.pow add kiya hai takay takeoff ki curve realistic lage
+                let y = 15 + (Math.pow(factor, 0.85) * 120); 
+                
                 planeObject.style.left = x + "px";
                 planeObject.style.bottom = y + "px";
                 
