@@ -592,13 +592,11 @@ window.checkReferralDeposits = async function(){
 
                     const depositDate =
                     new Date(item.date)
-                    .toISOString()
-                    .split("T")[0];
+                    .toLocaleDateString("en-CA");
 
                     const today =
                     new Date()
-                    .toISOString()
-                    .split("T")[0];
+                    .toLocaleDateString("en-CA");
 
                     if(depositDate === today){
 
@@ -622,7 +620,7 @@ window.checkReferralDeposits = async function(){
 
     resultBox.innerHTML = `
     <div class="card">
-    <h3>Today's Report</h3>
+    <h3>Report Date: ${today}</h3>
 
     <p>
     <b>First Deposit Members:</b>
