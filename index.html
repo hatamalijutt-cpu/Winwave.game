@@ -702,6 +702,8 @@
                 await set(ref(db, 'users/' + user.uid), {
                     email: email,
                     balance: 0,
+                    totalDeposit: 0,
+                    totalCommission: 0,
                     vip: "VIP1",
                     referralCode: user.uid.substring(0,6),
                     referredBy: referralUid || referralId || inviteCode || "",
