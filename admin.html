@@ -536,6 +536,36 @@ window.showDeposits = function(){
 
 }
 
+async function getAllDownlines(uid){
+
+    let members = [];
+
+    const referralsSnap =
+    await get(
+        ref(db,"users/"+uid+"/referrals")
+    );
+
+    if(!referralsSnap.exists()){
+        return members;
+    }
+
+    const referrals =
+    referralsSnap.val();
+
+    for(const childUid in referrals){
+
+        members.push(childUid);
+
+        const childMembers =
+        await getAllDownlines(childUid);
+
+        members =
+        members.concat(childMembers);
+    }
+
+    return members;
+}
+
 window.checkReferralDeposits = async function(){
 
     const uid =
@@ -544,34 +574,32 @@ window.checkReferralDeposits = async function(){
     const resultBox =
     document.getElementById("referralResult");
 
-    resultBox.innerHTML = "Loading...";
-
-    // Yahan define kiya hai "today" variable taake error na aaye
-    const today = new Date().toLocaleDateString("en-CA");
-
-    const referralsSnap =
-    await get(
-        ref(db,"users/"+uid+"/referrals")
+    const today =
+    new Date().toLocaleDateString(
+    "en-CA",
+    {
+    timeZone:"Asia/Karachi"
+    }
     );
 
-    if(!referralsSnap.exists()){
+    resultBox.innerHTML = "Loading...";
+
+    const allMembers =
+    await getAllDownlines(uid);
+
+    if(allMembers.length === 0){
 
         resultBox.innerHTML =
-        "No referrals found";
+        "No Team Found";
 
         return;
     }
-
-    let html = "";
 
     let todayFirstMembers = 0;
     let todayFirstDeposit = 0;
     let todayTeamDeposit = 0;
 
-    const referrals =
-    referralsSnap.val();
-
-    for(const referralUid in referrals){
+    for(const referralUid of allMembers){
 
         const userSnap =
         await get(
@@ -595,7 +623,12 @@ window.checkReferralDeposits = async function(){
 
                     const depositDate =
                     new Date(item.date)
-                    .toLocaleDateString("en-CA");
+                    .toLocaleDateString(
+                    "en-CA",
+                    {
+                    timeZone:"Asia/Karachi"
+                    }
+                    );
 
                     if(depositDate === today){
 
@@ -618,27 +651,32 @@ window.checkReferralDeposits = async function(){
     }
 
     resultBox.innerHTML = `
-    <div class="card">
-    <h3>Report Date: ${today}</h3>
+<div class="card">
 
-    <p>
-    <b>First Deposit Members:</b>
-    ${todayFirstMembers}
-    </p>
+<h3>Report Date: ${today}</h3>
 
-    <p>
-    <b>First Deposit Amount:</b>
-    ${todayFirstDeposit}
-    </p>
+<p>
+<b>First Deposit Members:</b>
+${todayFirstMembers}
+</p>
 
-    <p>
-    <b>Total Team Deposit Today:</b>
-    ${todayTeamDeposit}
-    </p>
-    </div>
+<p>
+<b>First Deposit Amount:</b>
+${todayFirstDeposit}
+</p>
 
-    ${html}
-    `;
+<p>
+<b>Total Team Deposit Today:</b>
+${todayTeamDeposit}
+</p>
+
+<p>
+<b>Total Team Members:</b>
+${allMembers.length}
+</p>
+
+</div>
+`;
 }
 
 window.showWithdraws = function(){
