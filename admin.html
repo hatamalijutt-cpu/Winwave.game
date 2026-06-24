@@ -250,7 +250,7 @@ window.approveDeposit = async function(requestId){
         userData.referredBy
     ) {
 
-        const depositAmount = request.amount;
+        const depositAmount = Number(request.amount);
 
         const level1Commission = depositAmount * 0.10; // 10%
         console.log("=== COMMISSION DEBUG ===");
