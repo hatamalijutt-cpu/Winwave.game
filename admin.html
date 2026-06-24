@@ -561,8 +561,9 @@ window.checkReferralDeposits = async function(){
 
     let html = "";
 
-    let totalMembers = 0;
-    let totalDeposit = 0;
+    let todayFirstMembers = 0;
+    let todayFirstDeposit = 0;
+    let todayTeamDeposit = 0;
 
     const referrals =
     referralsSnap.val();
@@ -579,36 +580,65 @@ window.checkReferralDeposits = async function(){
             const user =
             userSnap.val();
 
-            const deposit =
-            Number(user.totalDeposit || 0);
+            const historySnap = await get(
+                ref(db,"depositHistory/"+referralUid)
+            );
 
-            if(deposit > 0){
+            if(historySnap.exists()){
 
-                totalMembers++;
+                historySnap.forEach((h)=>{
 
-                totalDeposit += deposit;
+                    const item = h.val();
 
-                html += `
-                <div class="card">
-                <p><b>UID:</b> ${referralUid}</p>
-                <p><b>Email:</b> ${user.email||"-"}</p>
-                <p><b>Total Deposit:</b> ${deposit}</p>
-                </div>
-                `;
+                    const depositDate =
+                    new Date(item.date)
+                    .toISOString()
+                    .split("T")[0];
+
+                    const today =
+                    new Date()
+                    .toISOString()
+                    .split("T")[0];
+
+                    if(depositDate === today){
+
+                        todayTeamDeposit +=
+                        Number(item.amount || 0);
+
+                        if(item.isFirstDeposit){
+
+                            todayFirstMembers++;
+
+                            todayFirstDeposit +=
+                            Number(item.amount || 0);
+                        }
+                    }
+
+                });
+
             }
         }
     }
 
     resultBox.innerHTML = `
-    <h4>
-    Members Deposited:
-    ${totalMembers}
-    </h4>
+    <div class="card">
+    <h3>Today's Report</h3>
 
-    <h4>
-    Total Deposit:
-    ${totalDeposit}
-    </h4>
+    <p>
+    <b>First Deposit Members:</b>
+    ${todayFirstMembers}
+    </p>
+
+    <p>
+    <b>First Deposit Amount:</b>
+    ${todayFirstDeposit}
+    </p>
+
+    <p>
+    <b>Total Team Deposit Today:</b>
+    ${todayTeamDeposit}
+    </p>
+    </div>
 
     ${html}
     `;
