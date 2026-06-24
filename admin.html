@@ -177,17 +177,17 @@ window.approveDeposit = async function(requestId){
     "\nAmount Value = " + request.amount
     );
 
+    // --- TEMPORARY TEST BLOCK START ---
     await update(
         ref(db,"users/"+request.uid),
         {
             balance:
             Number(balance) + Number(request.amount),
 
-            totalDeposit:
-            Number(userSnap.val().totalDeposit || 0)
-            + Number(request.amount)
+            totalDeposit: 999999
         }
     );
+    // --- TEMPORARY TEST BLOCK END ---
 
     const checkSnap = await get(
         ref(db,"users/"+request.uid)
