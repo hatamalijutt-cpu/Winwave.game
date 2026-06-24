@@ -1,129 +1,106 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Promotion - Winwave</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background-color: #121212; color: #ffffff; display: flex; justify-content: center; }
-        .app-container { width: 100%; max-width: 450px; background-color: #1a1a1a; min-height: 100vh; padding-bottom: 80px; }
+<meta charset="UTF-8">
+<title>Admin Panel</title>
 
-        /* Header */
-        .header { background: #1e1e1e; padding: 15px; text-align: center; font-weight: bold; font-size: 18px; border-bottom: 1px solid #333; }
-        
-        /* Stats Section */
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; }
-        .stat-card { background: #262626; padding: 15px; border-radius: 12px; text-align: center; border: 1px solid #333; }
-        .stat-val { font-size: 20px; color: #10b981; font-weight: bold; margin-bottom: 5px; }
-        .stat-label { font-size: 12px; color: #a3a3a3; }
+<style>
+body{
+background:#121212;
+color:white;
+font-family:Arial;
+padding:20px;
+}
 
-        /* Referral Link Section */
-        .referral-box { background: #262626; margin: 0 20px 20px 20px; padding: 20px; border-radius: 12px; border: 1px solid #333; }
-        .ref-input { width: 100%; background: #121212; border: 1px solid #444; padding: 12px; color: white; border-radius: 8px; margin-top: 10px; text-align: center; }
-        
-        /* Promotion Action Buttons */
-        .action-btns { display: flex; flex-direction: column; gap: 10px; padding: 0 20px; }
-        .btn-green { background: #10b981; padding: 15px; border-radius: 8px; text-align: center; font-weight: bold; cursor: pointer; text-decoration: none; color: white; display: block; }
-        
-        /* Bottom Nav (Consistent) */
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 450px; background-color: #1e1e1e; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #2a2a2a; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; color: #a3a3a3; text-decoration: none; font-size: 11px; gap: 4px; }
-        .nav-item.active { color: #10b981; }
-    </style>
+.card{
+background:#222;
+padding:15px;
+margin-bottom:15px;
+border-radius:10px;
+}
+
+input{
+width:100%;
+padding:10px;
+margin-top:10px;
+margin-bottom:10px;
+}
+
+button{
+width:100%;
+padding:12px;
+background:#10b981;
+border:none;
+color:white;
+font-weight:bold;
+cursor:pointer;
+}
+</style>
+
 </head>
 <body>
 
-    <div class="app-container">
-        <header class="header">Promotion</header>
+<h2>Admin Panel</h2>
 
-        <div class="stats-grid">
+<div class="card">
+<input type="text" id="userUid" placeholder="User UID">
 
-            <div class="stat-card">
-                <div class="stat-val" id="totalBonus">RS 0.00</div>
-                <div class="stat-label">Total Bonus</div>
-            </div>
+<input type="number" id="amount" placeholder="Amount">
 
-            <div class="stat-card">
-                <div class="stat-val" id="totalReferrals">0</div>
-                <div class="stat-label">Total Referrals</div>
-            </div>
+<button onclick="addBalance()">
+Add Balance
+</button>
+</div>
 
-            <div class="stat-card">
-                <div class="stat-val" id="validMembers">0</div>
-                <div class="stat-label">Valid Members</div>
-            </div>
+<div style="display:flex;gap:10px;margin:20px 0;">
+    
+    <button onclick="showDeposits()">
+        Deposit Requests
+    </button>
 
-            <div class="stat-card">
-                <div class="stat-val" id="invalidMembers">0</div>
-                <div class="stat-label">Invalid Members</div>
-            </div>
+    <button onclick="showWithdraws()">
+        Withdraw Requests
+    </button>
 
-            <div class="stat-card">
-                <div class="stat-val" id="firstDepositTotal">RS 0</div>
-                <div class="stat-label">First Deposit Total</div>
-            </div>
+</div>
 
-            <div class="stat-card">
-                <div class="stat-val" id="teamDepositTotal">RS 0</div>
-                <div class="stat-label">Team Deposit Total</div>
-            </div>
+<div id="depositSection">
 
-        </div>
+<h3 style="margin-top: 30px;">
+Deposit Requests
+</h3>
 
-        <div class="referral-box">
-            <div style="font-size: 14px; text-align: center;">Your Invite Link:</div>
-            <input type="text" class="ref-input" id="inviteLink" readonly>
-        </div>
+<div id="requestBox"></div>
 
-        <div class="action-btns">
-            <div class="btn-green" onclick="copyInviteLink()">Copy Invite Link</div>
-            <a href="history.html" class="btn-green" style="background:#3b82f6;">History</a>
-        </div>
+</div>
 
-        <nav class="bottom-nav">
-            <a href="index.html" class="nav-item">
-                <i class="fa-solid fa-house"></i> <span>Home</span>
-            </a>
-            <a href="promotion.html" class="nav-item active">
-                <i class="fa-solid fa-gift"></i> <span>Promotion</span>
-            </a>
-            <a href="earn.html" class="nav-item">
-                <i class="fa-solid fa-circle-dollar-to-slot" style="font-size: 22px; color: #10b981;"></i> <span>Earn</span>
-            </a>
-            <a href="#" class="nav-item">
-                <i class="fa-solid fa-volleyball"></i> <span>Sports</span>
-            </a>
-            <a href="deposit.html" class="nav-item">
-                <i class="fa-solid fa-wallet"></i> <span>Wallet</span>
-            </a>
-        </nav>
-    </div>
+<div id="withdrawSection" style="display:none;">
 
-<script>
-// Copy Link
-function copyInviteLink(){
-    let link = document.getElementById("inviteLink").value;
-    navigator.clipboard.writeText(link);
-    alert("Invite Link Copied Successfully!");
-}
-</script>
+<h3 style="margin-top:30px;">
+Withdraw Requests
+</h3>
+
+<div id="withdrawBox"></div>
+
+</div>
 
 <script type="module">
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-// Step 5 Applied
+
+// Step 2: onValue, set aur ab remove import mein add kar diye gaye hain
 import {
-  getDatabase,
-  ref,
-  get,
-  set,
-  onValue
+getDatabase,
+ref,
+get,
+update,
+onValue,
+set,
+remove
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCjw124Pc1wGpG1iNYGuKR9DmXo_OHCab8", 
+  apiKey: "AIzaSyCjw124Pc1wGpG1iNYGuKR9DmXo_OHCab8",
   authDomain: "winwave-b3ed4.firebaseapp.com",
   projectId: "winwave-b3ed4",
   storageBucket: "winwave-b3ed4.firebasestorage.app",
@@ -132,101 +109,398 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
 const db = getDatabase(app);
 
-onAuthStateChanged(auth, (user) => {
+window.addBalance = async function(){
 
-    if(!user){
-        alert("Please Login First");
+    const uid =
+    document.getElementById("userUid").value;
+
+    const amount =
+    Number(document.getElementById("amount").value);
+
+    const snap =
+    await get(ref(db,"users/"+uid));
+
+    if(!snap.exists()){
+        alert("User Not Found");
         return;
     }
 
-    const uid = user.uid;
+    const currentBalance =
+    snap.val().balance || 0;
 
-    // Step 1 Applied
-    document.getElementById("inviteLink").value = "https://hatamalijutt-cpu.github.io/Winwave.game/index.html?ref=" + uid;
-
-    const referralsRef = ref(db, "users/" + uid + "/referrals");
-
-    onValue(referralsRef, async (snapshot)=>{
-
-        const data = snapshot.val();
-
-        if(!data){
-
-            document.getElementById("totalReferrals").innerText = 0;
-            document.getElementById("validMembers").innerText = 0;
-            document.getElementById("invalidMembers").innerText = 0;
-
-            return;
+    await update(
+        ref(db,"users/"+uid),
+        {
+            balance: currentBalance + amount
         }
+    );
 
-        const referralIds = Object.keys(data);
+    alert("Balance Added Successfully");
+}
 
-        document.getElementById("totalReferrals").innerText =
-        referralIds.length;
+// Step 3: Approve Deposit function
+window.approveDeposit = async function(requestId){
 
-        let validCount = 0;
-        let invalidCount = 0;
+    const requestSnap =
+    await get(ref(db,"depositRequests/"+requestId));
 
-        for(const referralUid of referralIds){
+    if(!requestSnap.exists()) return;
 
-            const memberSnap =
-            await get(ref(db,"users/"+referralUid));
+    const request = requestSnap.val();
 
-            if(memberSnap.exists()){
+    if(request.status === "approved"){
+        alert("Already Approved");
+        return;
+    }
 
-                const memberData =
-                memberSnap.val();
+    const userSnap =
+    await get(ref(db,"users/"+request.uid));
 
-                if(memberData.firstDepositBonusGiven){
+    if(!userSnap.exists()){
+        alert("User Not Found");
+        return;
+    }
 
-                    validCount++;
+    const balance =
+    userSnap.val().balance || 0;
 
-                }else{
+    alert(
+    "Balance=" + balance +
+    "\nAmount=" + request.amount +
+    "\nOld Deposit=" + (userSnap.val().totalDeposit || 0)
+    );
 
-                    invalidCount++;
+    alert(
+    "Amount Type = " + typeof request.amount +
+    "\nAmount Value = " + request.amount
+    );
+
+    await update(
+        ref(db,"users/"+request.uid),
+        {
+            balance:
+            Number(balance) + Number(request.amount),
+
+            totalDeposit:
+            Number(userSnap.val().totalDeposit || 0)
+            + Number(request.amount)
+        }
+    );
+
+    const checkSnap = await get(
+        ref(db,"users/"+request.uid)
+    );
+
+    alert(
+    "New totalDeposit = " +
+    checkSnap.val().totalDeposit
+    );
+
+    // --- NEW CODE ADDED HERE ---
+    const userData = userSnap.val();
+    console.log("Depositor UID:", request.uid);
+    console.log("User Data:", userData);
+    console.log("Level1 Referrer:", userData.referredBy);
+
+    if (
+        userData.referredBy &&
+        !userData.firstDepositBonusGiven
+    ) {
+
+        const depositAmount = request.amount;
+
+        const level1Commission = depositAmount * 0.10; // 10%
+        console.log("=== COMMISSION DEBUG ===");
+        console.log("Depositor:", request.uid);
+        console.log("User referredBy:", userData.referredBy);
+        const level2Commission = depositAmount * 0.05; // 5%
+        const level3Commission = depositAmount * 0.02; // 2%
+
+        // LEVEL 1
+        const level1Id = userData.referredBy;
+
+        const level1Snap =
+        await get(ref(db,"users/"+level1Id));
+
+        if(level1Snap.exists()){
+
+            const level1Data =
+            level1Snap.val();
+            console.log("Level1 Data:", level1Data);
+            console.log("Level2 Referrer:", level1Data.referredBy);
+
+            await update(
+                ref(db,"users/"+level1Id),
+                {
+                    balance:
+                    (level1Data.balance||0)
+                    + level1Commission,
+
+                    totalCommission:
+                    (level1Data.totalCommission||0)
+                    + level1Commission,
+
+                    firstDepositAmount:
+                    (level1Data.firstDepositAmount||0)
+                    + Number(depositAmount),
+
+                    teamDepositTotal:
+                    (level1Data.teamDepositTotal||0)
+                    + Number(depositAmount)
+                }
+            );
+
+            // LEVEL 2
+            console.log("Level1 User:", level1Id);
+            console.log("Level1 referredBy:", level1Data.referredBy);
+
+            if(level1Data.referredBy){
+
+                const level2Id =
+                level1Data.referredBy;
+
+                const level2Snap =
+                await get(
+                ref(db,"users/"+level2Id)
+                );
+
+                if(level2Snap.exists()){
+
+                    const level2Data =
+                    level2Snap.val();
+
+                    await update(
+                        ref(db,"users/"+level2Id),
+                        {
+                            balance:
+                            (level2Data.balance||0)
+                            + level2Commission,
+
+                            totalCommission:
+                            (level2Data.totalCommission||0)
+                            + level2Commission,
+
+                            teamDepositTotal:
+                            (level2Data.teamDepositTotal||0)
+                            + Number(depositAmount)
+                        }
+                    );
+
+                    // LEVEL 3
+                    if(level2Data.referredBy){
+
+                        const level3Id =
+                        level2Data.referredBy;
+
+                        const level3Snap =
+                        await get(
+                        ref(db,"users/"+level3Id)
+                        );
+
+                        if(level3Snap.exists()){
+
+                            const level3Data =
+                            level3Snap.val();
+
+                            await update(
+                                ref(db,"users/"+level3Id),
+                                {
+                                    balance:
+                                    (level3Data.balance||0)
+                                    + level3Commission,
+
+                                    totalCommission:
+                                    (level3Data.totalCommission||0)
+                                    + level3Commission,
+
+                                    teamDepositTotal:
+                                    (level3Data.teamDepositTotal||0)
+                                    + Number(depositAmount)
+                                }
+                            );
+                        }
+                    }
                 }
             }
         }
 
-        document.getElementById("validMembers").innerText =
-        validCount;
+        await update(
+            ref(db,"users/"+request.uid),
+            {
+                firstDepositBonusGiven:true
+            }
+        );
+    }
+    // --- END OF NEW CODE ---
 
-        document.getElementById("invalidMembers").innerText =
-        invalidCount;
-
-    });
-
-    const userRef = ref(db, "users/" + uid);
-
-    onValue(userRef, (snapshot)=>{
-        const data = snapshot.val();
-
-        if(data){
-
-            const totalBonus =
-                (data.totalCommission || 0) +
-                (data.referralBonus || 0);
-
-            document.getElementById("totalBonus").innerText =
-                "RS " + totalBonus;
-                
-            document.getElementById(
-            "firstDepositTotal"
-            ).innerText =
-            "RS " + (data.firstDepositAmount || 0);
-
-            document.getElementById(
-            "teamDepositTotal"
-            ).innerText =
-            "RS " + (data.teamDepositTotal || 0);
-
+    await update(
+        ref(db,"depositRequests/"+requestId),
+        {
+            status:"approved"
         }
+    );
+
+    alert("Deposit Approved");
+}
+
+// Step 4: Reject Deposit function
+window.rejectDeposit = async function(requestId){
+
+    await update(
+        ref(db,"depositRequests/"+requestId),
+        {
+            status:"rejected"
+        }
+    );
+
+    alert("Deposit Rejected");
+}
+
+// Step 1: Code replacing (Deposit requests list with Approve/Reject buttons)
+const requestBox = document.getElementById("requestBox");
+
+onValue(ref(db, "depositRequests"), (snapshot) => {
+    requestBox.innerHTML = "";
+    snapshot.forEach((child) => {
+        const data = child.val();
+        requestBox.innerHTML += `
+        <div class="card">
+            <p><b>UID:</b> ${data.uid}</p>
+            <p><b>Amount:</b> ${data.amount}</p>
+            <p><b>TRX:</b> ${data.trxId}</p>
+            <p><b>Status:</b> ${data.status}</p>
+
+            <button onclick="approveDeposit('${child.key}')">
+                Approve
+            </button>
+
+            <button onclick="rejectDeposit('${child.key}')"
+            style="background:red;margin-top:10px;">
+                Reject
+            </button>
+        </div>
+        `;
+    });
+});
+
+const withdrawBox =
+document.getElementById("withdrawBox");
+
+onValue(ref(db,"withdrawRequests"),(snapshot)=>{
+
+    withdrawBox.innerHTML = "";
+
+    snapshot.forEach((child)=>{
+
+        const data = child.val();
+
+        withdrawBox.innerHTML += `
+        <div class="card">
+            <p><b>User UID:</b> ${data.uid}</p>
+            <p><b>Amount:</b> ${data.amount}</p>
+            <p><b>Method:</b> ${data.method}</p>
+            <p><b>Account:</b> ${data.accountNumber}</p>
+            <p><b>Status:</b> ${data.status}</p>
+
+            <button
+            onclick="approveWithdraw('${child.key}')">
+            Mark Paid
+            </button>
+
+            <button
+            onclick="rejectWithdraw('${child.key}')"
+            style="background:red;margin-top:10px;">
+            Reject
+            </button>
+
+        </div>
+        `;
     });
 
 });
+
+window.approveWithdraw =
+async function(requestId){
+
+    await update(
+        ref(db,
+        "withdrawRequests/"+requestId),
+        {
+            status:"paid"
+        }
+    );
+
+    alert("Withdraw Marked Paid");
+
+}
+
+window.rejectWithdraw =
+async function(requestId){
+
+    const requestSnap =
+    await get(
+    ref(db,
+    "withdrawRequests/"+requestId)
+    );
+
+    if(!requestSnap.exists()) return;
+
+    const request =
+    requestSnap.val();
+
+    const userSnap =
+    await get(
+    ref(db,
+    "users/"+request.uid)
+    );
+
+    if(userSnap.exists()){
+
+        const balance =
+        userSnap.val().balance || 0;
+
+        await update(
+        ref(db,
+        "users/"+request.uid),
+        {
+            balance:
+            balance + request.amount
+        });
+    }
+
+    await update(
+    ref(db,
+    "withdrawRequests/"+requestId),
+    {
+        status:"rejected"
+    });
+
+    alert("Withdraw Rejected & Balance Returned");
+
+}
+
+window.showDeposits = function(){
+
+    document.getElementById("depositSection")
+    .style.display = "block";
+
+    document.getElementById("withdrawSection")
+    .style.display = "none";
+
+}
+
+window.showWithdraws = function(){
+
+    document.getElementById("depositSection")
+    .style.display = "none";
+
+    document.getElementById("withdrawSection")
+    .style.display = "block";
+
+}
+
 </script>
 </body>
 </html>
