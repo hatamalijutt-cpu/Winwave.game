@@ -564,17 +564,17 @@
                         <label>Phone Number / Username</label>
                         <div class="input-wrapper">
                             <i class="fa-solid fa-user"></i>
-                            <input type="text" placeholder="Enter your username or phone">
+                            <input type="text" id="loginEmail" placeholder="Enter your email">
                         </div>
                     </div>
                     <div class="form-group">
                         <label>Password</label>
                         <div class="input-wrapper">
                             <i class="fa-solid fa-lock"></i>
-                            <input type="password" placeholder="Enter your password">
+                            <input type="password" id="loginPassword" placeholder="Enter your password">
                         </div>
                     </div>
-                    <button class="submit-btn" onclick="handleAuthSuccess()">LOG IN</button>
+                    <button class="submit-btn" onclick="loginUser()">LOG IN</button>
                     <div class="switch-prompt">Don't have an account? <span onclick="switchTab('register')">Register</span></div>
                 </div>
 
@@ -786,6 +786,7 @@
                     }
                 }
 
+                localStorage.setItem("uid", user.uid);
                 alert("Account Successfully Created!");
 
                 closeAuthModal();
@@ -795,6 +796,42 @@
 
             } catch (error) {
                 alert(error.message);
+            }
+        }
+
+        async function loginUser() {
+
+            const email =
+            document.getElementById("loginEmail").value;
+
+            const password =
+            document.getElementById("loginPassword").value;
+
+            try {
+
+                const userCredential =
+                await signInWithEmailAndPassword(
+                    auth,
+                    email,
+                    password
+                );
+
+                const user =
+                userCredential.user;
+
+                localStorage.setItem(
+                    "uid",
+                    user.uid
+                );
+
+                alert("Login Successful");
+
+                closeAuthModal();
+
+            } catch(error) {
+
+                alert(error.message);
+
             }
         }
     </script>
