@@ -697,6 +697,11 @@
                     document.getElementById("liveProfit1").innerText =
                         "RS " + liveAmount1.toFixed(0);
                 }
+                if (betBox2.state === "active") {
+                    let liveAmount2 = betBox2.amount * liveMultiplierVal;
+                    document.getElementById("liveProfit2").innerText =
+                        "RS " + liveAmount2.toFixed(0);
+                }
 
                 let factor = (liveMultiplierVal - 1) / (crashPointTargetVal - 1 || 1);
                 if (factor > 1) factor = 1;
