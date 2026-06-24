@@ -172,6 +172,11 @@ window.approveDeposit = async function(requestId){
     "\nOld Deposit=" + (userSnap.val().totalDeposit || 0)
     );
 
+    alert(
+    "Amount Type = " + typeof request.amount +
+    "\nAmount Value = " + request.amount
+    );
+
     await update(
         ref(db,"users/"+request.uid),
         {
