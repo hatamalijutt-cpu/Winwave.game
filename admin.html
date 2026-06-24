@@ -105,7 +105,6 @@ Withdraw Requests
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 
-// Step 2: onValue, set aur ab remove import mein add kar diye gaye hain
 import {
 getDatabase,
 ref,
@@ -172,19 +171,23 @@ window.approveDeposit = async function(requestId){
         return;
     }
 
+    // --- Step 1 Ki Tabdeeli ---
     const userSnap =
     await get(ref(db,"users/"+request.uid));
-
-    const userData = userSnap.val();
-    const depositCount =
-    userData.depositCount || 0;
-    const isFirstDeposit =
-    depositCount === 0;
 
     if(!userSnap.exists()){
         alert("User Not Found");
         return;
     }
+
+    const userData = userSnap.val();
+
+    const depositCount =
+    userData.depositCount || 0;
+
+    const isFirstDeposit =
+    depositCount === 0;
+    // --------------------------
 
     const balance =
     userSnap.val().balance || 0;
@@ -240,10 +243,14 @@ window.approveDeposit = async function(requestId){
     );
 
     // --- NEW CODE ADDED HERE ---
-    const userData = userSnap.val();
+    // Step 2: Line delete kar di 'const userData = userSnap.val();'
     console.log("Depositor UID:", request.uid);
     console.log("User Data:", userData);
     console.log("Level1 Referrer:", userData.referredBy);
+
+    // Step 3: if condition se pehle variable add kiya
+    const isFirstDepositBonus =
+    !userData.firstDepositBonusGiven;
 
     if (
         userData.referredBy
@@ -282,10 +289,11 @@ window.approveDeposit = async function(requestId){
                     (level1Data.totalCommission||0)
                     + level1Commission,
 
+                    // Step 4: isFirstDepositBonus replace kiya yahan
                     firstDepositAmount:
                     (level1Data.firstDepositAmount||0) +
                     (
-                     !userData.firstDepositBonusGiven
+                     isFirstDepositBonus
                      ? Number(depositAmount)
                      : 0
                     ),
@@ -402,7 +410,6 @@ window.rejectDeposit = async function(requestId){
     alert("Deposit Rejected");
 }
 
-// Step 1: Code replacing (Deposit requests list with Approve/Reject buttons)
 const requestBox = document.getElementById("requestBox");
 
 onValue(ref(db, "depositRequests"), (snapshot) => {
