@@ -213,60 +213,16 @@ onAuthStateChanged(auth, (user) => {
             document.getElementById("totalBonus").innerText =
                 "RS " + totalBonus;
                 
-            let firstDepositTotal = 0;
-            let teamDepositTotal = 0;
+            document.getElementById(
+            "firstDepositTotal"
+            ).innerText =
+            "RS " + (data.firstDepositAmount || 0);
 
-            if(data.referrals){
+            document.getElementById(
+            "teamDepositTotal"
+            ).innerText =
+            "RS " + (data.teamDepositTotal || 0);
 
-                Object.keys(data.referrals).forEach(refUid=>{
-
-                    get(ref(db,"users/"+refUid))
-                    .then(snap=>{
-
-                        if(snap.exists()){
-
-                            const refUser = snap.val();
-
-                            if(refUser.totalDeposit){
-
-                                firstDepositTotal +=
-                                Number(refUser.totalDeposit);
-
-                                document.getElementById(
-                                "firstDepositTotal"
-                                ).innerText =
-                                "RS " + firstDepositTotal;
-                            }
-                        }
-                    });
-
-                });
-
-            }
-
-            get(ref(db,"users"))
-            .then(allUsers=>{
-
-                if(!allUsers.exists()) return;
-
-                allUsers.forEach(child=>{
-
-                    const member = child.val();
-
-                    if(member.totalDeposit){
-
-                        teamDepositTotal +=
-                        Number(member.totalDeposit);
-                    }
-
-                });
-
-                document.getElementById(
-                "teamDepositTotal"
-                ).innerText =
-                "RS " + teamDepositTotal;
-
-            });
         }
     });
 
