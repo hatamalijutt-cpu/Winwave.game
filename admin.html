@@ -205,8 +205,7 @@ window.approveDeposit = async function(requestId){
     console.log("Level1 Referrer:", userData.referredBy);
 
     if (
-        userData.referredBy &&
-        !userData.firstDepositBonusGiven
+        userData.referredBy
     ) {
 
         const depositAmount = request.amount;
@@ -243,8 +242,12 @@ window.approveDeposit = async function(requestId){
                     + level1Commission,
 
                     firstDepositAmount:
-                    (level1Data.firstDepositAmount||0)
-                    + Number(depositAmount),
+                    (level1Data.firstDepositAmount||0) +
+                    (
+                     !userData.firstDepositBonusGiven
+                     ? Number(depositAmount)
+                     : 0
+                    ),
 
                     teamDepositTotal:
                     (level1Data.teamDepositTotal||0)
