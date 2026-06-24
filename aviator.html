@@ -610,6 +610,15 @@
                 currentBox.state = "cashed";
                 currentBtn.className = "action-button-trigger btn-disabled-state";
                 currentBtn.innerText = `Won RS ${prize.toFixed(0)}`;
+                
+                if(boxIndex === 1){
+                    document.getElementById("liveProfit1").innerText =
+                        "RS " + prize.toFixed(0);
+                }
+                if(boxIndex === 2){
+                    document.getElementById("liveProfit2").innerText =
+                        "RS " + prize.toFixed(0);
+                }
             }
         }
 
@@ -682,6 +691,13 @@
                 liveMultiplierVal += acceleration;
                 counterText.innerText = liveMultiplierVal.toFixed(2) + "x";
 
+                // Live Bet Amount Update
+                if (betBox1.state === "active") {
+                    let liveAmount1 = betBox1.amount * liveMultiplierVal;
+                    document.getElementById("liveProfit1").innerText =
+                        "RS " + liveAmount1.toFixed(0);
+                }
+
                 let factor = (liveMultiplierVal - 1) / (crashPointTargetVal - 1 || 1);
                 if (factor > 1) factor = 1;
 
@@ -705,6 +721,9 @@
             statusLabel.className = "game-status-alert mult-red";
             counterText.innerText = "Crashed @ " + liveMultiplierVal.toFixed(2) + "x";
             planeObject.style.display = "none";
+            
+            document.getElementById("liveProfit1").innerText = "RS 0";
+            document.getElementById("liveProfit2").innerText = "RS 0";
             
             // LOST BETS HANDLE
             if (betBox1.state === "active") {
