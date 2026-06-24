@@ -177,6 +177,9 @@ window.approveDeposit = async function(requestId){
     "\nAmount Value = " + request.amount
     );
 
+    const isFirstDeposit =
+    (userSnap.val().totalDeposit || 0) == 0;
+
     await update(
         ref(db,"users/"+request.uid),
         {
@@ -185,7 +188,12 @@ window.approveDeposit = async function(requestId){
 
             totalDeposit:
             Number(userSnap.val().totalDeposit || 0)
-            + Number(request.amount)
+            + Number(request.amount),
+
+            firstDepositAmount:
+            isFirstDeposit
+            ? Number(request.amount)
+            : Number(userSnap.val().firstDepositAmount || 0)
         }
     );
 
@@ -240,7 +248,11 @@ window.approveDeposit = async function(requestId){
 
                     totalCommission:
                     (level1Data.totalCommission||0)
-                    + level1Commission
+                    + level1Commission,
+
+                    teamDepositTotal:
+                    (level1Data.teamDepositTotal||0)
+                    + Number(request.amount)
                 }
             );
 
@@ -272,7 +284,11 @@ window.approveDeposit = async function(requestId){
 
                             totalCommission:
                             (level2Data.totalCommission||0)
-                            + level2Commission
+                            + level2Commission,
+
+                            teamDepositTotal:
+                            (level2Data.teamDepositTotal||0)
+                            + Number(request.amount)
                         }
                     );
 
@@ -301,7 +317,11 @@ window.approveDeposit = async function(requestId){
 
                                     totalCommission:
                                     (level3Data.totalCommission||0)
-                                    + level3Commission
+                                    + level3Commission,
+
+                                    teamDepositTotal:
+                                    (level3Data.teamDepositTotal||0)
+                                    + Number(request.amount)
                                 }
                             );
                         }
