@@ -355,7 +355,7 @@
         </div>
         <div class="graph-display-arena">
             <svg class="graph-svg">
-                <path id="graphPath" class="flight-path" d="M 10,170 Q 140,160 380,25 L 420 25" />
+                <path id="graphPath" class="flight-path" d="M 10,170" />
             </svg>
             <div class="aviator-plane" id="planeObject">
                 <i class="fa-solid fa-plane"></i>
@@ -436,6 +436,7 @@
         let logsGenerationTimerRef = null;
         let crashPointTargetVal = 0;
         const maxPathStrokeOffset = 600;
+        let graphPoints = "M 10,170";
         let betBox1 = { amount: 100, state: "idle" }; 
         let betBox2 = { amount: 100, state: "idle" };
         const counterText = document.getElementById('multiplierLiveCounter');
@@ -560,6 +561,10 @@
             planeObject.style.bottom = "15px";
             planeObject.style.left = "15px";
             svgPathStroke.style.strokeDashoffset = maxPathStrokeOffset;
+            
+            graphPoints = "M 10,170";
+            svgPathStroke.setAttribute("d", graphPoints);
+            
             resetBetButtonsForNextRound(btn1, betBox1);
             resetBetButtonsForNextRound(btn2, betBox2);
             gameLoopTimerRef = setInterval(() => {
@@ -584,6 +589,9 @@
             }
         }
         function launchFlightSimulationEngine() {
+            graphPoints = "M 10,170";
+            svgPathStroke.setAttribute("d", graphPoints);
+            
             if (betBox1.state === "booked") {
                 betBox1.state = "active";
                 btn1.innerText = "Cash Out";
@@ -636,7 +644,11 @@
                 let y = 15 + (Math.pow(factor, 1.4) * 120);
                 planeObject.style.left = x + "px";
                 planeObject.style.bottom = y + "px";
-                svgPathStroke.style.strokeDashoffset = maxPathStrokeOffset - (factor * maxPathStrokeOffset);
+                
+                let drawY = 170 - y;
+                graphPoints += ` L ${x},${drawY}`;
+                svgPathStroke.setAttribute("d", graphPoints);
+                
                 if (liveMultiplierVal >= crashPointTargetVal) {
                     triggerCrashOutcome();
                 }
