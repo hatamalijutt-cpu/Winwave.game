@@ -12,7 +12,6 @@
             box-sizing: border-box;
             font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         }
-
         body {
             background-color: #0f0f10;
             color: #ffffff;
@@ -21,7 +20,6 @@
             align-items: center;
             min-height: 100vh;
         }
-
         /* Mobile Container (Dashboard Matching) */
         .app-container {
             width: 100%;
@@ -34,7 +32,6 @@
             border: 1px solid #272a31;
             overflow-x: hidden;
         }
-
         /* Game Top Header */
         .game-header {
             display: flex;
@@ -44,14 +41,12 @@
             background-color: #1b1c21;
             border-bottom: 1px solid #272a31;
         }
-
         .back-btn {
             color: #94a3b8;
             font-size: 16px;
             cursor: pointer;
             text-decoration: none;
         }
-
         .game-title {
             font-size: 15px;
             font-weight: 800;
@@ -62,7 +57,6 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-
         .balance-box {
             background-color: #101114;
             padding: 4px 12px;
@@ -72,7 +66,6 @@
             color: #22c55e;
             border: 1px solid #272a31;
         }
-
         /* Previous History Ribbon with Three Dots (...) */
         .history-section {
             display: flex;
@@ -83,7 +76,6 @@
             border-bottom: 1px solid #272a31;
             position: relative;
         }
-
         .history-ribbon {
             display: flex;
             gap: 5px;
@@ -91,7 +83,6 @@
             white-space: nowrap;
             width: 85%;
         }
-
         .history-badge {
             font-size: 10px;
             font-weight: 700;
@@ -101,7 +92,6 @@
         .mult-blue { color: #3b82f6; background: rgba(59, 130, 246, 0.15); }
         .mult-purple { color: #a855f7; background: rgba(168, 85, 247, 0.15); }
         .mult-red { color: #ef4444; background: rgba(239, 68, 68, 0.15); }
-
         .three-dots-btn {
             background: none;
             border: none;
@@ -110,7 +100,6 @@
             font-size: 14px;
             padding: 4px 8px;
         }
-
         /* History Dropdown Modal */
         .history-dropdown {
             display: none;
@@ -125,7 +114,6 @@
             padding: 10px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.5);
         }
-
         .history-dropdown h4 {
             font-size: 12px;
             color: #94a3b8;
@@ -133,7 +121,6 @@
             border-bottom: 1px solid #272a31;
             padding-bottom: 4px;
         }
-
         .grid-history {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -141,7 +128,6 @@
             max-height: 150px;
             overflow-y: auto;
         }
-
         /* Main Live Graph Screen View */
         .graph-display-arena {
             background-color: #0a0b0d;
@@ -155,7 +141,6 @@
             justify-content: center;
             align-items: center;
         }
-
         /* SVG Line Trail */
         .graph-svg {
             position: absolute;
@@ -165,7 +150,6 @@
             height: 100%;
             z-index: 1;
         }
-
         .flight-path {
             fill: none;
             stroke: #cb0e33;
@@ -173,7 +157,6 @@
             stroke-dasharray: 600;
             stroke-dashoffset: 600;
         }
-
         /* Plane Engine View */
         .aviator-plane {
             position: absolute;
@@ -187,19 +170,16 @@
             display: none;
             transform: rotate(-15deg);
         }
-
         /* Main Screen Displays Text */
         .live-counter-box {
             text-align: center;
             z-index: 3;
         }
-
         .live-multiplier {
             font-size: 38px;
             font-weight: 900;
             color: #fff;
         }
-
         .game-status-alert {
             font-size: 12px;
             color: #94a3b8;
@@ -208,12 +188,10 @@
             text-transform: uppercase;
             letter-spacing: 1px;
         }
-
         .countdown-timer-text {
             color: #eab308 !important;
             font-size: 16px;
         }
-
         /* Double Bet Boxes Layout Matrix */
         .double-bet-wrapper {
             display: grid;
@@ -222,14 +200,12 @@
             padding: 0 10px;
             margin-bottom: 10px;
         }
-
         .bet-control-panel {
             background-color: #18191d;
             padding: 10px;
             border-radius: 8px;
             border: 1px solid #272a31;
         }
-
         .selector-row {
             display: flex;
             background: #0f0f10;
@@ -241,7 +217,6 @@
             padding: 0 5px;
             margin-bottom: 6px;
         }
-
         .adjust-btn {
             background: none;
             border: none;
@@ -251,7 +226,6 @@
             cursor: pointer;
             width: 20px;
         }
-
         .bet-input-field {
             width: 100%;
             background: none;
@@ -262,7 +236,6 @@
             font-weight: 700;
             outline: none;
         }
-
         .action-button-trigger {
             width: 100%;
             border: none;
@@ -273,11 +246,9 @@
             cursor: pointer;
             height: 38px;
         }
-
         .btn-bet-state { background-color: #22c55e; color: white; }
         .btn-cashout-state { background-color: #d97706; color: white; }
         .btn-disabled-state { background-color: #2d3139 !important; color: #64748b !important; cursor: not-allowed; }
-
         /* Dynamic Real-time Users Logs Section */
         .live-bets-section {
             flex-grow: 1;
@@ -285,7 +256,6 @@
             display: flex;
             flex-direction: column;
         }
-
         .bets-header {
             display: flex;
             justify-content: space-between;
@@ -298,7 +268,6 @@
             border-radius: 6px;
             border: 1px solid #272a31;
         }
-
         .live-dot {
             height: 7px;
             width: 7px;
@@ -307,7 +276,6 @@
             display: inline-block;
             margin-right: 4px;
         }
-
         .bets-log-container {
             background-color: #101114;
             border-radius: 6px;
@@ -315,7 +283,6 @@
             height: 160px;
             overflow-y: auto;
         }
-
         .bet-log-row {
             display: flex;
             justify-content: space-between;
@@ -324,21 +291,17 @@
             font-size: 11px;
             border-bottom: 1px solid #18191d;
         }
-
         .bet-log-user {
             color: #cbd5e1;
             display: flex;
             align-items: center;
             gap: 5px;
         }
-
         .bet-log-user i { color: #64748b; }
-
         .bet-log-amount {
             font-weight: 700;
             color: #cbd5e1;
         }
-
         .bet-log-multiplier {
             background-color: rgba(34, 197, 94, 0.12);
             color: #22c55e;
@@ -359,9 +322,7 @@
     </style>
 </head>
 <body>
-
     <div class="app-container">
-
         <div class="game-header">
             <a href="index.html" class="back-btn">
                 <i class="fa-solid fa-chevron-left"></i>
@@ -373,7 +334,6 @@
                 RS <span id="userBalanceText">0.00</span>
             </div>
         </div>
-
         <div class="history-section">
             <div class="history-ribbon" id="historyRibbonContainer">
                 <div class="history-badge mult-blue">1.20x</div>
@@ -387,29 +347,24 @@
             <button class="three-dots-btn" onclick="toggleHistoryDropdown()">
                 <i class="fa-solid fa-ellipsis-vertical"></i>
             </button>
-
             <div class="history-dropdown" id="historyDropdown">
                 <h4>Round History (Last 20)</h4>
                 <div class="grid-history" id="fullHistoryGrid">
                 </div>
             </div>
         </div>
-
         <div class="graph-display-arena">
             <svg class="graph-svg">
                 <path id="graphPath" class="flight-path" d="M 10,170 Q 140,160 380,25 L 420 25" />
             </svg>
-
             <div class="aviator-plane" id="planeObject">
                 <i class="fa-solid fa-plane"></i>
             </div>
-
             <div class="live-counter-box">
                 <div class="live-multiplier" id="multiplierLiveCounter">8.0s</div>
                 <div class="game-status-alert countdown-timer-text" id="gameStatusLabel">PLACE YOUR BETS</div>
             </div>
         </div>
-
         <div class="double-bet-wrapper">
             
             <div class="bet-control-panel">
@@ -421,7 +376,6 @@
                 <div id="liveProfit1" class="live-profit">RS 0</div>
                 <button class="action-button-trigger btn-bet-state" id="actionBtn1" onclick="handleBetClick(1)">Place Bet</button>
             </div>
-
             <div class="bet-control-panel">
                 <div class="selector-row">
                     <button class="adjust-btn" onclick="adjustBet(2, -50)">-</button>
@@ -431,9 +385,7 @@
                 <div id="liveProfit2" class="live-profit">RS 0</div>
                 <button class="action-button-trigger btn-bet-state" id="actionBtn2" onclick="handleBetClick(2)">Place Bet</button>
             </div>
-
         </div>
-
         <div class="live-bets-section">
             <div class="bets-header">
                 <span><span class="live-dot"></span> All Bets</span>
@@ -442,13 +394,10 @@
             <div class="bets-log-container" id="liveBetsLogContainer">
             </div>
         </div>
-
     </div>
-
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getDatabase, ref, get, update, runTransaction } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
-
         // 1. Firebase Config update
         const firebaseConfig = {
           apiKey: "AIzaSyCjw124Pc1wGpG1iNYGuKR9DmXo_OHCab8",
@@ -459,12 +408,9 @@
           messagingSenderId: "501831087781",
           appId: "1:501831087781:web:ea52d559bcb1429b9a3f4c"
         };
-
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-
         const currentUid = localStorage.getItem("uid");
-
         // 6. UID check aur DB structure reference
         if (!currentUid) {
             alert("No UID found! Please login first.");
@@ -481,7 +427,6 @@
           }
         }
         */
-
         // Game states tracking engine parameters
         let currentGameState = "countdown"; 
         let liveMultiplierVal = 1.00;
@@ -491,10 +436,8 @@
         let logsGenerationTimerRef = null;
         let crashPointTargetVal = 0;
         const maxPathStrokeOffset = 600;
-
         let betBox1 = { amount: 100, state: "idle" }; 
         let betBox2 = { amount: 100, state: "idle" };
-
         const counterText = document.getElementById('multiplierLiveCounter');
         const statusLabel = document.getElementById('gameStatusLabel');
         const planeObject = document.getElementById('planeObject');
@@ -502,19 +445,15 @@
         const userBalanceDOM = document.getElementById('userBalanceText');
         const liveMembersDOM = document.getElementById('liveMembersCounter');
         const logsContainerDOM = document.getElementById('liveBetsLogContainer');
-
         const btn1 = document.getElementById('actionBtn1');
         const btn2 = document.getElementById('actionBtn2');
-
         let pastRoundsArray = [1.50, 2.44, 1.05, 5.20, 1.80, 12.30, 1.15, 3.40, 2.10, 1.01, 8.50, 1.34, 4.12, 1.95, 24.50];
-
         document.addEventListener("DOMContentLoaded", function() {
             loadWalletBalance();
             renderDropdownHistoryGrid();
             startCountdownTimerSequence();
             startLiveLogsSimulations();
         });
-
         async function loadWalletBalance(){
             if(!currentUid) return;
             const snap = await get(ref(db,"users/"+currentUid));
@@ -522,12 +461,10 @@
             userCurrentBalanceVal = snap.val().balance || 0;
             userBalanceDOM.innerText = userCurrentBalanceVal.toFixed(2);
         }
-
         window.toggleHistoryDropdown = function() {
             const dropdown = document.getElementById('historyDropdown');
             dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
         }
-
         function renderDropdownHistoryGrid() {
             const grid = document.getElementById('fullHistoryGrid');
             grid.innerHTML = "";
@@ -540,7 +477,6 @@
                 grid.appendChild(node);
             });
         }
-
         window.adjustBet = function(boxIndex, offset) {
             let currentBox = boxIndex === 1 ? betBox1 : betBox2;
             let field = document.getElementById(`betAmountField${boxIndex}`);
@@ -554,17 +490,13 @@
             }
             field.value = currentBox.amount;
         }
-
         window.handleBetClick = function(boxIndex) {
-
             if(!currentUid){
                 alert("Please Login First");
                 return;
             }
-
             let currentBox = boxIndex === 1 ? betBox1 : betBox2;
             let currentBtn = boxIndex === 1 ? btn1 : btn2;
-
             if (currentGameState === "countdown" && currentBox.state === "idle") {
                 if (userCurrentBalanceVal >= currentBox.amount) {
                     // 3. Bet lagate waqt Firebase update karo
@@ -573,7 +505,6 @@
                         balance: userCurrentBalanceVal
                     });
                     userBalanceDOM.innerText = userCurrentBalanceVal.toFixed(2);
-
                     currentBox.state = "booked";
                     currentBtn.className = "action-button-trigger btn-cashout-state";
                     currentBtn.innerText = "BET PLACED";
@@ -594,7 +525,6 @@
                     balance: userCurrentBalanceVal
                 });
                 userBalanceDOM.innerText = userCurrentBalanceVal.toFixed(2);
-
                 currentBox.state = "idle";
                 currentBtn.className = "action-button-trigger btn-bet-state";
                 currentBtn.innerText = "Place Bet";
@@ -606,7 +536,6 @@
                     balance: userCurrentBalanceVal
                 });
                 userBalanceDOM.innerText = userCurrentBalanceVal.toFixed(2);
-
                 currentBox.state = "cashed";
                 currentBtn.className = "action-button-trigger btn-disabled-state";
                 currentBtn.innerText = `Won RS ${prize.toFixed(0)}`;
@@ -621,22 +550,18 @@
                 }
             }
         }
-
         function startCountdownTimerSequence() {
             currentGameState = "countdown";
             countdownTimeLeft = 8.0;
             liveMultiplierVal = 1.00;
-
             statusLabel.innerText = "PLACE YOUR BETS";
             statusLabel.className = "game-status-alert countdown-timer-text";
             planeObject.style.display = "none";
             planeObject.style.bottom = "15px";
             planeObject.style.left = "15px";
             svgPathStroke.style.strokeDashoffset = maxPathStrokeOffset;
-
             resetBetButtonsForNextRound(btn1, betBox1);
             resetBetButtonsForNextRound(btn2, betBox2);
-
             gameLoopTimerRef = setInterval(() => {
                 countdownTimeLeft -= 0.1;
                 if (countdownTimeLeft <= 0) {
@@ -647,9 +572,7 @@
                 }
             }, 100);
         }
-
         function resetBetButtonsForNextRound(btn, box) {
-
             if (
                 box.state === "cashed" ||
                 box.state === "lost" ||
@@ -659,38 +582,43 @@
                 btn.className = "action-button-trigger btn-bet-state";
                 btn.innerText = "Place Bet";
             }
-
         }
-
         function launchFlightSimulationEngine() {
             if (betBox1.state === "booked") {
                 betBox1.state = "active";
                 btn1.innerText = "Cash Out";
                 btn1.className = "action-button-trigger btn-cashout-state";
             }
-
             if (betBox2.state === "booked") {
                 betBox2.state = "active";
                 btn2.innerText = "Cash Out";
                 btn2.className = "action-button-trigger btn-cashout-state";
             }
-
             currentGameState = "running";
             statusLabel.innerText = "The Plane Is Flying";
             statusLabel.className = "game-status-alert";
             planeObject.style.display = "block";
-
             if (betBox1.state !== "active") btn1.className = "action-button-trigger btn-disabled-state";
             if (betBox2.state !== "active") btn2.className = "action-button-trigger btn-disabled-state";
-
+            
             let rand = Math.random();
-            crashPointTargetVal = rand < 0.15 ? 1.05 + Math.random()*0.3 : (rand < 0.75 ? 1.4 + Math.random()*2.5 : 4.0 + Math.random()*12.0);
-
+            if (rand < 0.50) {
+                crashPointTargetVal = 1.00 + Math.random() * 0.50;
+            }
+            else if (rand < 0.80) {
+                crashPointTargetVal = 1.50 + Math.random() * 1.50;
+            }
+            else if (rand < 0.95) {
+                crashPointTargetVal = 3.00 + Math.random() * 3.00;
+            }
+            else {
+                crashPointTargetVal = 8.00 + Math.random() * 10.00;
+            }
+            
             gameLoopTimerRef = setInterval(() => {
                 let acceleration = 0.003 * Math.pow(liveMultiplierVal, 0.65);
                 liveMultiplierVal += acceleration;
                 counterText.innerText = liveMultiplierVal.toFixed(2) + "x";
-
                 // Live Bet Amount Update
                 if (betBox1.state === "active") {
                     let liveAmount1 = betBox1.amount * liveMultiplierVal;
@@ -702,23 +630,18 @@
                     document.getElementById("liveProfit2").innerText =
                         "RS " + liveAmount2.toFixed(0);
                 }
-
                 let factor = (liveMultiplierVal - 1) / (crashPointTargetVal - 1 || 1);
                 if (factor > 1) factor = 1;
-
                 let x = 15 + (factor * 340);
                 let y = 15 + (Math.pow(factor, 1.4) * 120);
                 planeObject.style.left = x + "px";
                 planeObject.style.bottom = y + "px";
-
                 svgPathStroke.style.strokeDashoffset = maxPathStrokeOffset - (factor * maxPathStrokeOffset);
-
                 if (liveMultiplierVal >= crashPointTargetVal) {
                     triggerCrashOutcome();
                 }
             }, 40);
         }
-
         function triggerCrashOutcome() {
             clearInterval(gameLoopTimerRef);
             currentGameState = "crashed";
@@ -737,39 +660,32 @@
                 btn1.innerText = "Lost";
                 document.getElementById("liveProfit1").innerText = "RS 0";
             }
-
             if (betBox2.state === "active") {
                 betBox2.state = "lost";
                 btn2.className = "action-button-trigger btn-disabled-state";
                 btn2.innerText = "Lost";
                 document.getElementById("liveProfit2").innerText = "RS 0";
             }
-
             pastRoundsArray.unshift(liveMultiplierVal);
             renderDropdownHistoryGrid();
-
             const ribbon = document.getElementById('historyRibbonContainer');
             const badge = document.createElement('div');
             let colorClass = liveMultiplierVal < 1.5 ? 'mult-blue' : (liveMultiplierVal < 4 ? 'mult-purple' : 'mult-red');
             badge.className = `history-badge ${colorClass}`;
             badge.innerText = liveMultiplierVal.toFixed(2) + "x";
             ribbon.insertBefore(badge, ribbon.firstChild);
-
             setTimeout(startCountdownTimerSequence, 3500);
         }
-
         function startLiveLogsSimulations() {
             const usersList = ["shani_dx", "malik_44", "imran_khan", "zain_shah", "rana_99", "asif_jatt", "bilal_vibe", "hamza_77", "nomi_w", "umer_farooq", "ali_reza"];
             
             logsGenerationTimerRef = setInterval(() => {
                 let randomLiveMembers = Math.floor(500 + Math.random() * 85);
                 liveMembersDOM.innerText = `${randomLiveMembers} Players Live`;
-
                 if (currentGameState === "countdown") {
                     let amountOptions = [15000, 13500, 8000, 20000, 5000, 12000, 18500];
                     let chosenAmount = amountOptions[Math.floor(Math.random() * amountOptions.length)];
                     let chosenUser = usersList[Math.floor(Math.random() * usersList.length)] + "_" + Math.floor(Math.random()*99);
-
                     const logRow = document.createElement('div');
                     logRow.className = "bet-log-row";
                     logRow.innerHTML = `
@@ -777,7 +693,6 @@
                         <div class="bet-log-amount">RS ${chosenAmount} <span style="color: #eab308; font-size:10px;">Ready</span></div>
                     `;
                     logsContainerDOM.insertBefore(logRow, logsContainerDOM.firstChild);
-
                     if (logsContainerDOM.children.length > 25) {
                         logsContainerDOM.removeChild(logsContainerDOM.lastChild);
                     }
