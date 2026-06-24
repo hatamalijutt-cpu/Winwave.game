@@ -189,6 +189,8 @@ window.approveDeposit = async function(requestId){
         }
     );
 
+    alert("totalDeposit updated");
+
     // --- NEW CODE ADDED HERE ---
     const userData = userSnap.val();
     console.log("Depositor UID:", request.uid);
