@@ -175,6 +175,12 @@ window.approveDeposit = async function(requestId){
     const userSnap =
     await get(ref(db,"users/"+request.uid));
 
+    const userData = userSnap.val();
+    const depositCount =
+    userData.depositCount || 0;
+    const isFirstDeposit =
+    depositCount === 0;
+
     if(!userSnap.exists()){
         alert("User Not Found");
         return;
@@ -199,10 +205,28 @@ window.approveDeposit = async function(requestId){
         {
             balance:
             Number(balance) + Number(request.amount),
-
             totalDeposit:
-            Number(userSnap.val().totalDeposit || 0)
-            + Number(request.amount)
+            Number(userData.totalDeposit || 0)
+            + Number(request.amount),
+            depositCount:
+            depositCount + 1
+        }
+    );
+
+    await set(
+        ref(
+            db,
+            "depositHistory/" +
+            request.uid +
+            "/" +
+            Date.now()
+        ),
+        {
+            amount: Number(request.amount),
+            date:
+            new Date().toISOString(),
+            isFirstDeposit:
+            isFirstDeposit
         }
     );
 
