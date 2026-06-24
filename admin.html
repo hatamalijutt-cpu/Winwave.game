@@ -51,6 +51,10 @@ type="text"
 id="checkUid"
 placeholder="Enter User UID">
 
+<input
+type="date"
+id="reportDate">
+
 <button onclick="checkReferralDeposits()">
 Check Deposits
 </button>
@@ -575,12 +579,12 @@ window.checkReferralDeposits = async function(){
     document.getElementById("referralResult");
 
     const today =
-    new Date().toLocaleDateString(
-    "en-CA",
-    {
-    timeZone:"Asia/Karachi"
+    document.getElementById("reportDate").value;
+
+    if(!today){
+        alert("Select Date");
+        return;
     }
-    );
 
     resultBox.innerHTML = "Loading...";
 
