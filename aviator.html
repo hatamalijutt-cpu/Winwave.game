@@ -623,15 +623,17 @@
         }
 
         function resetBetButtonsForNextRound(btn, box) {
-            if (box.state === "booked") {
-                box.state = "active";
-                btn.className = "action-button-trigger btn-cashout-state";
-                btn.innerText = "Cash Out";
-            } else if (box.state === "cashed" || box.state === "idle") {
+
+            if (
+                box.state === "cashed" ||
+                box.state === "lost" ||
+                box.state === "idle"
+            ) {
                 box.state = "idle";
                 btn.className = "action-button-trigger btn-bet-state";
                 btn.innerText = "Place Bet";
             }
+
         }
 
         function launchFlightSimulationEngine() {
@@ -686,6 +688,19 @@
             statusLabel.className = "game-status-alert mult-red";
             counterText.innerText = "Crashed @ " + liveMultiplierVal.toFixed(2) + "x";
             planeObject.style.display = "none";
+            
+            // LOST BETS HANDLE
+            if (betBox1.state === "active") {
+                betBox1.state = "lost";
+                btn1.className = "action-button-trigger btn-disabled-state";
+                btn1.innerText = "Lost";
+            }
+
+            if (betBox2.state === "active") {
+                betBox2.state = "lost";
+                btn2.className = "action-button-trigger btn-disabled-state";
+                btn2.innerText = "Lost";
+            }
 
             pastRoundsArray.unshift(liveMultiplierVal);
             renderDropdownHistoryGrid();
