@@ -193,12 +193,10 @@ window.approveDeposit = async function(requestId){
         ref(db,"users/"+request.uid)
     );
 
-    console.log(
-        "After Update Total Deposit =",
-        checkSnap.val().totalDeposit
+    alert(
+    "New totalDeposit = " +
+    checkSnap.val().totalDeposit
     );
-
-    alert("totalDeposit updated");
 
     // --- NEW CODE ADDED HERE ---
     const userData = userSnap.val();
