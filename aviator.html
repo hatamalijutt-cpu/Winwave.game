@@ -566,7 +566,7 @@
 
                     currentBox.state = "booked";
                     currentBtn.className = "action-button-trigger btn-cashout-state";
-                    currentBtn.innerText = "Cancel Bet";
+                    currentBtn.innerText = "BET PLACED";
                 } else {
                     alert("Insufficient Balance! Please deposit first.");
                 }
@@ -635,6 +635,18 @@
         }
 
         function launchFlightSimulationEngine() {
+            if (betBox1.state === "booked") {
+                betBox1.state = "active";
+                btn1.innerText = "Cash Out";
+                btn1.className = "action-button-trigger btn-cashout-state";
+            }
+
+            if (betBox2.state === "booked") {
+                betBox2.state = "active";
+                btn2.innerText = "Cash Out";
+                btn2.className = "action-button-trigger btn-cashout-state";
+            }
+
             currentGameState = "running";
             statusLabel.innerText = "The Plane Is Flying";
             statusLabel.className = "game-status-alert";
