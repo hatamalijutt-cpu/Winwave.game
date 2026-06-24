@@ -546,6 +546,12 @@
         }
 
         window.handleBetClick = function(boxIndex) {
+
+            if(!currentUid){
+                alert("Please Login First");
+                return;
+            }
+
             let currentBox = boxIndex === 1 ? betBox1 : betBox2;
             let currentBtn = boxIndex === 1 ? btn1 : btn2;
 
@@ -717,4 +723,4 @@
         }
     </script>
 </body>
-</html> pehlay yeah check kro phir main tumhay register html wali file deta hon us me check kr lena k uid local mein kis name se save ho rhi. 
+</html>
