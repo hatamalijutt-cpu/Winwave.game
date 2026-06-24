@@ -1,2033 +1,604 @@
 <!DOCTYPE html>
-
 <html>
-
 <head>
-
 <meta charset="UTF-8">
-
 <title>Admin Panel</title>
 
-
-
 <style>
-
 body{
-
 background:#121212;
-
 color:white;
-
 font-family:Arial;
-
 padding:20px;
-
 }
-
-
 
 .card{
-
 background:#222;
-
 padding:15px;
-
 margin-bottom:15px;
-
 border-radius:10px;
-
 }
-
-
 
 input{
-
 width:100%;
-
 padding:10px;
-
 margin-top:10px;
-
 margin-bottom:10px;
-
 }
-
-
 
 button{
-
 width:100%;
-
 padding:12px;
-
 background:#10b981;
-
 border:none;
-
 color:white;
-
 font-weight:bold;
-
 cursor:pointer;
-
 }
-
 </style>
 
-
-
 </head>
-
 <body>
-
-
 
 <h2>Admin Panel</h2>
 
-
-
 <div class="card">
 
+<h3>Referral Deposit Checker</h3>
+
+<input
+type="text"
+id="checkUid"
+placeholder="Enter User UID">
+
+<button onclick="checkReferralDeposits()">
+Check Deposits
+</button>
+
+<div id="referralResult"></div>
+
+</div>
+
+<div class="card">
 <input type="text" id="userUid" placeholder="User UID">
-
-
 
 <input type="number" id="amount" placeholder="Amount">
 
-
-
 <button onclick="addBalance()">
-
 Add Balance
-
 </button>
-
 </div>
-
-
 
 <div style="display:flex;gap:10px;margin:20px 0;">
-
     
-
     <button onclick="showDeposits()">
-
         Deposit Requests
-
     </button>
-
-
 
     <button onclick="showWithdraws()">
-
         Withdraw Requests
-
     </button>
 
-
-
 </div>
-
-
 
 <div id="depositSection">
 
-
-
 <h3 style="margin-top: 30px;">
-
 Deposit Requests
-
 </h3>
-
-
 
 <div id="requestBox"></div>
 
-
-
 </div>
-
-
 
 <div id="withdrawSection" style="display:none;">
 
-
-
 <h3 style="margin-top:30px;">
-
 Withdraw Requests
-
 </h3>
-
-
 
 <div id="withdrawBox"></div>
 
-
-
 </div>
-
-
 
 <script type="module">
 
-
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 
-
-
 // Step 2: onValue, set aur ab remove import mein add kar diye gaye hain
-
 import {
-
 getDatabase,
-
 ref,
-
 get,
-
 update,
-
 onValue,
-
 set,
-
 remove
-
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
-
-
 const firebaseConfig = {
-
   apiKey: "AIzaSyCjw124Pc1wGpG1iNYGuKR9DmXo_OHCab8",
-
   authDomain: "winwave-b3ed4.firebaseapp.com",
-
   projectId: "winwave-b3ed4",
-
   storageBucket: "winwave-b3ed4.firebasestorage.app",
-
   messagingSenderId: "501831087781",
-
   appId: "1:501831087781:web:ea52d559bcb1429b9a3f4c"
-
 };
 
-
-
 const app = initializeApp(firebaseConfig);
-
 const db = getDatabase(app);
-
-
 
 window.addBalance = async function(){
 
-
-
     const uid =
-
     document.getElementById("userUid").value;
 
-
-
     const amount =
-
     Number(document.getElementById("amount").value);
 
-
-
     const snap =
-
     await get(ref(db,"users/"+uid));
 
-
-
     if(!snap.exists()){
-
         alert("User Not Found");
-
         return;
-
     }
 
-
-
     const currentBalance =
-
     snap.val().balance || 0;
 
-
-
     await update(
-
         ref(db,"users/"+uid),
-
         {
-
             balance: currentBalance + amount
-
         }
-
     );
 
-
-
     alert("Balance Added Successfully");
-
 }
 
-
-
 // Step 3: Approve Deposit function
-
 window.approveDeposit = async function(requestId){
 
-
-
     const requestSnap =
-
     await get(ref(db,"depositRequests/"+requestId));
 
-
-
     if(!requestSnap.exists()) return;
-
-
 
     const request = requestSnap.val();
 
-
-
     if(request.status === "approved"){
-
         alert("Already Approved");
-
         return;
-
     }
-
-
 
     const userSnap =
-
     await get(ref(db,"users/"+request.uid));
 
-
-
     if(!userSnap.exists()){
-
         alert("User Not Found");
-
         return;
-
     }
 
-
-
     const balance =
-
     userSnap.val().balance || 0;
 
-
-
     alert(
-
     "Balance=" + balance +
-
     "\nAmount=" + request.amount +
-
     "\nOld Deposit=" + (userSnap.val().totalDeposit || 0)
-
     );
-
-
 
     alert(
-
     "Amount Type = " + typeof request.amount +
-
     "\nAmount Value = " + request.amount
-
     );
-
-
 
     await update(
-
         ref(db,"users/"+request.uid),
-
         {
-
             balance:
-
             Number(balance) + Number(request.amount),
 
-
-
             totalDeposit:
-
             Number(userSnap.val().totalDeposit || 0)
-
             + Number(request.amount)
-
         }
-
     );
-
-
 
     const checkSnap = await get(
-
         ref(db,"users/"+request.uid)
-
     );
-
-
 
     alert(
-
     "New totalDeposit = " +
-
     checkSnap.val().totalDeposit
-
     );
 
-
-
     // --- NEW CODE ADDED HERE ---
-
     const userData = userSnap.val();
-
     console.log("Depositor UID:", request.uid);
-
     console.log("User Data:", userData);
-
     console.log("Level1 Referrer:", userData.referredBy);
 
-
-
     if (
-
         userData.referredBy
-
     ) {
-
-
 
         const depositAmount = request.amount;
 
-
-
         const level1Commission = depositAmount * 0.10; // 10%
-
         console.log("=== COMMISSION DEBUG ===");
-
         console.log("Depositor:", request.uid);
-
         console.log("User referredBy:", userData.referredBy);
-
         const level2Commission = depositAmount * 0.05; // 5%
-
         const level3Commission = depositAmount * 0.02; // 2%
 
-
-
         // LEVEL 1
-
         const level1Id = userData.referredBy;
 
-
-
         const level1Snap =
-
         await get(ref(db,"users/"+level1Id));
-
-
 
         if(level1Snap.exists()){
 
-
-
             const level1Data =
-
             level1Snap.val();
-
             console.log("Level1 Data:", level1Data);
-
             console.log("Level2 Referrer:", level1Data.referredBy);
 
-
-
             await update(
-
                 ref(db,"users/"+level1Id),
-
                 {
-
                     balance:
-
                     (level1Data.balance||0)
-
                     + level1Commission,
-
-
 
                     totalCommission:
-
                     (level1Data.totalCommission||0)
-
                     + level1Commission,
 
-
-
                     firstDepositAmount:
-
                     (level1Data.firstDepositAmount||0) +
-
                     (
-
                      !userData.firstDepositBonusGiven
-
                      ? Number(depositAmount)
-
                      : 0
-
                     ),
 
-
-
                     teamDepositTotal:
-
                     (level1Data.teamDepositTotal||0)
-
                     + Number(depositAmount)
-
                 }
-
             );
 
-
-
             // LEVEL 2
-
             console.log("Level1 User:", level1Id);
-
             console.log("Level1 referredBy:", level1Data.referredBy);
-
-
 
             if(level1Data.referredBy){
 
-
-
                 const level2Id =
-
                 level1Data.referredBy;
 
-
-
                 const level2Snap =
-
                 await get(
-
                 ref(db,"users/"+level2Id)
-
                 );
-
-
 
                 if(level2Snap.exists()){
 
-
-
                     const level2Data =
-
                     level2Snap.val();
 
-
-
                     await update(
-
                         ref(db,"users/"+level2Id),
-
                         {
-
                             balance:
-
                             (level2Data.balance||0)
-
                             + level2Commission,
-
-
 
                             totalCommission:
-
                             (level2Data.totalCommission||0)
-
                             + level2Commission,
 
-
-
                             teamDepositTotal:
-
                             (level2Data.teamDepositTotal||0)
-
                             + Number(depositAmount)
-
                         }
-
                     );
 
-
-
                     // LEVEL 3
-
                     if(level2Data.referredBy){
 
-
-
                         const level3Id =
-
                         level2Data.referredBy;
 
-
-
                         const level3Snap =
-
                         await get(
-
                         ref(db,"users/"+level3Id)
-
                         );
-
-
 
                         if(level3Snap.exists()){
 
-
-
                             const level3Data =
-
                             level3Snap.val();
 
-
-
                             await update(
-
                                 ref(db,"users/"+level3Id),
-
                                 {
-
                                     balance:
-
                                     (level3Data.balance||0)
-
                                     + level3Commission,
-
-
 
                                     totalCommission:
-
                                     (level3Data.totalCommission||0)
-
                                     + level3Commission,
 
-
-
                                     teamDepositTotal:
-
                                     (level3Data.teamDepositTotal||0)
-
                                     + Number(depositAmount)
-
                                 }
-
                             );
-
                         }
-
                     }
-
                 }
-
             }
-
         }
-
-
 
         await update(
-
             ref(db,"users/"+request.uid),
-
             {
-
                 firstDepositBonusGiven:true
-
             }
-
         );
-
     }
-
     // --- END OF NEW CODE ---
 
-
-
     await update(
-
         ref(db,"depositRequests/"+requestId),
-
         {
-
             status:"approved"
-
         }
-
     );
-
-
 
     alert("Deposit Approved");
-
 }
-
-
 
 // Step 4: Reject Deposit function
-
 window.rejectDeposit = async function(requestId){
 
-
-
     await update(
-
         ref(db,"depositRequests/"+requestId),
-
         {
-
             status:"rejected"
-
         }
-
     );
 
-
-
     alert("Deposit Rejected");
-
 }
 
-
-
 // Step 1: Code replacing (Deposit requests list with Approve/Reject buttons)
-
 const requestBox = document.getElementById("requestBox");
 
-
-
 onValue(ref(db, "depositRequests"), (snapshot) => {
-
     requestBox.innerHTML = "";
-
     snapshot.forEach((child) => {
-
         const data = child.val();
-
         requestBox.innerHTML += `
-
         <div class="card">
-
             <p><b>UID:</b> ${data.uid}</p>
-
             <p><b>Amount:</b> ${data.amount}</p>
-
             <p><b>TRX:</b> ${data.trxId}</p>
-
             <p><b>Status:</b> ${data.status}</p>
 
-
-
             <button onclick="approveDeposit('${child.key}')">
-
                 Approve
-
             </button>
-
-
 
             <button onclick="rejectDeposit('${child.key}')"
-
             style="background:red;margin-top:10px;">
-
                 Reject
-
             </button>
-
         </div>
-
         `;
-
     });
-
 });
 
-
-
 const withdrawBox =
-
 document.getElementById("withdrawBox");
-
-
 
 onValue(ref(db,"withdrawRequests"),(snapshot)=>{
 
-
-
     withdrawBox.innerHTML = "";
-
-
 
     snapshot.forEach((child)=>{
 
-
-
         const data = child.val();
 
-
-
         withdrawBox.innerHTML += `
-
         <div class="card">
-
             <p><b>User UID:</b> ${data.uid}</p>
-
             <p><b>Amount:</b> ${data.amount}</p>
-
             <p><b>Method:</b> ${data.method}</p>
-
             <p><b>Account:</b> ${data.accountNumber}</p>
-
             <p><b>Status:</b> ${data.status}</p>
 
-
-
             <button
-
             onclick="approveWithdraw('${child.key}')">
-
             Mark Paid
-
             </button>
-
-
 
             <button
-
             onclick="rejectWithdraw('${child.key}')"
-
             style="background:red;margin-top:10px;">
-
             Reject
-
             </button>
-
-
 
         </div>
-
         `;
-
     });
-
-
 
 });
 
-
-
 window.approveWithdraw =
-
 async function(requestId){
 
-
-
     await update(
-
         ref(db,
-
         "withdrawRequests/"+requestId),
-
         {
-
             status:"paid"
-
         }
-
     );
-
-
 
     alert("Withdraw Marked Paid");
 
-
-
 }
 
-
-
 window.rejectWithdraw =
-
 async function(requestId){
 
-
-
     const requestSnap =
-
     await get(
-
     ref(db,
-
     "withdrawRequests/"+requestId)
-
     );
-
-
 
     if(!requestSnap.exists()) return;
 
-
-
     const request =
-
     requestSnap.val();
 
-
-
     const userSnap =
-
     await get(
-
     ref(db,
-
     "users/"+request.uid)
-
     );
-
-
 
     if(userSnap.exists()){
 
-
-
         const balance =
-
         userSnap.val().balance || 0;
 
-
-
         await update(
-
         ref(db,
-
         "users/"+request.uid),
-
         {
-
             balance:
-
             balance + request.amount
-
         });
-
     }
 
-
-
     await update(
-
     ref(db,
-
     "withdrawRequests/"+requestId),
-
     {
-
         status:"rejected"
-
     });
-
-
 
     alert("Withdraw Rejected & Balance Returned");
 
-
-
 }
-
-
 
 window.showDeposits = function(){
 
-
-
     document.getElementById("depositSection")
-
     .style.display = "block";
 
-
-
     document.getElementById("withdrawSection")
-
     .style.display = "none";
 
-
-
 }
 
-
-
-window.showWithdraws = function(){
-
-
-
-    document.getElementById("depositSection")
-
-    .style.display = "none";
-
-
-
-    document.getElementById("withdrawSection")
-
-    .style.display = "block";
-
-
-
-}
-
-
-
-</script>
-
-</body>
-
-</html> <!DOCTYPE html>
-
-<html>
-
-<head>
-
-<meta charset="UTF-8">
-
-<title>Admin Panel</title>
-
-
-
-<style>
-
-body{
-
-background:#121212;
-
-color:white;
-
-font-family:Arial;
-
-padding:20px;
-
-}
-
-
-
-.card{
-
-background:#222;
-
-padding:15px;
-
-margin-bottom:15px;
-
-border-radius:10px;
-
-}
-
-
-
-input{
-
-width:100%;
-
-padding:10px;
-
-margin-top:10px;
-
-margin-bottom:10px;
-
-}
-
-
-
-button{
-
-width:100%;
-
-padding:12px;
-
-background:#10b981;
-
-border:none;
-
-color:white;
-
-font-weight:bold;
-
-cursor:pointer;
-
-}
-
-</style>
-
-
-
-</head>
-
-<body>
-
-
-
-<h2>Admin Panel</h2>
-
-
-
-<div class="card">
-
-<input type="text" id="userUid" placeholder="User UID">
-
-
-
-<input type="number" id="amount" placeholder="Amount">
-
-
-
-<button onclick="addBalance()">
-
-Add Balance
-
-</button>
-
-</div>
-
-
-
-<div style="display:flex;gap:10px;margin:20px 0;">
-
-    
-
-    <button onclick="showDeposits()">
-
-        Deposit Requests
-
-    </button>
-
-
-
-    <button onclick="showWithdraws()">
-
-        Withdraw Requests
-
-    </button>
-
-
-
-</div>
-
-
-
-<div id="depositSection">
-
-
-
-<h3 style="margin-top: 30px;">
-
-Deposit Requests
-
-</h3>
-
-
-
-<div id="requestBox"></div>
-
-
-
-</div>
-
-
-
-<div id="withdrawSection" style="display:none;">
-
-
-
-<h3 style="margin-top:30px;">
-
-Withdraw Requests
-
-</h3>
-
-
-
-<div id="withdrawBox"></div>
-
-
-
-</div>
-
-
-
-<script type="module">
-
-
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-
-
-
-// Step 2: onValue, set aur ab remove import mein add kar diye gaye hain
-
-import {
-
-getDatabase,
-
-ref,
-
-get,
-
-update,
-
-onValue,
-
-set,
-
-remove
-
-} from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
-
-
-
-const firebaseConfig = {
-
-  apiKey: "AIzaSyCjw124Pc1wGpG1iNYGuKR9DmXo_OHCab8",
-
-  authDomain: "winwave-b3ed4.firebaseapp.com",
-
-  projectId: "winwave-b3ed4",
-
-  storageBucket: "winwave-b3ed4.firebasestorage.app",
-
-  messagingSenderId: "501831087781",
-
-  appId: "1:501831087781:web:ea52d559bcb1429b9a3f4c"
-
-};
-
-
-
-const app = initializeApp(firebaseConfig);
-
-const db = getDatabase(app);
-
-
-
-window.addBalance = async function(){
-
-
+window.checkReferralDeposits = async function(){
 
     const uid =
+    document.getElementById("checkUid").value;
 
-    document.getElementById("userUid").value;
+    const resultBox =
+    document.getElementById("referralResult");
 
+    resultBox.innerHTML = "Loading...";
 
+    const referralsSnap =
+    await get(
+        ref(db,"users/"+uid+"/referrals")
+    );
 
-    const amount =
+    if(!referralsSnap.exists()){
 
-    Number(document.getElementById("amount").value);
-
-
-
-    const snap =
-
-    await get(ref(db,"users/"+uid));
-
-
-
-    if(!snap.exists()){
-
-        alert("User Not Found");
+        resultBox.innerHTML =
+        "No referrals found";
 
         return;
-
     }
 
+    let html = "";
 
+    let totalMembers = 0;
+    let totalDeposit = 0;
 
-    const currentBalance =
+    const referrals =
+    referralsSnap.val();
 
-    snap.val().balance || 0;
+    for(const referralUid in referrals){
 
-
-
-    await update(
-
-        ref(db,"users/"+uid),
-
-        {
-
-            balance: currentBalance + amount
-
-        }
-
-    );
-
-
-
-    alert("Balance Added Successfully");
-
-}
-
-
-
-// Step 3: Approve Deposit function
-
-window.approveDeposit = async function(requestId){
-
-
-
-    const requestSnap =
-
-    await get(ref(db,"depositRequests/"+requestId));
-
-
-
-    if(!requestSnap.exists()) return;
-
-
-
-    const request = requestSnap.val();
-
-
-
-    if(request.status === "approved"){
-
-        alert("Already Approved");
-
-        return;
-
-    }
-
-
-
-    const userSnap =
-
-    await get(ref(db,"users/"+request.uid));
-
-
-
-    if(!userSnap.exists()){
-
-        alert("User Not Found");
-
-        return;
-
-    }
-
-
-
-    const balance =
-
-    userSnap.val().balance || 0;
-
-
-
-    alert(
-
-    "Balance=" + balance +
-
-    "\nAmount=" + request.amount +
-
-    "\nOld Deposit=" + (userSnap.val().totalDeposit || 0)
-
-    );
-
-
-
-    alert(
-
-    "Amount Type = " + typeof request.amount +
-
-    "\nAmount Value = " + request.amount
-
-    );
-
-
-
-    await update(
-
-        ref(db,"users/"+request.uid),
-
-        {
-
-            balance:
-
-            Number(balance) + Number(request.amount),
-
-
-
-            totalDeposit:
-
-            Number(userSnap.val().totalDeposit || 0)
-
-            + Number(request.amount)
-
-        }
-
-    );
-
-
-
-    const checkSnap = await get(
-
-        ref(db,"users/"+request.uid)
-
-    );
-
-
-
-    alert(
-
-    "New totalDeposit = " +
-
-    checkSnap.val().totalDeposit
-
-    );
-
-
-
-    // --- NEW CODE ADDED HERE ---
-
-    const userData = userSnap.val();
-
-    console.log("Depositor UID:", request.uid);
-
-    console.log("User Data:", userData);
-
-    console.log("Level1 Referrer:", userData.referredBy);
-
-
-
-    if (
-
-        userData.referredBy
-
-    ) {
-
-
-
-        const depositAmount = request.amount;
-
-
-
-        const level1Commission = depositAmount * 0.10; // 10%
-
-        console.log("=== COMMISSION DEBUG ===");
-
-        console.log("Depositor:", request.uid);
-
-        console.log("User referredBy:", userData.referredBy);
-
-        const level2Commission = depositAmount * 0.05; // 5%
-
-        const level3Commission = depositAmount * 0.02; // 2%
-
-
-
-        // LEVEL 1
-
-        const level1Id = userData.referredBy;
-
-
-
-        const level1Snap =
-
-        await get(ref(db,"users/"+level1Id));
-
-
-
-        if(level1Snap.exists()){
-
-
-
-            const level1Data =
-
-            level1Snap.val();
-
-            console.log("Level1 Data:", level1Data);
-
-            console.log("Level2 Referrer:", level1Data.referredBy);
-
-
-
-            await update(
-
-                ref(db,"users/"+level1Id),
-
-                {
-
-                    balance:
-
-                    (level1Data.balance||0)
-
-                    + level1Commission,
-
-
-
-                    totalCommission:
-
-                    (level1Data.totalCommission||0)
-
-                    + level1Commission,
-
-
-
-                    firstDepositAmount:
-
-                    (level1Data.firstDepositAmount||0) +
-
-                    (
-
-                     !userData.firstDepositBonusGiven
-
-                     ? Number(depositAmount)
-
-                     : 0
-
-                    ),
-
-
-
-                    teamDepositTotal:
-
-                    (level1Data.teamDepositTotal||0)
-
-                    + Number(depositAmount)
-
-                }
-
-            );
-
-
-
-            // LEVEL 2
-
-            console.log("Level1 User:", level1Id);
-
-            console.log("Level1 referredBy:", level1Data.referredBy);
-
-
-
-            if(level1Data.referredBy){
-
-
-
-                const level2Id =
-
-                level1Data.referredBy;
-
-
-
-                const level2Snap =
-
-                await get(
-
-                ref(db,"users/"+level2Id)
-
-                );
-
-
-
-                if(level2Snap.exists()){
-
-
-
-                    const level2Data =
-
-                    level2Snap.val();
-
-
-
-                    await update(
-
-                        ref(db,"users/"+level2Id),
-
-                        {
-
-                            balance:
-
-                            (level2Data.balance||0)
-
-                            + level2Commission,
-
-
-
-                            totalCommission:
-
-                            (level2Data.totalCommission||0)
-
-                            + level2Commission,
-
-
-
-                            teamDepositTotal:
-
-                            (level2Data.teamDepositTotal||0)
-
-                            + Number(depositAmount)
-
-                        }
-
-                    );
-
-
-
-                    // LEVEL 3
-
-                    if(level2Data.referredBy){
-
-
-
-                        const level3Id =
-
-                        level2Data.referredBy;
-
-
-
-                        const level3Snap =
-
-                        await get(
-
-                        ref(db,"users/"+level3Id)
-
-                        );
-
-
-
-                        if(level3Snap.exists()){
-
-
-
-                            const level3Data =
-
-                            level3Snap.val();
-
-
-
-                            await update(
-
-                                ref(db,"users/"+level3Id),
-
-                                {
-
-                                    balance:
-
-                                    (level3Data.balance||0)
-
-                                    + level3Commission,
-
-
-
-                                    totalCommission:
-
-                                    (level3Data.totalCommission||0)
-
-                                    + level3Commission,
-
-
-
-                                    teamDepositTotal:
-
-                                    (level3Data.teamDepositTotal||0)
-
-                                    + Number(depositAmount)
-
-                                }
-
-                            );
-
-                        }
-
-                    }
-
-                }
-
-            }
-
-        }
-
-
-
-        await update(
-
-            ref(db,"users/"+request.uid),
-
-            {
-
-                firstDepositBonusGiven:true
-
-            }
-
+        const userSnap =
+        await get(
+            ref(db,"users/"+referralUid)
         );
 
+        if(userSnap.exists()){
+
+            const user =
+            userSnap.val();
+
+            const deposit =
+            Number(user.totalDeposit || 0);
+
+            if(deposit > 0){
+
+                totalMembers++;
+
+                totalDeposit += deposit;
+
+                html += `
+                <div class="card">
+                <p><b>UID:</b> ${referralUid}</p>
+                <p><b>Email:</b> ${user.email||"-"}</p>
+                <p><b>Total Deposit:</b> ${deposit}</p>
+                </div>
+                `;
+            }
+        }
     }
 
-    // --- END OF NEW CODE ---
+    resultBox.innerHTML = `
+    <h4>
+    Members Deposited:
+    ${totalMembers}
+    </h4>
 
+    <h4>
+    Total Deposit:
+    ${totalDeposit}
+    </h4>
 
-
-    await update(
-
-        ref(db,"depositRequests/"+requestId),
-
-        {
-
-            status:"approved"
-
-        }
-
-    );
-
-
-
-    alert("Deposit Approved");
-
+    ${html}
+    `;
 }
-
-
-
-// Step 4: Reject Deposit function
-
-window.rejectDeposit = async function(requestId){
-
-
-
-    await update(
-
-        ref(db,"depositRequests/"+requestId),
-
-        {
-
-            status:"rejected"
-
-        }
-
-    );
-
-
-
-    alert("Deposit Rejected");
-
-}
-
-
-
-// Step 1: Code replacing (Deposit requests list with Approve/Reject buttons)
-
-const requestBox = document.getElementById("requestBox");
-
-
-
-onValue(ref(db, "depositRequests"), (snapshot) => {
-
-    requestBox.innerHTML = "";
-
-    snapshot.forEach((child) => {
-
-        const data = child.val();
-
-        requestBox.innerHTML += `
-
-        <div class="card">
-
-            <p><b>UID:</b> ${data.uid}</p>
-
-            <p><b>Amount:</b> ${data.amount}</p>
-
-            <p><b>TRX:</b> ${data.trxId}</p>
-
-            <p><b>Status:</b> ${data.status}</p>
-
-
-
-            <button onclick="approveDeposit('${child.key}')">
-
-                Approve
-
-            </button>
-
-
-
-            <button onclick="rejectDeposit('${child.key}')"
-
-            style="background:red;margin-top:10px;">
-
-                Reject
-
-            </button>
-
-        </div>
-
-        `;
-
-    });
-
-});
-
-
-
-const withdrawBox =
-
-document.getElementById("withdrawBox");
-
-
-
-onValue(ref(db,"withdrawRequests"),(snapshot)=>{
-
-
-
-    withdrawBox.innerHTML = "";
-
-
-
-    snapshot.forEach((child)=>{
-
-
-
-        const data = child.val();
-
-
-
-        withdrawBox.innerHTML += `
-
-        <div class="card">
-
-            <p><b>User UID:</b> ${data.uid}</p>
-
-            <p><b>Amount:</b> ${data.amount}</p>
-
-            <p><b>Method:</b> ${data.method}</p>
-
-            <p><b>Account:</b> ${data.accountNumber}</p>
-
-            <p><b>Status:</b> ${data.status}</p>
-
-
-
-            <button
-
-            onclick="approveWithdraw('${child.key}')">
-
-            Mark Paid
-
-            </button>
-
-
-
-            <button
-
-            onclick="rejectWithdraw('${child.key}')"
-
-            style="background:red;margin-top:10px;">
-
-            Reject
-
-            </button>
-
-
-
-        </div>
-
-        `;
-
-    });
-
-
-
-});
-
-
-
-window.approveWithdraw =
-
-async function(requestId){
-
-
-
-    await update(
-
-        ref(db,
-
-        "withdrawRequests/"+requestId),
-
-        {
-
-            status:"paid"
-
-        }
-
-    );
-
-
-
-    alert("Withdraw Marked Paid");
-
-
-
-}
-
-
-
-window.rejectWithdraw =
-
-async function(requestId){
-
-
-
-    const requestSnap =
-
-    await get(
-
-    ref(db,
-
-    "withdrawRequests/"+requestId)
-
-    );
-
-
-
-    if(!requestSnap.exists()) return;
-
-
-
-    const request =
-
-    requestSnap.val();
-
-
-
-    const userSnap =
-
-    await get(
-
-    ref(db,
-
-    "users/"+request.uid)
-
-    );
-
-
-
-    if(userSnap.exists()){
-
-
-
-        const balance =
-
-        userSnap.val().balance || 0;
-
-
-
-        await update(
-
-        ref(db,
-
-        "users/"+request.uid),
-
-        {
-
-            balance:
-
-            balance + request.amount
-
-        });
-
-    }
-
-
-
-    await update(
-
-    ref(db,
-
-    "withdrawRequests/"+requestId),
-
-    {
-
-        status:"rejected"
-
-    });
-
-
-
-    alert("Withdraw Rejected & Balance Returned");
-
-
-
-}
-
-
-
-window.showDeposits = function(){
-
-
-
-    document.getElementById("depositSection")
-
-    .style.display = "block";
-
-
-
-    document.getElementById("withdrawSection")
-
-    .style.display = "none";
-
-
-
-}
-
-
 
 window.showWithdraws = function(){
 
-
-
     document.getElementById("depositSection")
-
     .style.display = "none";
 
-
-
     document.getElementById("withdrawSection")
-
     .style.display = "block";
-
-
 
 }
 
-
-
 </script>
-
 </body>
-
 </html>
