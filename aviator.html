@@ -383,7 +383,7 @@
             <div class="history-dropdown" id="historyDropdown">
                 <h4>Round History (Last 20)</h4>
                 <div class="grid-history" id="fullHistoryGrid">
-                    </div>
+                </div>
             </div>
         </div>
 
@@ -430,12 +430,48 @@
                 <span id="liveMembersCounter">524 Players Live</span>
             </div>
             <div class="bets-log-container" id="liveBetsLogContainer">
-                </div>
+            </div>
         </div>
 
     </div>
 
-    <script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getDatabase, ref, get, update, runTransaction } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+        // 1. Firebase Config update
+        const firebaseConfig = {
+          apiKey: "AIzaSyCjw124Pc1wGpG1iNYGuKR9DmXo_OHCab8",
+          authDomain: "winwave-b3ed4.firebaseapp.com",
+          databaseURL: "https://winwave-b3ed4-default-rtdb.firebaseio.com",
+          projectId: "winwave-b3ed4",
+          storageBucket: "winwave-b3ed4.firebasestorage.app",
+          messagingSenderId: "501831087781",
+          appId: "1:501831087781:web:ea52d559bcb1429b9a3f4c"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        const currentUid = localStorage.getItem("uid");
+
+        // 6. UID check aur DB structure reference
+        if (!currentUid) {
+            alert("No UID found! Please login first.");
+            // Agar chahiye toh unhe login page par redirect kar sakte ho:
+            // window.location.href = "login.html";
+        }
+        /* Database structure for reference:
+        {
+          "users": {
+            "USER_UID": {
+              "balance": 5000,
+              "name": "Ali"
+            }
+          }
+        }
+        */
+
         // Game states tracking engine parameters
         let currentGameState = "countdown"; 
         let liveMultiplierVal = 1.00;
@@ -463,24 +499,21 @@
         let pastRoundsArray = [1.50, 2.44, 1.05, 5.20, 1.80, 12.30, 1.15, 3.40, 2.10, 1.01, 8.50, 1.34, 4.12, 1.95, 24.50];
 
         document.addEventListener("DOMContentLoaded", function() {
-            loadLocalWalletBalance();
+            loadWalletBalance();
             renderDropdownHistoryGrid();
             startCountdownTimerSequence();
             startLiveLogsSimulations();
         });
 
-        function loadLocalWalletBalance() {
-            let balance = localStorage.getItem('winwave_balance');
-            if (balance) {
-                userCurrentBalanceVal = parseFloat(balance);
-            } else {
-                localStorage.setItem('winwave_balance', '0.00'); // Force save 0 balance if not exists
-                userCurrentBalanceVal = 0.00;
-            }
+        async function loadWalletBalance(){
+            if(!currentUid) return;
+            const snap = await get(ref(db,"users/"+currentUid));
+            if(!snap.exists()) return;
+            userCurrentBalanceVal = snap.val().balance || 0;
             userBalanceDOM.innerText = userCurrentBalanceVal.toFixed(2);
         }
 
-        function toggleHistoryDropdown() {
+        window.toggleHistoryDropdown = function() {
             const dropdown = document.getElementById('historyDropdown');
             dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
         }
@@ -498,7 +531,7 @@
             });
         }
 
-        function adjustBet(boxIndex, offset) {
+        window.adjustBet = function(boxIndex, offset) {
             let currentBox = boxIndex === 1 ? betBox1 : betBox2;
             let field = document.getElementById(`betAmountField${boxIndex}`);
             
@@ -512,14 +545,17 @@
             field.value = currentBox.amount;
         }
 
-        function handleBetClick(boxIndex) {
+        window.handleBetClick = function(boxIndex) {
             let currentBox = boxIndex === 1 ? betBox1 : betBox2;
             let currentBtn = boxIndex === 1 ? btn1 : btn2;
 
             if (currentGameState === "countdown" && currentBox.state === "idle") {
                 if (userCurrentBalanceVal >= currentBox.amount) {
+                    // 3. Bet lagate waqt Firebase update karo
                     userCurrentBalanceVal -= currentBox.amount;
-                    localStorage.setItem('winwave_balance', userCurrentBalanceVal);
+                    update(ref(db,"users/"+currentUid), {
+                        balance: userCurrentBalanceVal
+                    });
                     userBalanceDOM.innerText = userCurrentBalanceVal.toFixed(2);
 
                     currentBox.state = "booked";
@@ -529,17 +565,23 @@
                     alert("Insufficient Balance! Please deposit first.");
                 }
             } else if (currentBox.state === "booked") {
+                // 4. Cancel Bet par Firebase update karo
                 userCurrentBalanceVal += currentBox.amount;
-                localStorage.setItem('winwave_balance', userCurrentBalanceVal);
+                update(ref(db,"users/"+currentUid), {
+                    balance: userCurrentBalanceVal
+                });
                 userBalanceDOM.innerText = userCurrentBalanceVal.toFixed(2);
 
                 currentBox.state = "idle";
                 currentBtn.className = "action-button-trigger btn-bet-state";
                 currentBtn.innerText = "Place Bet";
             } else if (currentGameState === "running" && currentBox.state === "active") {
+                // 5. Cashout par Firebase update karo
                 let prize = currentBox.amount * liveMultiplierVal;
                 userCurrentBalanceVal += prize;
-                localStorage.setItem('winwave_balance', userCurrentBalanceVal);
+                update(ref(db,"users/"+currentUid), {
+                    balance: userCurrentBalanceVal
+                });
                 userBalanceDOM.innerText = userCurrentBalanceVal.toFixed(2);
 
                 currentBox.state = "cashed";
@@ -675,4 +717,4 @@
         }
     </script>
 </body>
-</html>
+</html> pehlay yeah check kro phir main tumhay register html wali file deta hon us me check kr lena k uid local mein kis name se save ho rhi. 
