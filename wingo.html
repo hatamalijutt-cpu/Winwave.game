@@ -114,7 +114,7 @@
         }
 
         .btn-withdraw { background-color: #ff4d4f; }
-        .btn-deposit { background-color: #00dfad; color: #1a202c; font-weight: 800; }
+        .btn-deposit { background-color: #00dfad; color: #1a202c; font-weight: 800; } 
 
         /* Announcement Bar */
         .announcement {
@@ -785,7 +785,39 @@
 
     </div>
 
-    <script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import {
+          getDatabase,
+          ref,
+          set,
+          get,
+          update,
+          push,
+          onValue
+        } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyCjw124Pc1wGpG1iNYGuKR9DmXo_OHCab8",
+          authDomain: "winwave-b3ed4.firebaseapp.com",
+          databaseURL: "https://winwave-b3ed4-default-rtdb.firebaseio.com",
+          projectId: "winwave-b3ed4",
+          storageBucket: "winwave-b3ed4.firebasestorage.app",
+          messagingSenderId: "501831087781",
+          appId: "1:501831087781:web:ea52d559bcb1429b9a3f4c",
+          measurementId: "G-WQM3HS90CL"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        window.db = db;
+        window.ref = ref;
+        window.set = set;
+        window.get = get;
+        window.update = update;
+        window.push = push;
+
         // Game Logic State Variables
         let balance = 0.00; 
         let currentIntervalTime = 30; 
@@ -889,33 +921,80 @@
             totalBetValueDisplay.innerText = selectedBaseAmount * selectedMultiplierMultiplier;
         }
 
-        function confirmBet() {
-            let cost = selectedBaseAmount * selectedMultiplierMultiplier;
-            if(balance < cost) {
-                alert("Insufficient Balance!");
+        async function confirmBet() {
+            const uid = localStorage.getItem("uid");
+
+            if(!uid){
+                alert("Login Required");
                 return;
             }
-            if(currentActiveUserBet !== null) {
-                alert("Aap is round mein pehle hi bet laga chuke hain!");
+
+            let cost = selectedBaseAmount * selectedMultiplierMultiplier;
+
+            if(balance < cost){
+                alert("Insufficient Balance");
+                return;
+            }
+
+            if(currentActiveUserBet){
+                alert("Already Bet Placed");
                 return;
             }
 
             balance -= cost;
-            userBalanceDisplay.innerText = balance.toFixed(2);
+
+            await update(
+                ref(db,"users/" + uid),
+                {
+                    balance: balance
+                }
+            );
 
             currentActiveUserBet = {
-                period: currentPeriod,
+                period: currentPeriod.toString(),
                 target: selectedBetTarget,
                 amount: cost
             };
 
+            await set(
+                ref(
+                    db,
+                    "wingoBets/" +
+                    currentPeriod +
+                    "/" +
+                    uid
+                ),
+                {
+                    uid: uid,
+                    target: selectedBetTarget,
+                    amount: cost,
+                    period: currentPeriod.toString(),
+                    status: "pending",
+                    time: Date.now()
+                }
+            );
+
             closeBetSheet();
-            alert(`Bet Placed Successfully for target: ${selectedBetTarget}`);
+            alert("Bet Placed Successfully");
         }
 
         /* Settlement Logic Engine */
-        function resolveRoundResults() {
+        async function resolveRoundResults() {
             const randomNum = Math.floor(Math.random() * 10);
+
+            await set(
+                ref(
+                    db,
+                    "wingoResults/" +
+                    currentPeriod
+                ),
+                {
+                    number: randomNum,
+                    period: currentPeriod.toString(),
+                    time: Date.now()
+                }
+            );
+
             let sizeText = randomNum >= 5 ? 'Big' : 'Small';
             let colors = [];
             let colorString = '';
@@ -939,7 +1018,8 @@
             renderGameHistory();
             renderChart();
 
-            if(currentActiveUserBet && currentActiveUserBet.period === currentPeriod) {
+            if(currentActiveUserBet && currentActiveUserBet.period === currentPeriod.toString()) {
+                const uid = localStorage.getItem("uid");
                 let didWin = false;
                 let target = currentActiveUserBet.target;
 
@@ -954,8 +1034,33 @@
                     else returns = currentActiveUserBet.amount * 9;
 
                     balance += returns;
-                    userBalanceDisplay.innerText = balance.toFixed(2);
+
+                    await update(
+                        ref(db,"users/" + uid),
+                        {
+                            balance: balance
+                        }
+                    );
                 }
+
+                await set(
+                    ref(
+                        db,
+                        "wingoHistory/" +
+                        uid +
+                        "/" +
+                        currentPeriod
+                    ),
+                    {
+                        target: target,
+                        amount: currentActiveUserBet.amount,
+                        resultNumber: randomNum,
+                        win: didWin,
+                        payout: returns || 0,
+                        period: currentPeriod.toString(),
+                        time: Date.now()
+                    }
+                );
 
                 const myBody = document.getElementById('myHistoryBody');
                 if(myBody.innerText.includes("No bets placed")) myBody.innerHTML = '';
@@ -1089,6 +1194,28 @@
                 }
                 rowHtml += `</tr>`;
                 chartBody.innerHTML += rowHtml;
+            });
+        }
+
+        // Global context scope expose for HTML inline onClick events
+        window.switchTimeMode = switchTimeMode;
+        window.openBetSheet = openBetSheet;
+        window.closeBetSheet = closeBetSheet;
+        window.selectAmount = selectAmount;
+        window.selectMultiplier = selectMultiplier;
+        window.confirmBet = confirmBet;
+        window.switchHistoryTab = switchHistoryTab;
+
+        // STEP 2 — Balance ko Firebase se load karo
+        const uid = localStorage.getItem("uid");
+        if(uid){
+            const userRef = ref(db,"users/" + uid);
+            onValue(userRef,(snapshot)=>{
+                if(snapshot.exists()){
+                    const data = snapshot.val();
+                    balance = Number(data.balance || 0);
+                    userBalanceDisplay.innerText = balance.toFixed(2);
+                }
             });
         }
     </script>
