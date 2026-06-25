@@ -410,6 +410,113 @@
         };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
+
+        async function giveReferralCommission(playerUid, lossAmount){
+            try{
+                const playerSnap =
+                await get(ref(db,"users/" + playerUid));
+
+                if(!playerSnap.exists()) return;
+
+                const playerData =
+                playerSnap.val();
+
+                // Level 1
+                if(playerData.referredBy){
+
+                    const level1Uid =
+                    playerData.referredBy;
+
+                    const level1Commission =
+                    lossAmount * 0.005;
+
+                    await runTransaction(
+                        ref(db,"users/" + level1Uid + "/balance"),
+                        (balance)=>{
+                            return (balance || 0) + level1Commission;
+                        }
+                    );
+
+                    await runTransaction(
+                        ref(db,"users/" + level1Uid + "/totalCommission"),
+                        (amount)=>{
+                            return (amount || 0) + level1Commission;
+                        }
+                    );
+
+                    const level1Snap =
+                    await get(ref(db,"users/" + level1Uid));
+
+                    if(level1Snap.exists()){
+
+                        const level1Data =
+                        level1Snap.val();
+
+                        // Level 2
+                        if(level1Data.referredBy){
+
+                            const level2Uid =
+                            level1Data.referredBy;
+
+                            const level2Commission =
+                            lossAmount * 0.003;
+
+                            await runTransaction(
+                                ref(db,"users/" + level2Uid + "/balance"),
+                                (balance)=>{
+                                    return (balance || 0) + level2Commission;
+                                }
+                            );
+
+                            await runTransaction(
+                                ref(db,"users/" + level2Uid + "/totalCommission"),
+                                (amount)=>{
+                                    return (amount || 0) + level2Commission;
+                                }
+                            );
+
+                            const level2Snap =
+                            await get(ref(db,"users/" + level2Uid));
+
+                            if(level2Snap.exists()){
+
+                                const level2Data =
+                                level2Snap.val();
+
+                                // Level 3
+                                if(level2Data.referredBy){
+
+                                    const level3Uid =
+                                    level2Data.referredBy;
+
+                                    const level3Commission =
+                                    lossAmount * 0.001;
+
+                                    await runTransaction(
+                                        ref(db,"users/" + level3Uid + "/balance"),
+                                        (balance)=>{
+                                            return (balance || 0) + level3Commission;
+                                        }
+                                    );
+
+                                    await runTransaction(
+                                        ref(db,"users/" + level3Uid + "/totalCommission"),
+                                        (amount)=>{
+                                            return (amount || 0) + level3Commission;
+                                        }
+                                    );
+
+                                }
+                            }
+                        }
+                    }
+                }
+
+            }catch(error){
+                console.log(error);
+            }
+        }
+
         const currentUid = localStorage.getItem("uid");
         // 6. UID check aur DB structure reference
         if (!currentUid) {
@@ -664,7 +771,7 @@
                 }
             }, 40);
         }
-        function triggerCrashOutcome() {
+        async function triggerCrashOutcome() {
             clearInterval(gameLoopTimerRef);
             currentGameState = "crashed";
             statusLabel.innerText = "FLEW AWAY";
@@ -677,12 +784,24 @@
             
             // LOST BETS HANDLE
             if (betBox1.state === "active") {
+
+                await giveReferralCommission(
+                    currentUid,
+                    betBox1.amount
+                );
+
                 betBox1.state = "lost";
                 btn1.className = "action-button-trigger btn-disabled-state";
                 btn1.innerText = "Lost";
                 document.getElementById("liveProfit1").innerText = "RS 0";
             }
             if (betBox2.state === "active") {
+
+                await giveReferralCommission(
+                    currentUid,
+                    betBox2.amount
+                );
+
                 betBox2.state = "lost";
                 btn2.className = "action-button-trigger btn-disabled-state";
                 btn2.innerText = "Lost";
