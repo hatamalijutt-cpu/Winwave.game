@@ -600,7 +600,7 @@
         
         <div class="top-bg-section">
             <header class="header">
-                <a href="#" class="back-btn"><i class="fa-solid fa-chevron-left"></i></a>
+                <a href="javascript:void(0)" class="back-btn" id="backBtn"><i class="fa-solid fa-chevron-left"></i></a>
                 <div class="game-title">WINWAVE</div>
                 <div class="header-icons">
                     <i class="fa-solid fa-file-invoice"></i>
@@ -950,11 +950,15 @@
                 }
             );
 
+            localStorage.setItem("balance", balance);
+
             currentActiveUserBet = {
                 period: currentPeriod.toString(),
                 target: selectedBetTarget,
                 amount: cost
             };
+
+            console.log("BET SAVED", currentActiveUserBet);
 
             await set(
                 ref(
@@ -981,6 +985,8 @@
         /* Settlement Logic Engine */
         async function resolveRoundResults() {
             const randomNum = Math.floor(Math.random() * 10);
+
+            console.log("RESULT GENERATED", randomNum);
 
             await set(
                 ref(
@@ -1018,6 +1024,9 @@
             renderGameHistory();
             renderChart();
 
+            console.log("Current Bet", currentActiveUserBet);
+            console.log("Current Period", currentPeriod.toString());
+
             if(currentActiveUserBet && currentActiveUserBet.period === currentPeriod.toString()) {
                 const uid = localStorage.getItem("uid");
                 let didWin = false;
@@ -1041,6 +1050,8 @@
                             balance: balance
                         }
                     );
+
+                    localStorage.setItem("balance", balance);
                 }
 
                 await set(
@@ -1218,6 +1229,10 @@
                 }
             });
         }
+
+        document.getElementById("backBtn").addEventListener("click", () => {
+            window.history.back();
+        });
     </script>
 </body>
 </html>
