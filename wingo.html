@@ -824,7 +824,10 @@
         let timeRemaining = 30;
         
         // FIX: Using 'n' for BigInt to prevent precision loss on 17 digit numbers
-        let currentPeriod = 20260625100051487n; 
+        let currentPeriod = BigInt(
+            Date.now().toString() +
+            Math.floor(Math.random() * 1000).toString().padStart(3, '0')
+        ); 
         let timerEngine = null;
         
         let gameHistoryList = [];
@@ -845,6 +848,7 @@
 
         // Startup functions
         initGameHistoryData();
+        periodDisplay.innerText = currentPeriod.toString();
         startTimerEngine();
 
         function startTimerEngine() {
@@ -855,7 +859,10 @@
                     timeRemaining = currentIntervalTime;
                     resolveRoundResults();
                     // BigInt Increment
-                    currentPeriod++;
+                    currentPeriod = BigInt(
+                        Date.now().toString() +
+                        Math.floor(Math.random() * 1000).toString().padStart(3, '0')
+                    );
                     periodDisplay.innerText = currentPeriod.toString();
                 }
                 updateTimerText();
@@ -875,7 +882,11 @@
             timeRemaining = seconds;
             
             // FIX: Generate new BigInt period when switching tabs and refresh history properly
-            currentPeriod = 20260625100000000n + BigInt(Math.floor(Math.random() * 100000));
+            currentPeriod = BigInt(
+                Date.now().toString() +
+                Math.floor(Math.random() * 1000).toString().padStart(3, '0')
+            );
+
             periodDisplay.innerText = currentPeriod.toString();
             currentActiveUserBet = null;
             
