@@ -853,11 +853,13 @@
 
         function startTimerEngine() {
             clearInterval(timerEngine);
-            timerEngine = setInterval(() => {
+            timerEngine = setInterval(async () => {
                 timeRemaining--;
                 if (timeRemaining < 0) {
                     timeRemaining = currentIntervalTime;
-                    resolveRoundResults();
+                    
+                    await resolveRoundResults();
+                    
                     // BigInt Increment
                     currentPeriod = BigInt(
                         Date.now().toString() +
@@ -995,6 +997,7 @@
 
         /* Settlement Logic Engine */
         async function resolveRoundResults() {
+            const finishedPeriod = currentPeriod.toString();
             const randomNum = Math.floor(Math.random() * 10);
 
             console.log("RESULT GENERATED", randomNum);
@@ -1003,7 +1006,7 @@
                 ref(
                     db,
                     "wingoResults/" +
-                    currentPeriod
+                    finishedPeriod
                 ),
                 {
                     number: randomNum,
@@ -1023,7 +1026,7 @@
             else { colors = ['Green']; colorString = 'Green'; ballClass = 'num-odd'; }
 
             gameHistoryList.unshift({
-                period: currentPeriod,
+                period: BigInt(finishedPeriod),
                 number: randomNum,
                 size: sizeText,
                 colorClass: ballClass,
@@ -1038,7 +1041,7 @@
             console.log("Current Bet", currentActiveUserBet);
             console.log("Current Period", currentPeriod.toString());
 
-            if(currentActiveUserBet && currentActiveUserBet.period === currentPeriod.toString()) {
+            if(currentActiveUserBet && currentActiveUserBet.period === finishedPeriod) {
                 const uid = localStorage.getItem("uid");
                 let didWin = false;
                 let target = currentActiveUserBet.target;
@@ -1071,7 +1074,7 @@
                         "wingoHistory/" +
                         uid +
                         "/" +
-                        currentPeriod
+                        finishedPeriod
                     ),
                     {
                         target: target,
@@ -1079,7 +1082,7 @@
                         resultNumber: randomNum,
                         win: didWin,
                         payout: returns || 0,
-                        period: currentPeriod.toString(),
+                        period: finishedPeriod,
                         time: Date.now()
                     }
                 );
