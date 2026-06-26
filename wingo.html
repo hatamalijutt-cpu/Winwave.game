@@ -753,14 +753,35 @@
         const betSheet = document.getElementById('betSheet');
         const sheetTargetBadge = document.getElementById('sheetTargetBadge');
         const totalBetValueDisplay = document.getElementById('totalBetValueDisplay');
+
+        // STEP 1 & 2
+        async function loadGameState() {
+            let snap = await get(ref(db, "gameState"));
+            if (!snap.exists()) {
+                await set(ref(db, "gameState"), {
+                    startTime: Date.now(),
+                    basePeriod: "20260625100051487"
+                });
+                snap = await get(ref(db, "gameState"));
+            }
+            const data = snap.val();
+            const startTime = data.startTime;
+            const basePeriod = BigInt(data.basePeriod);
+            const now = Date.now();
+            const passedRounds = Math.floor((now - startTime) / (currentIntervalTime * 1000));
+            currentPeriod = basePeriod + BigInt(passedRounds);
+            periodDisplay.innerText = currentPeriod.toString();
+            const passedSeconds = Math.floor((now - startTime) / 1000);
+            timeRemaining = currentIntervalTime - (passedSeconds % currentIntervalTime);
+        }
+
         // Startup functions
         initGameHistoryData();
-        currentPeriod = calculateCurrentPeriod();
-        periodDisplay.innerText = currentPeriod.toString();
+        // STEP 3
+        await loadGameState();
         startTimerEngine();
+
         function startTimerEngine() {
-            currentPeriod = calculateCurrentPeriod();
-            periodDisplay.innerText = currentPeriod.toString();
             clearInterval(timerEngine);
             timerEngine = setInterval(async () => {
                 timeRemaining--;
@@ -770,26 +791,28 @@
                     await resolveRoundResults();
                     
                     // BigInt Increment
-                    currentPeriod = calculateCurrentPeriod();
+                    // STEP 4
+                    currentPeriod = currentPeriod + 1n;
                     periodDisplay.innerText = currentPeriod.toString();
                 }
                 updateTimerText();
             }, 1000);
         }
+
         function updateTimerText() {
             let mins = Math.floor(timeRemaining / 60);
             let secs = timeRemaining % 60;
             timerDisplay.innerText = `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
         }
-        function switchTimeMode(seconds, element) {
+
+        async function switchTimeMode(seconds, element) {
             document.querySelectorAll('.time-tab').forEach(t => t.classList.remove('active'));
             element.classList.add('active');
             currentIntervalTime = seconds;
             timeRemaining = seconds;
             
             // FIX: Generate new BigInt period when switching tabs and refresh history properly
-            currentPeriod = calculateCurrentPeriod();
-            periodDisplay.innerText = currentPeriod.toString();
+            await loadGameState();
             currentActiveUserBet = null;
             
             initGameHistoryData();
@@ -967,6 +990,14 @@
                 showResultPopup(didWin, returns, currentActiveUserBet.amount, target, randomNum, sizeText, colorString);
             }
             currentActiveUserBet = null;
+
+            // STEP 5
+            await update(
+                ref(db, "gameState"),
+                {
+                    currentPeriod: currentPeriod.toString()
+                }
+            );
         }
         function showResultPopup(didWin, winAmt, betAmt, selected, num, size, colors) {
             const overlay = document.getElementById('resultPopup');
