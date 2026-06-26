@@ -811,6 +811,18 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
+        async function createGameIfNotExists() {
+            const gameRef = ref(db, "gameState/wingo30");
+            const snap = await get(gameRef);
+            if (!snap.exists()) {
+                await set(gameRef, {
+                    period: Date.now().toString(),
+                    remaining: 30,
+                    lastUpdate: Date.now()
+                });
+            }
+        }
+
         window.db = db;
         window.ref = ref;
         window.set = set;
@@ -847,9 +859,9 @@
         const totalBetValueDisplay = document.getElementById('totalBetValueDisplay');
 
         // Startup functions
-        initGameHistoryData();
-        periodDisplay.innerText = currentPeriod.toString();
-        startTimerEngine();
+        (async () => {
+            await createGameIfNotExists();
+        })();
 
         function startTimerEngine() {
             clearInterval(timerEngine);
