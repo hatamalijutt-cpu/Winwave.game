@@ -1304,18 +1304,7 @@
 
                 <div class="wingo-title-sm">WinGo 30Sec</div>
 
-                <div class="mini-balls">
-
-                    <span class="m-ball" style="background:#18b368;">1</span>
-
-                    <span class="m-ball" style="background:#18b368;">9</span>
-
-                    <span class="m-ball" style="background:#ff4d4f;">8</span>
-
-                    <span class="m-ball" style="background:#18b368;">5</span>
-
-                    <span class="m-ball" style="background:#ff4d4f;">6</span>
-
+                <div class="mini-balls" id="miniBalls">
                 </div>
 
             </div>
@@ -2407,6 +2396,60 @@
                 `;
 
             });
+
+
+
+            const miniBalls = document.getElementById("miniBalls");
+
+
+
+            if(miniBalls){
+
+                miniBalls.innerHTML = "";
+
+
+
+                gameHistoryList.slice(0,5).forEach(item => {
+
+
+
+                    let bg = "#18b368";
+
+
+
+                    if(item.number === 0){
+
+                        bg = "#9c27b0";
+
+                    }
+
+                    else if(item.number === 5){
+
+                        bg = "#9c27b0";
+
+                    }
+
+                    else if(item.number % 2 === 0){
+
+                        bg = "#ff4d4f";
+
+                    }
+
+
+
+                    miniBalls.innerHTML += `
+
+                        <span class="m-ball" style="background:${bg}">
+
+                            ${item.number}
+
+                        </span>
+
+                    `;
+
+                });
+
+            }
 
         }
 
