@@ -1628,44 +1628,122 @@
 
 
 
-async function giveReferralCommission(uid, betAmount){
+        async function giveReferralCommission(playerUid, lossAmount){
 
-    const userSnap = await get(ref(db, "users/" + uid));
+            try{
 
-    if(!userSnap.exists()) return;
+                const playerSnap = await get(ref(db,"users/" + playerUid));
 
-    const userData = userSnap.val();
+                if(!playerSnap.exists()) return;
 
-    if(!userData.refBy) return;
+                const playerData = playerSnap.val();
 
-    const sponsorUid = userData.refBy;
+                // LEVEL 1
+                if(playerData.refBy){
 
-    const commission = betAmount * 0.05;
+                    const level1Uid = playerData.refBy;
 
-    const sponsorSnap = await get(ref(db, "users/" + sponsorUid));
+                    const level1Commission = lossAmount * 0.005;
 
-    if(!sponsorSnap.exists()) return;
+                    const level1Snap = await get(ref(db,"users/"+level1Uid));
 
-    const sponsorData = sponsorSnap.val();
+                    if(level1Snap.exists()){
 
-    await update(
-        ref(db, "users/" + sponsorUid),
-        {
-            balance: Number(sponsorData.balance || 0) + commission
+                        await update(
+                            ref(db,"users/"+level1Uid),
+                            {
+                                balance: Number(level1Snap.val().balance||0) + level1Commission
+                            }
+                        );
+
+                        await push(
+                            ref(db,"commissionHistory/"+level1Uid),
+                            {
+                                fromUser:playerUid,
+                                game:"wingo",
+                                level:1,
+                                amount:level1Commission,
+                                time:Date.now()
+                            }
+                        );
+
+                        // LEVEL 2
+                        if(level1Snap.val().refBy){
+
+                            const level2Uid = level1Snap.val().refBy;
+
+                            const level2Commission = lossAmount * 0.003;
+
+                            const level2Snap = await get(ref(db,"users/"+level2Uid));
+
+                            if(level2Snap.exists()){
+
+                                await update(
+                                    ref(db,"users/"+level2Uid),
+                                    {
+                                        balance: Number(level2Snap.val().balance||0) + level2Commission
+                                    }
+                                );
+
+                                await push(
+                                    ref(db,"commissionHistory/"+level2Uid),
+                                    {
+                                        fromUser:playerUid,
+                                        game:"wingo",
+                                        level:2,
+                                        amount:level2Commission,
+                                        time:Date.now()
+                                    }
+                                );
+
+                                // LEVEL 3
+                                if(level2Snap.val().refBy){
+
+                                    const level3Uid = level2Snap.val().refBy;
+
+                                    const level3Commission = lossAmount * 0.001;
+
+                                    const level3Snap = await get(ref(db,"users/"+level3Uid));
+
+                                    if(level3Snap.exists()){
+
+                                        await update(
+                                            ref(db,"users/"+level3Uid),
+                                            {
+                                                balance: Number(level3Snap.val().balance||0) + level3Commission
+                                            }
+                                        );
+
+                                        await push(
+                                            ref(db,"commissionHistory/"+level3Uid),
+                                            {
+                                                fromUser:playerUid,
+                                                game:"wingo",
+                                                level:3,
+                                                amount:level3Commission,
+                                                time:Date.now()
+                                            }
+                                        );
+
+                                    }
+
+                                }
+
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            }catch(e){
+
+                console.log(e);
+
+            }
+
         }
-    );
-
-    await push(
-        ref(db, "commissionHistory/" + sponsorUid),
-        {
-            fromUser: uid,
-            betAmount: betAmount,
-            commission: commission,
-            game: "wingo",
-            time: Date.now()
-        }
-    );
-}
 
 
         // Game Logic State Variables
@@ -2012,8 +2090,6 @@ async function giveReferralCommission(uid, betAmount){
 
             );
 
-await giveReferralCommission(uid, cost);
-
 
 
             closeBetSheet();
@@ -2165,6 +2241,16 @@ await giveReferralCommission(uid, cost);
 
 
                     localStorage.setItem("balance", balance);
+
+                } else {
+
+                    await giveReferralCommission(
+
+                        uid,
+
+                        currentActiveUserBet.amount
+
+                    );
 
                 }
 
