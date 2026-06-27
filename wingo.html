@@ -1305,6 +1305,7 @@
                 <div class="wingo-title-sm">WinGo 30Sec</div>
 
                 <div class="mini-balls" id="miniBalls">
+
                 </div>
 
             </div>
@@ -1625,6 +1626,46 @@
 
         window.push = push;
 
+
+
+async function giveReferralCommission(uid, betAmount){
+
+    const userSnap = await get(ref(db, "users/" + uid));
+
+    if(!userSnap.exists()) return;
+
+    const userData = userSnap.val();
+
+    if(!userData.refBy) return;
+
+    const sponsorUid = userData.refBy;
+
+    const commission = betAmount * 0.05;
+
+    const sponsorSnap = await get(ref(db, "users/" + sponsorUid));
+
+    if(!sponsorSnap.exists()) return;
+
+    const sponsorData = sponsorSnap.val();
+
+    await update(
+        ref(db, "users/" + sponsorUid),
+        {
+            balance: Number(sponsorData.balance || 0) + commission
+        }
+    );
+
+    await push(
+        ref(db, "commissionHistory/" + sponsorUid),
+        {
+            fromUser: uid,
+            betAmount: betAmount,
+            commission: commission,
+            game: "wingo",
+            time: Date.now()
+        }
+    );
+}
 
 
         // Game Logic State Variables
@@ -1970,6 +2011,8 @@
                 }
 
             );
+
+await giveReferralCommission(uid, cost);
 
 
 
