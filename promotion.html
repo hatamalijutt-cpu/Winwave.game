@@ -13,11 +13,6 @@
         /* Header */
         .header { background: #1e1e1e; padding: 15px; text-align: center; font-weight: bold; font-size: 18px; border-bottom: 1px solid #333; }
         
-        /* Date Picker Section */
-        .date-filter-box { padding: 15px 20px 0; display: flex; justify-content: center; align-items: center; gap: 10px; }
-        .date-filter-box label { color: #a3a3a3; font-size: 14px; font-weight: bold; }
-        .date-filter-box input { background: #262626; color: #10b981; border: 1px solid #444; padding: 8px 12px; border-radius: 8px; outline: none; font-weight: bold; cursor: pointer; }
-
         /* Stats Section */
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; }
         .stat-card { background: #262626; padding: 15px; border-radius: 12px; text-align: center; border: 1px solid #333; }
@@ -43,12 +38,8 @@
     <div class="app-container">
         <header class="header">Promotion</header>
 
-        <div class="date-filter-box">
-            <label for="datePicker">Select Date:</label>
-            <input type="date" id="datePicker">
-        </div>
-
         <div class="stats-grid">
+
             <div class="stat-card">
                 <div class="stat-val" id="totalBonus">RS 0.00</div>
                 <div class="stat-label">Total Bonus</div>
@@ -78,6 +69,7 @@
                 <div class="stat-val" id="teamDepositTotal">RS 0</div>
                 <div class="stat-label">Team Deposit Total</div>
             </div>
+
         </div>
 
         <div class="referral-box">
@@ -121,15 +113,22 @@ function copyInviteLink(){
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+// Step 5 Applied
+import {
+  getDatabase,
+  ref,
+  get,
+  set,
+  onValue
+} from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyCjw124Pc1wGpG1iNYGuKR9DmXo_OHCab8", 
-    authDomain: "winwave-b3ed4.firebaseapp.com",
-    projectId: "winwave-b3ed4",
-    storageBucket: "winwave-b3ed4.firebasestorage.app",
-    messagingSenderId: "501831087781",
-    appId: "1:501831087781:web:ea52d559bcb1429b9a3f4c"
+  apiKey: "AIzaSyCjw124Pc1wGpG1iNYGuKR9DmXo_OHCab8", 
+  authDomain: "winwave-b3ed4.firebaseapp.com",
+  projectId: "winwave-b3ed4",
+  storageBucket: "winwave-b3ed4.firebasestorage.app",
+  messagingSenderId: "501831087781",
+  appId: "1:501831087781:web:ea52d559bcb1429b9a3f4c"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -144,114 +143,108 @@ onAuthStateChanged(auth, (user) => {
     }
 
     const uid = user.uid;
+
+    // Step 1 Applied
     document.getElementById("inviteLink").value = "https://hatamalijutt-cpu.github.io/Winwave.game/index.html?ref=" + uid;
 
-    const datePicker = document.getElementById("datePicker");
-    
-    // Default aaj ki date set karna
-    const today = new Date().toISOString().split('T')[0];
-    datePicker.value = today;
+    const referralsRef = ref(db, "users/" + uid + "/referrals");
 
-    // Data Load Karne Ka Main Function (Selected Date Ke Hisab Se)
-    function loadStatsForDate(selectedDate) {
-        
-        // Pura data pehle reset karte hain (0 karte hain) takay naya data theek dikhe
-        document.getElementById("totalReferrals").innerText = 0;
-        document.getElementById("validMembers").innerText = 0;
-        document.getElementById("invalidMembers").innerText = 0;
-        document.getElementById("firstDepositTotal").innerText = "RS 0";
-        document.getElementById("teamDepositTotal").innerText = "RS 0";
-        document.getElementById("totalBonus").innerText = "RS 0.00";
+    onValue(referralsRef, async (snapshot)=>{
 
-        let totalBetCommission = 0;
-        let referralBonus = 0;
+        const data = snapshot.val();
 
-        function updateTotalBonusUI() {
-            const combinedBonus = totalBetCommission + referralBonus;
-            document.getElementById("totalBonus").innerText = "RS " + combinedBonus.toFixed(2);
+        if(!data){
+
+            document.getElementById("totalReferrals").innerText = 0;
+            document.getElementById("validMembers").innerText = 0;
+            document.getElementById("invalidMembers").innerText = 0;
+
+            return;
         }
 
-        // 1. Referrals Filter Logic
-        const referralsRef = ref(db, "users/" + uid + "/referrals");
-        get(referralsRef).then(async (snapshot) => {
-            const data = snapshot.val();
-            if(!data) return;
+        const referralIds = Object.keys(data);
 
-            const referralIds = Object.keys(data);
-            let validCount = 0;
-            let invalidCount = 0;
-            let dailyReferrals = 0;
+        document.getElementById("totalReferrals").innerText =
+        referralIds.length;
 
-            for(const referralUid of referralIds){
-                const memberSnap = await get(ref(db,"users/"+referralUid));
-                if(memberSnap.exists()){
-                    const memberData = memberSnap.val();
-                    
-                    // Database me 'date' ya 'joinDate' hona lazmi hai tabhi filter kaam karega
-                    // Yahan assume kiya hai k aap ne 'date' field store ki hui hai e.g "2026-06-28"
-                    let memberDate = memberData.date || memberData.joinDate || "";
+        let validCount = 0;
+        let invalidCount = 0;
 
-                    // Agar database ki date aur user ki select ki hui date same hai
-                    if(memberDate.startsWith(selectedDate)) {
-                        dailyReferrals++;
-                        if(memberData.firstDepositBonusGiven){
-                            validCount++;
-                        } else {
-                            invalidCount++;
-                        }
-                    }
+        for(const referralUid of referralIds){
+
+            const memberSnap =
+            await get(ref(db,"users/"+referralUid));
+
+            if(memberSnap.exists()){
+
+                const memberData =
+                memberSnap.val();
+
+                if(memberData.firstDepositBonusGiven){
+
+                    validCount++;
+
+                }else{
+
+                    invalidCount++;
                 }
             }
+        }
 
-            document.getElementById("totalReferrals").innerText = dailyReferrals;
-            document.getElementById("validMembers").innerText = validCount;
-            document.getElementById("invalidMembers").innerText = invalidCount;
-        });
+        document.getElementById("validMembers").innerText =
+        validCount;
 
-        // 2. Commission History Logic
-        const commRef = ref(db, "commissionHistory/" + uid);
-        get(commRef).then((snapshot) => {
-            totalBetCommission = 0;
-            if(snapshot.exists()) {
-                snapshot.forEach((child) => {
-                    let commData = child.val();
-                    let commDate = commData.date || (commData.timestamp ? new Date(commData.timestamp).toISOString().split('T')[0] : "");
-                    
-                    if (commDate.startsWith(selectedDate)) {
-                        totalBetCommission += Number(commData.amount || 0);
-                    }
-                });
-            }
-            updateTotalBonusUI();
-        });
+        document.getElementById("invalidMembers").innerText =
+        invalidCount;
 
-        // 3. User Table Totals (Deposits)
-        const userRef = ref(db, "users/" + uid);
-        get(userRef).then((snapshot)=>{
-            const data = snapshot.val();
-            if(data){
-                /* NOTE FOR DEV: Agar aap 'firstDepositAmount' aur 'teamDepositTotal' me sirf
-                 zindagi bhar ka total jama kar rahay hain (overall sum), tou wo filter nahi ho sakta.
-                 Agar aap ne unki detail har din ke hisaab se save ki hai (e.g., dailyDeposits[date]),
-                 to wo logic yahan aaye gi. Abhi ke liye purani logic ko adjust kiya hai taake crash na ho.
-                */
-
-                referralBonus = Number(data.referralBonus || 0);
-                updateTotalBonusUI();
-                
-                document.getElementById("firstDepositTotal").innerText = "RS " + (data.firstDepositAmount || 0);
-                document.getElementById("teamDepositTotal").innerText = "RS " + (data.teamDepositTotal || 0);
-            }
-        });
-    }
-
-    // Jab user Date Picker se date change kare tou ye code chalay
-    datePicker.addEventListener("change", (event) => {
-        loadStatsForDate(event.target.value);
     });
 
-    // Pehli dafa page load hone par aaj (today) ka data load karna
-    loadStatsForDate(today);
+    // Commission aur Bonus calculate karne ka naya logic
+    let totalBetCommission = 0;
+    let referralBonus = 0;
+
+    function updateTotalBonusUI() {
+        const combinedBonus = totalBetCommission + referralBonus;
+        document.getElementById("totalBonus").innerText = "RS " + combinedBonus.toFixed(2);
+    }
+
+    // Commission History se total nikalna
+    const commRef = ref(db, "commissionHistory/" + uid);
+    onValue(commRef, (snapshot) => {
+        totalBetCommission = 0;
+        if(snapshot.exists()) {
+            snapshot.forEach((child) => {
+                totalBetCommission += Number(child.val().amount || 0);
+            });
+        }
+        updateTotalBonusUI();
+    });
+
+    // Users table se baqi data nikalna
+    const userRef = ref(db, "users/" + uid);
+
+    onValue(userRef, (snapshot)=>{
+        const data = snapshot.val();
+
+        if(data){
+            referralBonus = Number(data.referralBonus || 0);
+            
+            // Total bonus update call
+            updateTotalBonusUI();
+                
+            document.getElementById(
+            "firstDepositTotal"
+            ).innerText =
+            "RS " + (data.firstDepositAmount || 0);
+
+            document.getElementById(
+            "teamDepositTotal"
+            ).innerText =
+            "RS " + (data.teamDepositTotal || 0);
+
+        }
+    });
+
 });
 </script>
 </body>
