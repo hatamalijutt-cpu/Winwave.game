@@ -697,6 +697,16 @@
             try {
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
+                
+                // --- NEW ADDITIONS STARTS HERE ---
+                const uid = user.uid;
+                
+                // Fetch referral from local storage
+                const referralCode = localStorage.getItem("referral");
+                
+                // Generate Invite link:
+                const inviteLink = window.location.origin + "/register.html?ref=" + uid;
+                // --- NEW ADDITIONS ENDS HERE ---
 
                 // STEP 3: user create hone ke baad Replace kiya
                 await set(ref(db, 'users/' + user.uid), {
@@ -709,7 +719,8 @@
                     vip: "VIP1",
                     referralCode: user.uid.substring(0,6),
                     referredBy: referralUid || referralId || inviteCode || "",
-                    firstDepositBonusGiven: false
+                    firstDepositBonusGiven: false,
+                    refBy: referralCode || null // Added as requested without changing existing structure
                 });
 
                 if(referralUid){
@@ -876,6 +887,13 @@
         const referralId = urlParams.get("ref");
         if(referralId){
             localStorage.setItem("referralId", referralId);
+        }
+
+        // --- NEW ADDITION: URL se referral pakro ---
+        const params = new URLSearchParams(window.location.search);
+        const refCode = params.get("ref");
+        if(refCode){
+            localStorage.setItem("referral", refCode);
         }
 
         onAuthStateChanged(auth, (user) => {
