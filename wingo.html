@@ -1628,203 +1628,122 @@
 
 
 
-        async function giveReferralCommission(
+        // UPDATED FUNCTION WITH CONSOLE LOGS FOR DEBUGGING
 
-        playerUid,
+        async function giveReferralCommission(playerUid, betAmount) {
 
-        betAmount
+            try {
 
-        ){
+                const rates = [0.005, 0.003, 0.001]; // Level 1 = 0.5%, Level 2 = 0.3%, Level 3 = 0.1%
 
+                let currentUid = playerUid;
 
+                
 
-        try{
+                console.log(`--- COMMISSION START ---`);
 
+                console.log(`Player UID: ${playerUid} | Bet Amount: ${betAmount}`);
 
 
-        const rates=[0.005,0.003,0.001];
 
+                for (let level = 0; level < 3; level++) {
 
+                    const snap = await get(ref(db, "users/" + currentUid));
 
-        let currentUid=playerUid;
 
 
+                    if (!snap.exists()) {
 
-        for(
+                        console.log(`Level ${level}: User (${currentUid}) Database mein nahi mila. Stopping.`);
 
-        let level=0;
+                        break;
 
-        level<3;
+                    }
 
-        level++
 
-        ){
 
+                    const user = snap.val();
 
 
-        const snap=
 
-        await get(
+                    if (!user.refBy) {
 
-        ref(
+                        console.log(`Level ${level}: User (${currentUid}) ka koi refBy (inviter) set nahi hai. Stopping.`);
 
-        db,
+                        break;
 
-        "users/"+currentUid
+                    }
 
-        )
 
-        );
 
+                    const parentUid = user.refBy;
 
+                    const parentSnap = await get(ref(db, "users/" + parentUid));
 
-        if(
 
-        !snap.exists()
 
-        ) break;
+                    if (!parentSnap.exists()) {
 
+                        console.log(`Level ${level}: Parent User (${parentUid}) Firebase mein nahi mila. Stopping.`);
 
+                        break;
 
-        const user=
+                    }
 
-        snap.val();
 
 
+                    const commission = Number(betAmount) * rates[level];
 
-        if(
+                    const newBalance = Number(parentSnap.val().balance || 0) + commission;
 
-        !user.refBy
 
-        ) break;
 
+                    console.log(`[SUCCESS] Level ${level + 1} Commission: ${commission} added to Parent (${parentUid}). New Balance: ${newBalance}`);
 
 
-        const parentUid=
 
-        user.refBy;
+                    await update(ref(db, "users/" + parentUid), {
 
+                        balance: newBalance
 
+                    });
 
-        const parentSnap=
 
-        await get(
 
-        ref(
+                    await push(ref(db, "commissionHistory/" + parentUid), {
 
-        db,
+                        from: playerUid,
 
-        "users/"+parentUid
+                        level: level + 1,
 
-        )
+                        amount: commission,
 
-        );
+                        period: currentPeriod.toString(),
 
+                        time: Date.now()
 
+                    });
 
-        if(
 
-        !parentSnap.exists()
 
-        ) break;
+                    // Aglay level k liye currentUid ko parentUid bana diya
 
+                    currentUid = parentUid;
 
+                }
 
-        const commission=
+                
 
-        betAmount*
+                console.log(`--- COMMISSION END ---`);
 
-        rates[level];
+            } catch (e) {
 
+                console.error("Commission Function Error:", e);
 
-
-        const newBalance=
-
-        Number(
-
-        parentSnap.val().balance||0
-
-        )+commission;
-
-
-
-        await update(
-
-        ref(
-
-        db,
-
-        "users/"+parentUid
-
-        ),
-
-        {
-
-        balance:newBalance
+            }
 
         }
 
-        );
-
-
-
-        await push(
-
-        ref(
-
-        db,
-
-        "commissionHistory/"+parentUid
-
-        ),
-
-        {
-
-        from:playerUid,
-
-        level:level+1,
-
-        amount:commission,
-
-        period:
-
-        currentPeriod.toString(),
-
-        time:
-
-        Date.now()
-
-        }
-
-        );
-
-
-
-        currentUid=
-
-        parentUid;
-
-
-
-        }
-
-
-
-        }
-
-        catch(e){
-
-
-
-        console.log(e);
-
-
-
-        }
-
-
-
-        }
 
 
         // Game Logic State Variables
