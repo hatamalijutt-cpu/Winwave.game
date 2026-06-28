@@ -38,6 +38,10 @@
     <div class="app-container">
         <header class="header">Promotion</header>
 
+        <div style="padding:15px;text-align:center;">
+            <input type="date" id="historyDate">
+        </div>
+
         <div class="stats-grid">
 
             <div class="stat-card">
@@ -143,6 +147,45 @@ onAuthStateChanged(auth, (user) => {
     }
 
     const uid = user.uid;
+
+    // --- Steps 3, 4, 5, 6, 7 Implementation Started ---
+    
+    // Step 3 — Default Date
+    const today = new Date().toISOString().split("T")[0];
+    document.getElementById("historyDate").value = today;
+
+    // Step 6 — loadDailyData() Function & Step 4 — Naya Firebase Reference
+    async function loadDailyData(){
+        const selectedDate = document.getElementById("historyDate").value;
+        const snap = await get(ref(db, "promotionHistory/"+uid+"/"+selectedDate));
+
+        if(!snap.exists()){
+            document.getElementById("totalBonus").innerText="RS 0";
+            document.getElementById("totalReferrals").innerText="0";
+            document.getElementById("validMembers").innerText="0";
+            document.getElementById("invalidMembers").innerText="0";
+            document.getElementById("firstDepositTotal").innerText="RS 0";
+            document.getElementById("teamDepositTotal").innerText="RS 0";
+            return;
+        }
+
+        const d = snap.val();
+        document.getElementById("totalBonus").innerText="RS "+d.totalBonus;
+        document.getElementById("totalReferrals").innerText=d.totalReferrals;
+        document.getElementById("validMembers").innerText=d.validMembers;
+        document.getElementById("invalidMembers").innerText=d.invalidMembers;
+        document.getElementById("firstDepositTotal").innerText="RS "+d.firstDepositTotal;
+        document.getElementById("teamDepositTotal").innerText="RS "+d.teamDepositTotal;
+    }
+
+    // Step 5 — User Date Change Kare
+    document.getElementById("historyDate").addEventListener("change", loadDailyData);
+
+    // Step 7 - Login hone ke baad loadDailyData() call
+    loadDailyData();
+
+    // --- Steps 3, 4, 5, 6, 7 Implementation Ended ---
+
 
     // Step 1 Applied
     document.getElementById("inviteLink").value = "https://hatamalijutt-cpu.github.io/Winwave.game/index.html?ref=" + uid;
