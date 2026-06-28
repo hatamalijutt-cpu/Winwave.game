@@ -117,7 +117,6 @@ function copyInviteLink(){
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-// Step 5 Applied
 import {
   getDatabase,
   ref,
@@ -148,16 +147,14 @@ onAuthStateChanged(auth, (user) => {
 
     const uid = user.uid;
 
-    // --- Steps 3, 4, 5, 6, 7 Implementation Started ---
-    
-    // Step 3 — Default Date
+    // Default Date
     const today = new Date().toISOString().split("T")[0];
     document.getElementById("historyDate").value = today;
 
-    // Step 6 — loadDailyData() Function & Step 4 — Naya Firebase Reference
+    // Step 4 Applied — Updated loadDailyData()
     async function loadDailyData(){
         const selectedDate = document.getElementById("historyDate").value;
-        const snap = await get(ref(db, "promotionHistory/"+uid+"/"+selectedDate));
+        const snap = await get(ref(db,"promotionHistory/"+uid+"/"+selectedDate));
 
         if(!snap.exists()){
             document.getElementById("totalBonus").innerText="RS 0";
@@ -169,124 +166,24 @@ onAuthStateChanged(auth, (user) => {
             return;
         }
 
-        const d = snap.val();
-        document.getElementById("totalBonus").innerText="RS "+d.totalBonus;
-        document.getElementById("totalReferrals").innerText=d.totalReferrals;
-        document.getElementById("validMembers").innerText=d.validMembers;
-        document.getElementById("invalidMembers").innerText=d.invalidMembers;
-        document.getElementById("firstDepositTotal").innerText="RS "+d.firstDepositTotal;
-        document.getElementById("teamDepositTotal").innerText="RS "+d.teamDepositTotal;
+        const d=snap.val();
+
+        document.getElementById("totalBonus").innerText="RS "+(d.totalBonus||0);
+        document.getElementById("totalReferrals").innerText=d.totalReferrals||0;
+        document.getElementById("validMembers").innerText=d.validMembers||0;
+        document.getElementById("invalidMembers").innerText=d.invalidMembers||0;
+        document.getElementById("firstDepositTotal").innerText="RS "+(d.firstDepositTotal||0);
+        document.getElementById("teamDepositTotal").innerText="RS "+(d.teamDepositTotal||0);
     }
 
-    // Step 5 — User Date Change Kare
+    // Step 5 Applied
     document.getElementById("historyDate").addEventListener("change", loadDailyData);
-
-    // Step 7 - Login hone ke baad loadDailyData() call
     loadDailyData();
 
-    // --- Steps 3, 4, 5, 6, 7 Implementation Ended ---
-
-
-    // Step 1 Applied
+    // Invite Link Setup
     document.getElementById("inviteLink").value = "https://hatamalijutt-cpu.github.io/Winwave.game/index.html?ref=" + uid;
 
-    const referralsRef = ref(db, "users/" + uid + "/referrals");
-
-    onValue(referralsRef, async (snapshot)=>{
-
-        const data = snapshot.val();
-
-        if(!data){
-
-            document.getElementById("totalReferrals").innerText = 0;
-            document.getElementById("validMembers").innerText = 0;
-            document.getElementById("invalidMembers").innerText = 0;
-
-            return;
-        }
-
-        const referralIds = Object.keys(data);
-
-        document.getElementById("totalReferrals").innerText =
-        referralIds.length;
-
-        let validCount = 0;
-        let invalidCount = 0;
-
-        for(const referralUid of referralIds){
-
-            const memberSnap =
-            await get(ref(db,"users/"+referralUid));
-
-            if(memberSnap.exists()){
-
-                const memberData =
-                memberSnap.val();
-
-                if(memberData.firstDepositBonusGiven){
-
-                    validCount++;
-
-                }else{
-
-                    invalidCount++;
-                }
-            }
-        }
-
-        document.getElementById("validMembers").innerText =
-        validCount;
-
-        document.getElementById("invalidMembers").innerText =
-        invalidCount;
-
-    });
-
-    // Commission aur Bonus calculate karne ka naya logic
-    let totalBetCommission = 0;
-    let referralBonus = 0;
-
-    function updateTotalBonusUI() {
-        const combinedBonus = totalBetCommission + referralBonus;
-        document.getElementById("totalBonus").innerText = "RS " + combinedBonus.toFixed(2);
-    }
-
-    // Commission History se total nikalna
-    const commRef = ref(db, "commissionHistory/" + uid);
-    onValue(commRef, (snapshot) => {
-        totalBetCommission = 0;
-        if(snapshot.exists()) {
-            snapshot.forEach((child) => {
-                totalBetCommission += Number(child.val().amount || 0);
-            });
-        }
-        updateTotalBonusUI();
-    });
-
-    // Users table se baqi data nikalna
-    const userRef = ref(db, "users/" + uid);
-
-    onValue(userRef, (snapshot)=>{
-        const data = snapshot.val();
-
-        if(data){
-            referralBonus = Number(data.referralBonus || 0);
-            
-            // Total bonus update call
-            updateTotalBonusUI();
-                
-            document.getElementById(
-            "firstDepositTotal"
-            ).innerText =
-            "RS " + (data.firstDepositAmount || 0);
-
-            document.getElementById(
-            "teamDepositTotal"
-            ).innerText =
-            "RS " + (data.teamDepositTotal || 0);
-
-        }
-    });
+    // Steps 1, 2, and 3 Applied: Removed referralsRef, commRef, and userRef blocks entirely as requested.
 
 });
 </script>
