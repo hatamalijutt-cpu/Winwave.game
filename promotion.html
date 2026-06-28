@@ -199,19 +199,38 @@ onAuthStateChanged(auth, (user) => {
 
     });
 
+    // Commission aur Bonus calculate karne ka naya logic
+    let totalBetCommission = 0;
+    let referralBonus = 0;
+
+    function updateTotalBonusUI() {
+        const combinedBonus = totalBetCommission + referralBonus;
+        document.getElementById("totalBonus").innerText = "RS " + combinedBonus.toFixed(2);
+    }
+
+    // Commission History se total nikalna
+    const commRef = ref(db, "commissionHistory/" + uid);
+    onValue(commRef, (snapshot) => {
+        totalBetCommission = 0;
+        if(snapshot.exists()) {
+            snapshot.forEach((child) => {
+                totalBetCommission += Number(child.val().amount || 0);
+            });
+        }
+        updateTotalBonusUI();
+    });
+
+    // Users table se baqi data nikalna
     const userRef = ref(db, "users/" + uid);
 
     onValue(userRef, (snapshot)=>{
         const data = snapshot.val();
 
         if(data){
-
-            const totalBonus =
-                (data.totalCommission || 0) +
-                (data.referralBonus || 0);
-
-            document.getElementById("totalBonus").innerText =
-                "RS " + totalBonus;
+            referralBonus = Number(data.referralBonus || 0);
+            
+            // Total bonus update call
+            updateTotalBonusUI();
                 
             document.getElementById(
             "firstDepositTotal"
