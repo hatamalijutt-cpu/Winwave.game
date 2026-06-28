@@ -1,137 +1,134 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Promotion - Winwave</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background-color: #121212; color: #ffffff; display: flex; justify-content: center; }
-        .app-container { width: 100%; max-width: 450px; background-color: #1a1a1a; min-height: 100vh; padding-bottom: 80px; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Promotion - Winwave</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: #121212; color: #ffffff; display: flex; justify-content: center; }
+        .app-container { width: 100%; max-width: 450px; background-color: #1a1a1a; min-height: 100vh; padding-bottom: 80px; }
 
-        /* Header */
-        .header { background: #1e1e1e; padding: 15px; text-align: center; font-weight: bold; font-size: 18px; border-bottom: 1px solid #333; }
-        
-        /* Stats Section */
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; }
-        .stat-card { background: #262626; padding: 15px; border-radius: 12px; text-align: center; border: 1px solid #333; }
-        .stat-val { font-size: 20px; color: #10b981; font-weight: bold; margin-bottom: 5px; }
-        .stat-label { font-size: 12px; color: #a3a3a3; }
+        /* Header */
+        .header { background: #1e1e1e; padding: 15px; text-align: center; font-weight: bold; font-size: 18px; border-bottom: 1px solid #333; }
+        
+        /* Stats Section */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; }
+        .stat-card { background: #262626; padding: 15px; border-radius: 12px; text-align: center; border: 1px solid #333; }
+        .stat-val { font-size: 20px; color: #10b981; font-weight: bold; margin-bottom: 5px; }
+        .stat-label { font-size: 12px; color: #a3a3a3; }
 
-        /* Referral Link Section */
-        .referral-box { background: #262626; margin: 0 20px 20px 20px; padding: 20px; border-radius: 12px; border: 1px solid #333; }
-        .ref-input { width: 100%; background: #121212; border: 1px solid #444; padding: 12px; color: white; border-radius: 8px; margin-top: 10px; text-align: center; }
-        
-        /* Promotion Action Buttons */
-        .action-btns { display: flex; flex-direction: column; gap: 10px; padding: 0 20px; }
-        .btn-green { background: #10b981; padding: 15px; border-radius: 8px; text-align: center; font-weight: bold; cursor: pointer; text-decoration: none; color: white; display: block; }
-        
-        /* Bottom Nav (Consistent) */
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 450px; background-color: #1e1e1e; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #2a2a2a; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; color: #a3a3a3; text-decoration: none; font-size: 11px; gap: 4px; }
-        .nav-item.active { color: #10b981; }
-    </style>
+        /* Referral Link Section */
+        .referral-box { background: #262626; margin: 0 20px 20px 20px; padding: 20px; border-radius: 12px; border: 1px solid #333; }
+        .ref-input { width: 100%; background: #121212; border: 1px solid #444; padding: 12px; color: white; border-radius: 8px; margin-top: 10px; text-align: center; }
+        
+        /* Promotion Action Buttons */
+        .action-btns { display: flex; flex-direction: column; gap: 10px; padding: 0 20px; }
+        .btn-green { background: #10b981; padding: 15px; border-radius: 8px; text-align: center; font-weight: bold; cursor: pointer; text-decoration: none; color: white; display: block; }
+        
+        /* Bottom Nav (Consistent) */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 450px; background-color: #1e1e1e; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #2a2a2a; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #a3a3a3; text-decoration: none; font-size: 11px; gap: 4px; }
+        .nav-item.active { color: #10b981; }
+    </style>
 </head>
 <body>
 
-    <div class="app-container">
-        <header class="header">Promotion</header>
+    <div class="app-container">
+        <header class="header">Promotion</header>
 
-        <div style="padding:15px;text-align:center;">
-            <input type="date" id="historyDate">
-        </div>
+        <div class="stats-grid">
 
-        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-val" id="totalBonus">RS 0.00</div>
+                <div class="stat-label">Total Bonus</div>
+            </div>
 
-            <div class="stat-card">
-                <div class="stat-val" id="totalBonus">RS 0.00</div>
-                <div class="stat-label">Total Bonus</div>
-            </div>
+            <div class="stat-card">
+                <div class="stat-val" id="totalReferrals">0</div>
+                <div class="stat-label">Total Referrals</div>
+            </div>
 
-            <div class="stat-card">
-                <div class="stat-val" id="totalReferrals">0</div>
-                <div class="stat-label">Total Referrals</div>
-            </div>
+            <div class="stat-card">
+                <div class="stat-val" id="validMembers">0</div>
+                <div class="stat-label">Valid Members</div>
+            </div>
 
-            <div class="stat-card">
-                <div class="stat-val" id="validMembers">0</div>
-                <div class="stat-label">Valid Members</div>
-            </div>
+            <div class="stat-card">
+                <div class="stat-val" id="invalidMembers">0</div>
+                <div class="stat-label">Invalid Members</div>
+            </div>
 
-            <div class="stat-card">
-                <div class="stat-val" id="invalidMembers">0</div>
-                <div class="stat-label">Invalid Members</div>
-            </div>
+            <div class="stat-card">
+                <div class="stat-val" id="firstDepositTotal">RS 0</div>
+                <div class="stat-label">First Deposit Total</div>
+            </div>
 
-            <div class="stat-card">
-                <div class="stat-val" id="firstDepositTotal">RS 0</div>
-                <div class="stat-label">First Deposit Total</div>
-            </div>
+            <div class="stat-card">
+                <div class="stat-val" id="teamDepositTotal">RS 0</div>
+                <div class="stat-label">Team Deposit Total</div>
+            </div>
 
-            <div class="stat-card">
-                <div class="stat-val" id="teamDepositTotal">RS 0</div>
-                <div class="stat-label">Team Deposit Total</div>
-            </div>
+        </div>
 
-        </div>
+        <div class="referral-box">
+            <div style="font-size: 14px; text-align: center;">Your Invite Link:</div>
+            <input type="text" class="ref-input" id="inviteLink" readonly>
+        </div>
 
-        <div class="referral-box">
-            <div style="font-size: 14px; text-align: center;">Your Invite Link:</div>
-            <input type="text" class="ref-input" id="inviteLink" readonly>
-        </div>
+        <div class="action-btns">
+            <div class="btn-green" onclick="copyInviteLink()">Copy Invite Link</div>
+            <a href="history.html" class="btn-green" style="background:#3b82f6;">History</a>
+        </div>
 
-        <div class="action-btns">
-            <div class="btn-green" onclick="copyInviteLink()">Copy Invite Link</div>
-            <a href="history.html" class="btn-green" style="background:#3b82f6;">History</a>
-        </div>
-
-        <nav class="bottom-nav">
-            <a href="index.html" class="nav-item">
-                <i class="fa-solid fa-house"></i> <span>Home</span>
-            </a>
-            <a href="promotion.html" class="nav-item active">
-                <i class="fa-solid fa-gift"></i> <span>Promotion</span>
-            </a>
-            <a href="earn.html" class="nav-item">
-                <i class="fa-solid fa-circle-dollar-to-slot" style="font-size: 22px; color: #10b981;"></i> <span>Earn</span>
-            </a>
-            <a href="#" class="nav-item">
-                <i class="fa-solid fa-volleyball"></i> <span>Sports</span>
-            </a>
-            <a href="deposit.html" class="nav-item">
-                <i class="fa-solid fa-wallet"></i> <span>Wallet</span>
-            </a>
-        </nav>
-    </div>
+        <nav class="bottom-nav">
+            <a href="index.html" class="nav-item">
+                <i class="fa-solid fa-house"></i> <span>Home</span>
+            </a>
+            <a href="promotion.html" class="nav-item active">
+                <i class="fa-solid fa-gift"></i> <span>Promotion</span>
+            </a>
+            <a href="earn.html" class="nav-item">
+                <i class="fa-solid fa-circle-dollar-to-slot" style="font-size: 22px; color: #10b981;"></i> <span>Earn</span>
+            </a>
+            <a href="#" class="nav-item">
+                <i class="fa-solid fa-volleyball"></i> <span>Sports</span>
+            </a>
+            <a href="deposit.html" class="nav-item">
+                <i class="fa-solid fa-wallet"></i> <span>Wallet</span>
+            </a>
+        </nav>
+    </div>
 
 <script>
 // Copy Link
 function copyInviteLink(){
-    let link = document.getElementById("inviteLink").value;
-    navigator.clipboard.writeText(link);
-    alert("Invite Link Copied Successfully!");
+    let link = document.getElementById("inviteLink").value;
+    navigator.clipboard.writeText(link);
+    alert("Invite Link Copied Successfully!");
 }
 </script>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+// Step 5 Applied
 import {
-  getDatabase,
-  ref,
-  get,
-  set,
-  onValue
+  getDatabase,
+  ref,
+  get,
+  set,
+  onValue
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCjw124Pc1wGpG1iNYGuKR9DmXo_OHCab8", 
-  authDomain: "winwave-b3ed4.firebaseapp.com",
-  projectId: "winwave-b3ed4",
-  storageBucket: "winwave-b3ed4.firebasestorage.app",
-  messagingSenderId: "501831087781",
-  appId: "1:501831087781:web:ea52d559bcb1429b9a3f4c"
+  apiKey: "AIzaSyCjw124Pc1wGpG1iNYGuKR9DmXo_OHCab8", 
+  authDomain: "winwave-b3ed4.firebaseapp.com",
+  projectId: "winwave-b3ed4",
+  storageBucket: "winwave-b3ed4.firebasestorage.app",
+  messagingSenderId: "501831087781",
+  appId: "1:501831087781:web:ea52d559bcb1429b9a3f4c"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -140,50 +137,113 @@ const db = getDatabase(app);
 
 onAuthStateChanged(auth, (user) => {
 
-    if(!user){
-        alert("Please Login First");
-        return;
-    }
+    if(!user){
+        alert("Please Login First");
+        return;
+    }
 
-    const uid = user.uid;
+    const uid = user.uid;
 
-    // Default Date
-    const today = new Date().toISOString().split("T")[0];
-    document.getElementById("historyDate").value = today;
+    // Step 1 Applied
+    document.getElementById("inviteLink").value = "https://hatamalijutt-cpu.github.io/Winwave.game/index.html?ref=" + uid;
 
-    // Step 4 Applied — Updated loadDailyData()
-    async function loadDailyData(){
-        const selectedDate = document.getElementById("historyDate").value;
-        const snap = await get(ref(db,"promotionHistory/"+uid+"/"+selectedDate));
+    const referralsRef = ref(db, "users/" + uid + "/referrals");
 
-        if(!snap.exists()){
-            document.getElementById("totalBonus").innerText="RS 0";
-            document.getElementById("totalReferrals").innerText="0";
-            document.getElementById("validMembers").innerText="0";
-            document.getElementById("invalidMembers").innerText="0";
-            document.getElementById("firstDepositTotal").innerText="RS 0";
-            document.getElementById("teamDepositTotal").innerText="RS 0";
-            return;
-        }
+    onValue(referralsRef, async (snapshot)=>{
 
-        const d=snap.val();
+        const data = snapshot.val();
 
-        document.getElementById("totalBonus").innerText="RS "+(d.totalBonus||0);
-        document.getElementById("totalReferrals").innerText=d.totalReferrals||0;
-        document.getElementById("validMembers").innerText=d.validMembers||0;
-        document.getElementById("invalidMembers").innerText=d.invalidMembers||0;
-        document.getElementById("firstDepositTotal").innerText="RS "+(d.firstDepositTotal||0);
-        document.getElementById("teamDepositTotal").innerText="RS "+(d.teamDepositTotal||0);
-    }
+        if(!data){
 
-    // Step 5 Applied
-    document.getElementById("historyDate").addEventListener("change", loadDailyData);
-    loadDailyData();
+            document.getElementById("totalReferrals").innerText = 0;
+            document.getElementById("validMembers").innerText = 0;
+            document.getElementById("invalidMembers").innerText = 0;
 
-    // Invite Link Setup
-    document.getElementById("inviteLink").value = "https://hatamalijutt-cpu.github.io/Winwave.game/index.html?ref=" + uid;
+            return;
+        }
 
-    // Steps 1, 2, and 3 Applied: Removed referralsRef, commRef, and userRef blocks entirely as requested.
+        const referralIds = Object.keys(data);
+
+        document.getElementById("totalReferrals").innerText =
+        referralIds.length;
+
+        let validCount = 0;
+        let invalidCount = 0;
+
+        for(const referralUid of referralIds){
+
+            const memberSnap =
+            await get(ref(db,"users/"+referralUid));
+
+            if(memberSnap.exists()){
+
+                const memberData =
+                memberSnap.val();
+
+                if(memberData.firstDepositBonusGiven){
+
+                    validCount++;
+
+                }else{
+
+                    invalidCount++;
+                }
+            }
+        }
+
+        document.getElementById("validMembers").innerText =
+        validCount;
+
+        document.getElementById("invalidMembers").innerText =
+        invalidCount;
+
+    });
+
+    // Commission aur Bonus calculate karne ka naya logic
+    let totalBetCommission = 0;
+    let referralBonus = 0;
+
+    function updateTotalBonusUI() {
+        const combinedBonus = totalBetCommission + referralBonus;
+        document.getElementById("totalBonus").innerText = "RS " + combinedBonus.toFixed(2);
+    }
+
+    // Commission History se total nikalna
+    const commRef = ref(db, "commissionHistory/" + uid);
+    onValue(commRef, (snapshot) => {
+        totalBetCommission = 0;
+        if(snapshot.exists()) {
+            snapshot.forEach((child) => {
+                totalBetCommission += Number(child.val().amount || 0);
+            });
+        }
+        updateTotalBonusUI();
+    });
+
+    // Users table se baqi data nikalna
+    const userRef = ref(db, "users/" + uid);
+
+    onValue(userRef, (snapshot)=>{
+        const data = snapshot.val();
+
+        if(data){
+            referralBonus = Number(data.referralBonus || 0);
+            
+            // Total bonus update call
+            updateTotalBonusUI();
+                
+            document.getElementById(
+            "firstDepositTotal"
+            ).innerText =
+            "RS " + (data.firstDepositAmount || 0);
+
+            document.getElementById(
+            "teamDepositTotal"
+            ).innerText =
+            "RS " + (data.teamDepositTotal || 0);
+
+        }
+    });
 
 });
 </script>
