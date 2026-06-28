@@ -1492,13 +1492,13 @@
 
             <div class="amount-selector">
 
-                <div class="amt-chip-bet active" onclick="selectAmount(10, this)">10</div>
+                <div class="amt-chip-bet active" onclick="selectAmount(300, this)">300</div>
 
-                <div class="amt-chip-bet" onclick="selectAmount(50, this)">50</div>
+                <div class="amt-chip-bet" onclick="selectAmount(1000, this)">1000</div>
 
-                <div class="amt-chip-bet" onclick="selectAmount(100, this)">100</div>
+                <div class="amt-chip-bet" onclick="selectAmount(5000, this)">5000</div>
 
-                <div class="amt-chip-bet" onclick="selectAmount(500, this)">500</div>
+                <div class="amt-chip-bet" onclick="selectAmount(10000, this)">10000</div>
 
             </div>
 
@@ -1522,7 +1522,7 @@
 
                 <span>Total Payable Amount:</span>
 
-                <span style="color:#00dfad; font-weight:bold;">RS <span id="totalBetValueDisplay">10</span></span>
+                <span style="color:#00dfad; font-weight:bold;">RS <span id="totalBetValueDisplay">300</span></span>
 
             </div>
 
@@ -1778,7 +1778,7 @@
 
         let selectedBetTarget = '';
 
-        let selectedBaseAmount = 10;
+        let selectedBaseAmount = 300;
 
         let selectedMultiplierMultiplier = 1;
 
@@ -1995,6 +1995,28 @@
 
 
             let cost = selectedBaseAmount * selectedMultiplierMultiplier;
+
+
+
+            // New Minimum and Maximum Limits applied
+
+            if (cost < 300) {
+
+                alert("Minimum bet limit is RS 300");
+
+                return;
+
+            }
+
+            
+
+            if (cost > 100000) {
+
+                alert("Maximum bet limit is RS 100,000");
+
+                return;
+
+            }
 
 
 
