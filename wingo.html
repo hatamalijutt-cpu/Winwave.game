@@ -1628,120 +1628,201 @@
 
 
 
-        async function giveReferralCommission(playerUid, lossAmount){
+        async function giveReferralCommission(
 
-            try{
+        playerUid,
 
-                const playerSnap = await get(ref(db,"users/" + playerUid));
+        betAmount
 
-                if(!playerSnap.exists()) return;
+        ){
 
-                const playerData = playerSnap.val();
 
-                // LEVEL 1
-                if(playerData.refBy){
 
-                    const level1Uid = playerData.refBy;
+        try{
 
-                    const level1Commission = lossAmount * 0.005;
 
-                    const level1Snap = await get(ref(db,"users/"+level1Uid));
 
-                    if(level1Snap.exists()){
+        const rates=[0.005,0.003,0.001];
 
-                        await update(
-                            ref(db,"users/"+level1Uid),
-                            {
-                                balance: Number(level1Snap.val().balance||0) + level1Commission
-                            }
-                        );
 
-                        await push(
-                            ref(db,"commissionHistory/"+level1Uid),
-                            {
-                                fromUser:playerUid,
-                                game:"wingo",
-                                level:1,
-                                amount:level1Commission,
-                                time:Date.now()
-                            }
-                        );
 
-                        // LEVEL 2
-                        if(level1Snap.val().refBy){
+        let currentUid=playerUid;
 
-                            const level2Uid = level1Snap.val().refBy;
 
-                            const level2Commission = lossAmount * 0.003;
 
-                            const level2Snap = await get(ref(db,"users/"+level2Uid));
+        for(
 
-                            if(level2Snap.exists()){
+        let level=0;
 
-                                await update(
-                                    ref(db,"users/"+level2Uid),
-                                    {
-                                        balance: Number(level2Snap.val().balance||0) + level2Commission
-                                    }
-                                );
+        level<3;
 
-                                await push(
-                                    ref(db,"commissionHistory/"+level2Uid),
-                                    {
-                                        fromUser:playerUid,
-                                        game:"wingo",
-                                        level:2,
-                                        amount:level2Commission,
-                                        time:Date.now()
-                                    }
-                                );
+        level++
 
-                                // LEVEL 3
-                                if(level2Snap.val().refBy){
+        ){
 
-                                    const level3Uid = level2Snap.val().refBy;
 
-                                    const level3Commission = lossAmount * 0.001;
 
-                                    const level3Snap = await get(ref(db,"users/"+level3Uid));
+        const snap=
 
-                                    if(level3Snap.exists()){
+        await get(
 
-                                        await update(
-                                            ref(db,"users/"+level3Uid),
-                                            {
-                                                balance: Number(level3Snap.val().balance||0) + level3Commission
-                                            }
-                                        );
+        ref(
 
-                                        await push(
-                                            ref(db,"commissionHistory/"+level3Uid),
-                                            {
-                                                fromUser:playerUid,
-                                                game:"wingo",
-                                                level:3,
-                                                amount:level3Commission,
-                                                time:Date.now()
-                                            }
-                                        );
+        db,
 
-                                    }
+        "users/"+currentUid
 
-                                }
+        )
 
-                            }
+        );
 
-                        }
 
-                    }
 
-                }
+        if(
 
-            }catch(e){
+        !snap.exists()
 
-                console.log(e);
+        ) break;
 
-            }
+
+
+        const user=
+
+        snap.val();
+
+
+
+        if(
+
+        !user.refBy
+
+        ) break;
+
+
+
+        const parentUid=
+
+        user.refBy;
+
+
+
+        const parentSnap=
+
+        await get(
+
+        ref(
+
+        db,
+
+        "users/"+parentUid
+
+        )
+
+        );
+
+
+
+        if(
+
+        !parentSnap.exists()
+
+        ) break;
+
+
+
+        const commission=
+
+        betAmount*
+
+        rates[level];
+
+
+
+        const newBalance=
+
+        Number(
+
+        parentSnap.val().balance||0
+
+        )+commission;
+
+
+
+        await update(
+
+        ref(
+
+        db,
+
+        "users/"+parentUid
+
+        ),
+
+        {
+
+        balance:newBalance
+
+        }
+
+        );
+
+
+
+        await push(
+
+        ref(
+
+        db,
+
+        "commissionHistory/"+parentUid
+
+        ),
+
+        {
+
+        from:playerUid,
+
+        level:level+1,
+
+        amount:commission,
+
+        period:
+
+        currentPeriod.toString(),
+
+        time:
+
+        Date.now()
+
+        }
+
+        );
+
+
+
+        currentUid=
+
+        parentUid;
+
+
+
+        }
+
+
+
+        }
+
+        catch(e){
+
+
+
+        console.log(e);
+
+
+
+        }
+
+
 
         }
 
@@ -2212,6 +2293,18 @@
 
                 let returns = 0;
 
+
+
+                await giveReferralCommission(
+
+                    uid,
+
+                    currentActiveUserBet.amount
+
+                );
+
+
+
                 if(didWin) {
 
                     if(['Big','Small','Green','Red'].includes(target)) returns = currentActiveUserBet.amount * 1.96;
@@ -2241,16 +2334,6 @@
 
 
                     localStorage.setItem("balance", balance);
-
-                } else {
-
-                    await giveReferralCommission(
-
-                        uid,
-
-                        currentActiveUserBet.amount
-
-                    );
 
                 }
 
