@@ -291,23 +291,54 @@ window.fetchDailyStats = async function() {
 
     // 4. Lifetime Referrals Count (Taake N/A show na ho)
     const referralsSnap = await get(ref(db, "users/" + uid + "/referrals"));
+
     let totalRef = 0;
     let validCount = 0;
     let invalidCount = 0;
 
-    if(referralsSnap.exists()){
-        const data = referralsSnap.val();
-        const referralIds = Object.keys(data);
-        totalRef = referralIds.length;
-        
-        for(const referralUid of referralIds){
-            const memberSnap = await get(ref(db,"users/"+referralUid));
+    if (referralsSnap.exists()) {
+
+        const referrals = referralsSnap.val();
+
+        for (const referralUid in referrals) {
+
+            const referral = referrals[referralUid];
+
+            if (!referral.joinedAt) continue;
+
+            const joinedDate =
+                new Date(referral.joinedAt)
+                .toLocaleDateString(
+                    "en-CA",
+                    {
+                        timeZone:"Asia/Karachi"
+                    }
+                );
+
+            if (joinedDate !== selectedDate)
+                continue;
+
+            totalRef++;
+
+            const memberSnap =
+            await get(
+                ref(db,"users/"+referralUid)
+            );
+
             if(memberSnap.exists()){
-                const memberData = memberSnap.val();
-                if(memberData.firstDepositBonusGiven) validCount++;
-                else invalidCount++;
+
+                const member =
+                memberSnap.val();
+
+                if(member.firstDepositBonusGiven)
+                    validCount++;
+
+                else
+                    invalidCount++;
             }
+
         }
+
     }
 
     // Update UI with Final Data
