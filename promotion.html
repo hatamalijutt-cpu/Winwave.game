@@ -243,6 +243,7 @@ window.fetchDailyStats = async function() {
     let dailyBonus = 0;
     let dailyTeamDeposit = 0;
     let dailyFirstDepositAmount = 0;
+    let dailyValidMembers = 0; // Us din kitne logon ne pehla deposit kiya
 
     // 1. Calculate Daily Bonus from Commission History
     const commSnap = await get(ref(db, "commissionHistory/" + uid));
@@ -258,14 +259,7 @@ window.fetchDailyStats = async function() {
         });
     }
 
-    // 2. Get Lifetime Referral Bonus (Kyunke iski date save nahi hoti DB mein)
-    let lifetimeReferralBonus = 0;
-    const userSnap = await get(ref(db, "users/" + uid));
-    if(userSnap.exists()) {
-        lifetimeReferralBonus = Number(userSnap.val().referralBonus || 0);
-    }
-
-    // 3. Calculate Team Deposits for the selected date
+    // 2. Calculate Team Deposits for the selected date
     const teamMembers = await getTeamMembers(uid);
     
     for(const memberUid of teamMembers) {
@@ -280,8 +274,10 @@ window.fetchDailyStats = async function() {
                     if(depositDate === selectedDate) {
                         dailyTeamDeposit += Number(dep.amount || 0);
                         
+                        // Agar us din pehla deposit hua, toh amount aur Valid Member count plus hoga
                         if(dep.isFirstDeposit) {
                             dailyFirstDepositAmount += Number(dep.amount || 0);
+                            dailyValidMembers++;
                         }
                     }
                 }
@@ -289,40 +285,17 @@ window.fetchDailyStats = async function() {
         }
     }
 
-    // 4. Lifetime Referrals Count (Taake N/A show na ho)
-    const referralsSnap = await get(ref(db, "users/" + uid + "/referrals"));
-    let totalRef = 0;
-    let validCount = 0;
-    let invalidCount = 0;
-
-    if(referralsSnap.exists()){
-        const data = referralsSnap.val();
-        const referralIds = Object.keys(data);
-        totalRef = referralIds.length;
-        
-        for(const referralUid of referralIds){
-            const memberSnap = await get(ref(db,"users/"+referralUid));
-            if(memberSnap.exists()){
-                const memberData = memberSnap.val();
-                if(memberData.firstDepositBonusGiven) validCount++;
-                else invalidCount++;
-            }
-        }
-    }
-
-    // Update UI with Final Data
-    const totalDisplayBonus = dailyBonus + lifetimeReferralBonus; // Daily Commission + Total Referral Bonus
-    
-    document.getElementById("totalBonus").innerText = "RS " + totalDisplayBonus.toFixed(2);
+    // Update UI with Exact Daily Data
+    document.getElementById("totalBonus").innerText = "RS " + dailyBonus.toFixed(2);
     document.getElementById("teamDepositTotal").innerText = "RS " + dailyTeamDeposit;
     document.getElementById("firstDepositTotal").innerText = "RS " + dailyFirstDepositAmount;
     
-    // In teen boxes mein Total Record hi show hoga
-    document.getElementById("validMembers").innerText = validCount;
-    document.getElementById("totalReferrals").innerText = totalRef; 
-    document.getElementById("invalidMembers").innerText = invalidCount;
+    // Sirf is specific date ka data show hoga
+    document.getElementById("validMembers").innerText = dailyValidMembers;
+    document.getElementById("totalReferrals").innerText = 0; // Join Date DB mein nahi hai isliye 0
+    document.getElementById("invalidMembers").innerText = 0; // Same reason
     
-    document.getElementById("statusText").innerText = "Showing Team Deposits for: " + selectedDate;
+    document.getElementById("statusText").innerText = "Showing Data for: " + selectedDate;
     document.getElementById("statusText").style.color = "#10b981";
 }
 </script>
