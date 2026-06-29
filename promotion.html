@@ -13,6 +13,11 @@
         /* Header */
         .header { background: #1e1e1e; padding: 15px; text-align: center; font-weight: bold; font-size: 18px; border-bottom: 1px solid #333; }
         
+        /* Date Filter Section */
+        .filter-section { display: flex; gap: 10px; padding: 20px 20px 0 20px; }
+        .date-input { flex: 1; background: #121212; border: 1px solid #444; padding: 12px; color: white; border-radius: 8px; }
+        .btn-search { background: #10b981; border: none; padding: 12px 20px; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; }
+
         /* Stats Section */
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; }
         .stat-card { background: #262626; padding: 15px; border-radius: 12px; text-align: center; border: 1px solid #333; }
@@ -38,16 +43,22 @@
     <div class="app-container">
         <header class="header">Promotion</header>
 
+        <div class="filter-section">
+            <input type="date" id="filterDate" class="date-input">
+            <button class="btn-search" onclick="fetchDailyStats()">Search</button>
+        </div>
+        <div style="text-align: center; font-size: 12px; color: #a3a3a3; margin-top: 5px;" id="statusText">Showing Lifetime Data</div>
+
         <div class="stats-grid">
 
             <div class="stat-card">
                 <div class="stat-val" id="totalBonus">RS 0.00</div>
-                <div class="stat-label">Total Bonus</div>
+                <div class="stat-label">Bonus</div>
             </div>
 
             <div class="stat-card">
                 <div class="stat-val" id="totalReferrals">0</div>
-                <div class="stat-label">Total Referrals</div>
+                <div class="stat-label">Referrals</div>
             </div>
 
             <div class="stat-card">
@@ -102,7 +113,6 @@
     </div>
 
 <script>
-// Copy Link
 function copyInviteLink(){
     let link = document.getElementById("inviteLink").value;
     navigator.clipboard.writeText(link);
@@ -113,12 +123,10 @@ function copyInviteLink(){
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-// Step 5 Applied
 import {
   getDatabase,
   ref,
   get,
-  set,
   onValue
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
@@ -135,117 +143,162 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
 
-onAuthStateChanged(auth, (user) => {
+let currentUserUid = null;
 
+// Helper Function: Recursion se team nikalna (Admin panel wali logic)
+async function getTeamMembers(uid){
+    let members = [];
+    const referralsSnap = await get(ref(db, "users/" + uid + "/referrals"));
+    if(!referralsSnap.exists()) return members;
+    
+    const referrals = referralsSnap.val();
+    for(const childUid in referrals){
+        members.push(childUid);
+        const childMembers = await getTeamMembers(childUid);
+        members = members.concat(childMembers);
+    }
+    return members;
+}
+
+onAuthStateChanged(auth, (user) => {
     if(!user){
         alert("Please Login First");
         return;
     }
 
-    const uid = user.uid;
+    currentUserUid = user.uid;
+    document.getElementById("inviteLink").value = "https://hatamalijutt-cpu.github.io/Winwave.game/index.html?ref=" + currentUserUid;
 
-    // Step 1 Applied
-    document.getElementById("inviteLink").value = "https://hatamalijutt-cpu.github.io/Winwave.game/index.html?ref=" + uid;
+    // Load Lifetime stats by default on page load
+    loadLifetimeStats();
+});
 
-    const referralsRef = ref(db, "users/" + uid + "/referrals");
-
-    onValue(referralsRef, async (snapshot)=>{
-
+function loadLifetimeStats() {
+    const uid = currentUserUid;
+    document.getElementById("statusText").innerText = "Showing Lifetime Data";
+    
+    // 1. Referrals Data (Lifetime)
+    onValue(ref(db, "users/" + uid + "/referrals"), async (snapshot)=>{
         const data = snapshot.val();
-
         if(!data){
-
             document.getElementById("totalReferrals").innerText = 0;
             document.getElementById("validMembers").innerText = 0;
             document.getElementById("invalidMembers").innerText = 0;
-
             return;
         }
 
         const referralIds = Object.keys(data);
+        document.getElementById("totalReferrals").innerText = referralIds.length;
 
-        document.getElementById("totalReferrals").innerText =
-        referralIds.length;
-
-        let validCount = 0;
-        let invalidCount = 0;
-
+        let validCount = 0, invalidCount = 0;
         for(const referralUid of referralIds){
-
-            const memberSnap =
-            await get(ref(db,"users/"+referralUid));
-
+            const memberSnap = await get(ref(db,"users/"+referralUid));
             if(memberSnap.exists()){
-
-                const memberData =
-                memberSnap.val();
-
-                if(memberData.firstDepositBonusGiven){
-
-                    validCount++;
-
-                }else{
-
-                    invalidCount++;
-                }
+                const memberData = memberSnap.val();
+                if(memberData.firstDepositBonusGiven) validCount++;
+                else invalidCount++;
             }
         }
-
-        document.getElementById("validMembers").innerText =
-        validCount;
-
-        document.getElementById("invalidMembers").innerText =
-        invalidCount;
-
+        document.getElementById("validMembers").innerText = validCount;
+        document.getElementById("invalidMembers").innerText = invalidCount;
     });
 
-    // Commission aur Bonus calculate karne ka naya logic
+    // 2. Commission & Deposit Totals (Lifetime)
     let totalBetCommission = 0;
     let referralBonus = 0;
-
-    function updateTotalBonusUI() {
-        const combinedBonus = totalBetCommission + referralBonus;
-        document.getElementById("totalBonus").innerText = "RS " + combinedBonus.toFixed(2);
-    }
-
-    // Commission History se total nikalna
-    const commRef = ref(db, "commissionHistory/" + uid);
-    onValue(commRef, (snapshot) => {
+    
+    onValue(ref(db, "commissionHistory/" + uid), (snapshot) => {
         totalBetCommission = 0;
         if(snapshot.exists()) {
             snapshot.forEach((child) => {
                 totalBetCommission += Number(child.val().amount || 0);
             });
         }
-        updateTotalBonusUI();
     });
 
-    // Users table se baqi data nikalna
-    const userRef = ref(db, "users/" + uid);
-
-    onValue(userRef, (snapshot)=>{
+    onValue(ref(db, "users/" + uid), (snapshot)=>{
         const data = snapshot.val();
-
         if(data){
             referralBonus = Number(data.referralBonus || 0);
-            
-            // Total bonus update call
-            updateTotalBonusUI();
-                
-            document.getElementById(
-            "firstDepositTotal"
-            ).innerText =
-            "RS " + (data.firstDepositAmount || 0);
-
-            document.getElementById(
-            "teamDepositTotal"
-            ).innerText =
-            "RS " + (data.teamDepositTotal || 0);
-
+            document.getElementById("totalBonus").innerText = "RS " + (totalBetCommission + referralBonus).toFixed(2);
+            document.getElementById("firstDepositTotal").innerText = "RS " + (data.firstDepositAmount || 0);
+            document.getElementById("teamDepositTotal").innerText = "RS " + (data.teamDepositTotal || 0);
         }
     });
+}
 
-});
+// --- NEW FUNCTION: DATE-WISE SEARCH ---
+window.fetchDailyStats = async function() {
+    const selectedDate = document.getElementById("filterDate").value;
+    if(!selectedDate) {
+        alert("Please select a date first.");
+        return;
+    }
+
+    document.getElementById("statusText").innerText = "Loading data for " + selectedDate + "...";
+    
+    const uid = currentUserUid;
+    
+    // Daily Variables
+    let dailyBonus = 0;
+    let dailyTeamDeposit = 0;
+    let dailyFirstDepositAmount = 0;
+    let dailyValidMembers = 0; // Members who made their first deposit on this date
+
+    // 1. Calculate Daily Bonus from Commission History
+    const commSnap = await get(ref(db, "commissionHistory/" + uid));
+    if(commSnap.exists()) {
+        commSnap.forEach((child) => {
+            const item = child.val();
+            // Checking if the commission timestamp matches the selected date
+            if(item.date) {
+                const commDate = new Date(item.date).toLocaleDateString("en-CA", { timeZone: "Asia/Karachi" });
+                if(commDate === selectedDate) {
+                    dailyBonus += Number(item.amount || 0);
+                }
+            }
+        });
+    }
+
+    // 2. Calculate Team Deposits for the selected date
+    const teamMembers = await getTeamMembers(uid);
+    
+    for(const memberUid of teamMembers) {
+        const historySnap = await get(ref(db, "depositHistory/" + memberUid));
+        
+        if(historySnap.exists()) {
+            historySnap.forEach((h) => {
+                const dep = h.val();
+                if(dep.date) {
+                    const depositDate = new Date(dep.date).toLocaleDateString("en-CA", { timeZone: "Asia/Karachi" });
+                    
+                    if(depositDate === selectedDate) {
+                        dailyTeamDeposit += Number(dep.amount || 0);
+                        
+                        if(dep.isFirstDeposit) {
+                            dailyFirstDepositAmount += Number(dep.amount || 0);
+                            dailyValidMembers++;
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    // Note: Finding EXACT daily new registered referrals requires saving a 'registerDate' in the user node.
+    // If you don't have it, we show N/A for today's new registrations to avoid wrong data.
+
+    // Update UI with Daily Data
+    document.getElementById("totalBonus").innerText = "RS " + dailyBonus.toFixed(2);
+    document.getElementById("teamDepositTotal").innerText = "RS " + dailyTeamDeposit;
+    document.getElementById("firstDepositTotal").innerText = "RS " + dailyFirstDepositAmount;
+    document.getElementById("validMembers").innerText = dailyValidMembers;
+    document.getElementById("totalReferrals").innerText = "N/A"; 
+    document.getElementById("invalidMembers").innerText = "N/A";
+    
+    document.getElementById("statusText").innerText = "Showing Data for: " + selectedDate;
+    document.getElementById("statusText").style.color = "#10b981";
+}
 </script>
 </body>
 </html>
