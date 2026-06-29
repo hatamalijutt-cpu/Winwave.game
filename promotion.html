@@ -58,17 +58,17 @@
 
             <div class="stat-card">
                 <div class="stat-val" id="totalReferrals">0</div>
-                <div class="stat-label">Referrals</div>
+                <div class="stat-label">Referrals (Total)</div>
             </div>
 
             <div class="stat-card">
                 <div class="stat-val" id="validMembers">0</div>
-                <div class="stat-label">Valid Members</div>
+                <div class="stat-label">Valid (Total)</div>
             </div>
 
             <div class="stat-card">
                 <div class="stat-val" id="invalidMembers">0</div>
-                <div class="stat-label">Invalid Members</div>
+                <div class="stat-label">Invalid (Total)</div>
             </div>
 
             <div class="stat-card">
@@ -145,7 +145,7 @@ const db = getDatabase(app);
 
 let currentUserUid = null;
 
-// Helper Function: Recursion se team nikalna (Admin panel wali logic)
+// Helper Function: Recursion se team nikalna
 async function getTeamMembers(uid){
     let members = [];
     const referralsSnap = await get(ref(db, "users/" + uid + "/referrals"));
@@ -243,14 +243,12 @@ window.fetchDailyStats = async function() {
     let dailyBonus = 0;
     let dailyTeamDeposit = 0;
     let dailyFirstDepositAmount = 0;
-    let dailyValidMembers = 0; // Members who made their first deposit on this date
 
     // 1. Calculate Daily Bonus from Commission History
     const commSnap = await get(ref(db, "commissionHistory/" + uid));
     if(commSnap.exists()) {
         commSnap.forEach((child) => {
             const item = child.val();
-            // Checking if the commission timestamp matches the selected date
             if(item.date) {
                 const commDate = new Date(item.date).toLocaleDateString("en-CA", { timeZone: "Asia/Karachi" });
                 if(commDate === selectedDate) {
@@ -260,7 +258,14 @@ window.fetchDailyStats = async function() {
         });
     }
 
-    // 2. Calculate Team Deposits for the selected date
+    // 2. Get Lifetime Referral Bonus (Kyunke iski date save nahi hoti DB mein)
+    let lifetimeReferralBonus = 0;
+    const userSnap = await get(ref(db, "users/" + uid));
+    if(userSnap.exists()) {
+        lifetimeReferralBonus = Number(userSnap.val().referralBonus || 0);
+    }
+
+    // 3. Calculate Team Deposits for the selected date
     const teamMembers = await getTeamMembers(uid);
     
     for(const memberUid of teamMembers) {
@@ -277,7 +282,6 @@ window.fetchDailyStats = async function() {
                         
                         if(dep.isFirstDeposit) {
                             dailyFirstDepositAmount += Number(dep.amount || 0);
-                            dailyValidMembers++;
                         }
                     }
                 }
@@ -285,18 +289,40 @@ window.fetchDailyStats = async function() {
         }
     }
 
-    // Note: Finding EXACT daily new registered referrals requires saving a 'registerDate' in the user node.
-    // If you don't have it, we show N/A for today's new registrations to avoid wrong data.
+    // 4. Lifetime Referrals Count (Taake N/A show na ho)
+    const referralsSnap = await get(ref(db, "users/" + uid + "/referrals"));
+    let totalRef = 0;
+    let validCount = 0;
+    let invalidCount = 0;
 
-    // Update UI with Daily Data
-    document.getElementById("totalBonus").innerText = "RS " + dailyBonus.toFixed(2);
+    if(referralsSnap.exists()){
+        const data = referralsSnap.val();
+        const referralIds = Object.keys(data);
+        totalRef = referralIds.length;
+        
+        for(const referralUid of referralIds){
+            const memberSnap = await get(ref(db,"users/"+referralUid));
+            if(memberSnap.exists()){
+                const memberData = memberSnap.val();
+                if(memberData.firstDepositBonusGiven) validCount++;
+                else invalidCount++;
+            }
+        }
+    }
+
+    // Update UI with Final Data
+    const totalDisplayBonus = dailyBonus + lifetimeReferralBonus; // Daily Commission + Total Referral Bonus
+    
+    document.getElementById("totalBonus").innerText = "RS " + totalDisplayBonus.toFixed(2);
     document.getElementById("teamDepositTotal").innerText = "RS " + dailyTeamDeposit;
     document.getElementById("firstDepositTotal").innerText = "RS " + dailyFirstDepositAmount;
-    document.getElementById("validMembers").innerText = dailyValidMembers;
-    document.getElementById("totalReferrals").innerText = "N/A"; 
-    document.getElementById("invalidMembers").innerText = "N/A";
     
-    document.getElementById("statusText").innerText = "Showing Data for: " + selectedDate;
+    // In teen boxes mein Total Record hi show hoga
+    document.getElementById("validMembers").innerText = validCount;
+    document.getElementById("totalReferrals").innerText = totalRef; 
+    document.getElementById("invalidMembers").innerText = invalidCount;
+    
+    document.getElementById("statusText").innerText = "Showing Team Deposits for: " + selectedDate;
     document.getElementById("statusText").style.color = "#10b981";
 }
 </script>
