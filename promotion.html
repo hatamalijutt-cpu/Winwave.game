@@ -342,7 +342,8 @@ window.fetchDailyStats = async function() {
     }
 
     // Update UI with Final Data
-    const totalDisplayBonus = dailyBonus + lifetimeReferralBonus; // Daily Commission + Total Referral Bonus
+    // FIX CHANGED HERE: lifetimeReferralBonus ko hata diya taake date wise correct bonus dikhe
+    const totalDisplayBonus = dailyBonus; 
     
     document.getElementById("totalBonus").innerText = "RS " + totalDisplayBonus.toFixed(2);
     document.getElementById("teamDepositTotal").innerText = "RS " + dailyTeamDeposit;
