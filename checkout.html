@@ -52,8 +52,7 @@
             <div class="amount-display" id="displayAmount">RS 0</div>
 
             <div class="bank-details" id="bankDetailsBox">
-                <!-- Data will be populated via JS -->
-            </div>
+                </div>
 
             <div class="qr-section">
                 <img id="qrCodeImage" src="" alt="QR Code" class="qr-image" onerror="this.src='https://via.placeholder.com/200?text=No+QR+Code'">
@@ -74,7 +73,6 @@
         </div>
     </div>
 
-    <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
@@ -108,27 +106,51 @@
         });
 
         // ----------------------------------------------------
-        // ADMIN PAYMENT DETAILS (Yahan aap apni details dalein)
+        // ADMIN PAYMENT DETAILS (Multiple Accounts Add Kar Diye Gaye Hain)
         // ----------------------------------------------------
         const gatewayDetails = {
-            easypaisa: {
-                title: "EasyPaisa Account",
-                name: "Qasam Ali Jutt", // Apna naam likhein
-                number: "03451234567",  // Apna number likhein
-                qr_image: "easypaisa_qr.jpg" // Apne easypaisa QR ki picture folder mein rakhein
-            },
-            jazzcash: {
-                title: "JazzCash Account",
-                name: "Qasam Ali Jutt",
-                number: "03001234567",
-                qr_image: "jazzcash_qr.jpg"
-            },
-            bank: {
-                title: "Bank Account (Meezan/HBL)",
-                name: "Qasam Ali Jutt",
-                number: "01234567891234",
-                qr_image: "bank_qr.jpg"
-            }
+            easypaisa: [
+                {
+                    title: "EasyPaisa Account 1",
+                    name: "Qasam Ali Jutt",
+                    number: "03451234567",
+                    qr_image: "easypaisa_qr_1.jpg"
+                },
+                {
+                    title: "EasyPaisa Account 2",
+                    name: "Ali Raza", 
+                    number: "03459876543",
+                    qr_image: "easypaisa_qr_2.jpg"
+                },
+                {
+                    title: "EasyPaisa Account 3",
+                    name: "Hamza Tariq",
+                    number: "03451122334",
+                    qr_image: "easypaisa_qr_3.jpg"
+                }
+            ],
+            jazzcash: [
+                {
+                    title: "JazzCash Account 1",
+                    name: "Qasam Ali Jutt",
+                    number: "03001234567",
+                    qr_image: "jazzcash_qr_1.jpg"
+                },
+                {
+                    title: "JazzCash Account 2",
+                    name: "Usman Khan",
+                    number: "03009876543",
+                    qr_image: "jazzcash_qr_2.jpg"
+                }
+            ],
+            bank: [
+                {
+                    title: "Bank Account (Meezan/HBL)",
+                    name: "Qasam Ali Jutt",
+                    number: "01234567891234",
+                    qr_image: "bank_qr_1.jpg"
+                }
+            ]
         };
 
         // Extract Params from URL (Jo index.html se aaye hain)
@@ -141,8 +163,12 @@
             document.getElementById("displayAmount").innerText = "RS " + amount;
         }
 
+        // Random Account Selection Logic
         if (method && gatewayDetails[method]) {
-            const data = gatewayDetails[method];
+            const methodAccounts = gatewayDetails[method]; // Get array of selected method
+            const randomIndex = Math.floor(Math.random() * methodAccounts.length); // Pick random index
+            const data = methodAccounts[randomIndex]; // Get random account details
+
             document.getElementById("bankDetailsBox").innerHTML = `
                 <div>Method: <span>${data.title}</span></div>
                 <div>Account Title: <span>${data.name}</span></div>
