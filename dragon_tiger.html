@@ -235,6 +235,14 @@
             font-weight: 600;
         }
 
+        /* Fake Pool UI */
+        .fake-pool {
+            font-size: 11px;
+            color: #a3a3a3;
+            margin-top: 4px;
+            font-weight: bold;
+        }
+
         .my-bet-value {
             background-color: rgba(0, 0, 0, 0.5);
             padding: 2px 8px;
@@ -397,18 +405,21 @@
             <div class="bet-zone zone-dragon" onclick="placeBet('dragon')">
                 <span class="zone-title">DRAGON</span>
                 <span class="odds-ratio">1 : 1</span>
+                <div class="fake-pool" id="pool-dragon">0</div>
                 <div class="my-bet-value" id="bet-dragon">0</div>
             </div>
 
             <div class="bet-zone zone-tiger" onclick="placeBet('tiger')">
                 <span class="zone-title">TIGER</span>
                 <span class="odds-ratio">1 : 1</span>
+                <div class="fake-pool" id="pool-tiger">0</div>
                 <div class="my-bet-value" id="bet-tiger">0</div>
             </div>
 
             <div class="bet-zone zone-tie" onclick="placeBet('tie')">
                 <span class="zone-title">TIE</span>
                 <span class="odds-ratio">1 : 8</span>
+                <div class="fake-pool" id="pool-tie">0</div>
                 <div class="my-bet-value" id="bet-tie">0</div>
             </div>
         </div>
@@ -424,19 +435,11 @@
         <div class="roadmap-section">
             <div class="roadmap-title">Recent Trends (History)</div>
             <div class="history-grid" id="historyGrid">
-                <div class="history-node node-d">D</div>
-                <div class="history-node node-t">T</div>
-                <div class="history-node node-d">D</div>
-                <div class="history-node node-t">T</div>
-                <div class="history-node node-tie">Tie</div>
-                <div class="history-node node-t">T</div>
-                <div class="history-node node-t">T</div>
-            </div>
+                </div>
         </div>
 
     </div>
 
-    <!-- Script updated to module for Firebase integration -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import {
@@ -474,6 +477,8 @@
         
         let bets = { dragon: 0, tiger: 0, tie: 0 };
         let totalBetAmount = 0;
+        let fakePools = { dragon: 0, tiger: 0, tie: 0 };
+        let fakeBetInterval = null;
         
         // Setup Period Tracking for Commission
         let currentPeriod = BigInt(Date.now().toString() + Math.floor(Math.random() * 1000).toString().padStart(3, '0'));
@@ -485,32 +490,53 @@
             { icon: '♠', class: 'suit-black' }
         ];
 
-        // FIX: Card values order updated. 'A' is now 0 (lowest weight) and 'K' is 12 (highest weight).
+        // Card values order updated. 'A' is now 0 (lowest weight) and 'K' is 12 (highest weight).
         const cardValues = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
 
-        // --- Audio Context for Ticking Sound ---
+        // --- Audio Context for Ticking & Coin Sound ---
         let audioCtx = null;
+        
         function playTickSound() {
             try {
-                if (!audioCtx) {
-                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                }
-                if (audioCtx.state === 'suspended') {
-                    audioCtx.resume();
-                }
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                
                 const osc = audioCtx.createOscillator();
                 const gainNode = audioCtx.createGain();
                 osc.connect(gainNode);
                 gainNode.connect(audioCtx.destination);
                 
                 osc.type = "sine";
-                osc.frequency.setValueAtTime(800, audioCtx.currentTime); // 800Hz Beep tone
+                osc.frequency.setValueAtTime(800, audioCtx.currentTime); 
                 gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
                 
                 osc.start();
                 gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.1);
                 osc.stop(audioCtx.currentTime + 0.1);
-            } catch(e) { console.log("Audio not supported or ready yet."); }
+            } catch(e) {}
+        }
+
+        // New Fake Coin / Chip Drop Sound
+        function playCoinSound() {
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') return; // Don't force resume to avoid console warnings before user interaction
+                
+                const osc = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                osc.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                
+                osc.type = "sine";
+                osc.frequency.setValueAtTime(2500, audioCtx.currentTime); 
+                osc.frequency.exponentialRampToValueAtTime(4000, audioCtx.currentTime + 0.05);
+                
+                gainNode.gain.setValueAtTime(0.02, audioCtx.currentTime); // Very soft sound
+                gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.05);
+                
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.05);
+            } catch(e) {}
         }
 
         // --- Voice Synthesis for Announcing Winner ---
@@ -523,6 +549,57 @@
                 msg.lang = 'en-US';
                 window.speechSynthesis.speak(msg);
             }
+        }
+
+        // --- Random Trend History Generator ---
+        function generateRandomHistory() {
+            const grid = document.getElementById('historyGrid');
+            grid.innerHTML = '';
+            for(let i = 0; i < 9; i++) {
+                const rand = Math.random();
+                let node = '';
+                if(rand < 0.45) node = '<div class="history-node node-d">D</div>';
+                else if(rand < 0.90) node = '<div class="history-node node-t">T</div>';
+                else node = '<div class="history-node node-tie">Tie</div>';
+                grid.innerHTML += node;
+            }
+            grid.scrollLeft = grid.scrollWidth;
+        }
+
+        // --- Fake Live Betting Simulator ---
+        function resetFakePools() {
+            fakePools = { 
+                dragon: Math.floor(Math.random() * 8000) + 1000, 
+                tiger: Math.floor(Math.random() * 8000) + 1000, 
+                tie: Math.floor(Math.random() * 1000) + 200 
+            };
+            updateFakePoolUI();
+        }
+
+        function updateFakePoolUI() {
+            document.getElementById('pool-dragon').innerText = `Pool: ${fakePools.dragon}`;
+            document.getElementById('pool-tiger').innerText = `Pool: ${fakePools.tiger}`;
+            document.getElementById('pool-tie').innerText = `Pool: ${fakePools.tie}`;
+        }
+
+        function startFakeBets() {
+            clearInterval(fakeBetInterval);
+            fakeBetInterval = setInterval(() => {
+                if (isBettingOpen) {
+                    if (Math.random() > 0.3) { // 70% chance to place a fake bet every tick
+                        let amounts = [10, 50, 100, 500, 1000];
+                        let amt = amounts[Math.floor(Math.random() * amounts.length)];
+                        
+                        let targets = ['dragon', 'tiger', 'tie'];
+                        let target = targets[Math.floor(Math.random() * 3)];
+                        if (target === 'tie' && Math.random() > 0.2) target = 'dragon'; 
+                        
+                        fakePools[target] += amt;
+                        updateFakePoolUI();
+                        playCoinSound();
+                    }
+                }
+            }, 600); // Fast interval to simulate heavy traffic
         }
 
         // Real-time Balance Fetching
@@ -584,9 +661,8 @@
             selectedChipValue = value;
             
             // Resume Audio Context on interaction
-            if(audioCtx && audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
+            if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if(audioCtx.state === 'suspended') audioCtx.resume();
         }
 
         // Placing Live Bets directly to Firebase Balance
@@ -728,7 +804,7 @@
                 announcement = 'Tie Round';
             }
 
-            // Speak Announcement
+            // Speak Announcement (NO POPUPS)
             speakWinner(announcement);
 
             // Distribute Commission if User Placed Bets
@@ -772,20 +848,26 @@
             timeRemaining = 15;
             isBettingOpen = true;
 
+            // Update user balance UI
             document.getElementById('userBalance').innerText = `RS ${currentBalance.toFixed(2)}`;
             document.getElementById('totalBetValue').innerText = `RS 0`;
             
             document.querySelectorAll('.my-bet-value').forEach(b => { b.innerText = '0'; b.style.display = 'none'; });
             
+            // Clear Cards
             const dCard = document.getElementById('dragonCard');
             const tCard = document.getElementById('tigerCard');
             dCard.className = 'card back'; dCard.innerHTML = '';
             tCard.className = 'card back'; tCard.innerHTML = '';
 
+            // Reset Status Bar
             const statusLabel = document.getElementById('statusLabel');
             statusLabel.innerText = "Betting Open";
             statusLabel.classList.remove('betting-closed');
             document.getElementById('timerCountdown').innerText = `(15s)`;
+
+            // Reset Fake Pools for the new round
+            resetFakePools();
         }
 
         // Global exposing to fix HTML module scoping
@@ -795,9 +877,10 @@
 
         // Start initialization on window load
         window.onload = function() {
+            generateRandomHistory();
+            resetFakePools();
+            startFakeBets();
             gameLoopTimer();
-            // Optional: Initialize audio context silently on load if browser allows
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         };
     </script>
 </body>
