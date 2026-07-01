@@ -294,6 +294,7 @@
             text-decoration: none;
             font-size: 11px;
             gap: 4px;
+            cursor: pointer;
         }
 
         .nav-item.active {
@@ -304,7 +305,7 @@
             font-size: 18px;
         }
 
-        /* Auth Modal */
+        /* Auth/Deposit Modal */
         .modal-overlay {
             position: absolute;
             top: 0;
@@ -389,7 +390,7 @@
             font-size: 14px;
         }
 
-        .input-wrapper input {
+        .input-wrapper input, .input-wrapper select {
             width: 100%;
             background-color: #121212;
             border: 1px solid #333;
@@ -399,9 +400,10 @@
             font-size: 14px;
             outline: none;
             transition: 0.2s;
+            appearance: none;
         }
 
-        .input-wrapper input:focus {
+        .input-wrapper input:focus, .input-wrapper select:focus {
             border-color: #10b981;
         }
 
@@ -430,6 +432,28 @@
             cursor: pointer;
             font-weight: 600;
         }
+
+        /* Amount Presets Grid */
+        .amount-presets {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .preset-btn {
+            background: #2a2a2a;
+            border: 1px solid #333;
+            color: #fff;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .preset-btn:hover {
+            border-color: #10b981;
+            color: #10b981;
+        }
     </style>
 </head>
 <body>
@@ -443,7 +467,7 @@
             </div>
 
             <div class="header-right">
-                <a href="deposit.html" class="wallet-info" id="walletBox">
+                <a href="#" class="wallet-info" id="walletBox" onclick="openDepositModal()">
                     <i class="fa-solid fa-wallet"></i>
                     <span>RS 0.00</span>
                 </a>
@@ -523,7 +547,6 @@
                 </a>
             </div>
             
-            <!-- NEW PLINKO BOX ADDED HERE -->
             <div class="games-row">
                 <a href="plinko.html" class="game-card-box" style="text-decoration: none; color: inherit;">
                     <span class="hot-tag">Hot</span>
@@ -550,10 +573,10 @@
                 <i class="fa-solid fa-volleyball"></i>
                 <span>Sports</span>
             </a>
-            <a href="deposit.html" class="nav-item">
+            <div class="nav-item" onclick="openDepositModal()">
                 <i class="fa-solid fa-wallet"></i>
                 <span>Wallet</span>
-            </a>
+            </div>
         </nav>
 
         <div class="modal-overlay" id="authModal">
@@ -620,6 +643,40 @@
             </div>
         </div>
 
+        <div class="modal-overlay" id="depositModal">
+            <div class="modal-box">
+                <i class="fa-solid fa-xmark close-modal" onclick="closeDepositModal()"></i>
+                <h3 style="text-align: center; margin-bottom: 20px; color: #10b981;">DEPOSIT FUNDS</h3>
+                
+                <div class="form-group">
+                    <label>Select Gateway</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-building-columns"></i>
+                        <select id="depositMethod">
+                            <option value="easypaisa">EasyPaisa</option>
+                            <option value="jazzcash">JazzCash</option>
+                            <option value="bank">Bank Transfer</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Amount (PKR)</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-money-bill-wave"></i>
+                        <input type="number" id="depositAmount" placeholder="Enter amount (Min 500)" min="500">
+                    </div>
+                    <div class="amount-presets">
+                        <button class="preset-btn" onclick="setAmount(500)">500</button>
+                        <button class="preset-btn" onclick="setAmount(1000)">1000</button>
+                        <button class="preset-btn" onclick="setAmount(5000)">5000</button>
+                    </div>
+                </div>
+
+                <button class="submit-btn" onclick="goToCheckout()">SUBMIT NEXT</button>
+            </div>
+        </div>
+
     </div>
 
     <script>
@@ -657,6 +714,34 @@
             authModal.style.display = 'none';
         }
 
+        // --- Deposit Modal Controls ---
+        const depositModal = document.getElementById('depositModal');
+        
+        function openDepositModal() {
+            // Agar user logged in nahi hai toh pehle login modal open ho
+            if(localStorage.getItem("uid")) {
+                depositModal.style.display = 'flex';
+            } else {
+                openAuthModal('login');
+            }
+        }
+        function closeDepositModal() {
+            depositModal.style.display = 'none';
+        }
+        function setAmount(val) {
+            document.getElementById('depositAmount').value = val;
+        }
+        function goToCheckout() {
+            const method = document.getElementById('depositMethod').value;
+            const amount = document.getElementById('depositAmount').value;
+            if(!amount || amount < 500) {
+                alert("Please enter a valid amount (Min RS 500)");
+                return;
+            }
+            // Parameters ke sath checkout.html pe redirect karega
+            window.location.href = `checkout.html?method=${method}&amount=${amount}`;
+        }
+
         function switchTab(type) {
             if (type === 'login') {
                 loginTab.classList.add('active');
@@ -687,7 +772,6 @@
             const confirmPassword = document.getElementById("regConfirmPassword").value;
             
             const inviteCode = document.getElementById("inviteCode").value;
-            // STEP 2: registerUser() function modify kiya
             const referralId = localStorage.getItem("referralId");
 
             if (!email || !password || !confirmPassword) {
@@ -704,17 +788,10 @@
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
                 
-                // --- NEW ADDITIONS STARTS HERE ---
                 const uid = user.uid;
-                
-                // Fetch referral from local storage
                 const referralCode = localStorage.getItem("referral");
-                
-                // Generate Invite link:
                 const inviteLink = window.location.origin + "/register.html?ref=" + uid;
-                // --- NEW ADDITIONS ENDS HERE ---
 
-                // STEP 3: user create hone ke baad Replace kiya
                 await set(ref(db, 'users/' + user.uid), {
                     email: email,
                     balance: 0,
@@ -726,77 +803,32 @@
                     referralCode: user.uid.substring(0,6),
                     referredBy: referralUid || referralId || inviteCode || "",
                     firstDepositBonusGiven: false,
-                    refBy: referralCode || null // Added as requested without changing existing structure
+                    refBy: referralCode || null
                 });
 
                 if(referralUid){
+                    await set(ref(db,"users/" + referralUid + "/referrals/" + user.uid), {
+                        email: email,
+                        joinedAt: Date.now()
+                    });
 
-                    // Level 1 save
-                    await set(
-                        ref(db,"users/" + referralUid + "/referrals/" + user.uid),
-                        {
-                            email: email,
-                            joinedAt: Date.now()
-                        }
-                    );
-
-                    // Referrer data
-                    const parentSnap =
-                    await get(ref(db,"users/" + referralUid));
-
+                    const parentSnap = await get(ref(db,"users/" + referralUid));
                     if(parentSnap.exists()){
-
-                        const parentData =
-                        parentSnap.val();
-
-                        // Level 2 save
+                        const parentData = parentSnap.val();
                         if(parentData.referredBy){
+                            await set(ref(db, "users/" + parentData.referredBy + "/level2Referrals/" + user.uid), {
+                                email: email,
+                                joinedAt: Date.now()
+                            });
 
-                            await set(
-                                ref(
-                                    db,
-                                    "users/" +
-                                    parentData.referredBy +
-                                    "/level2Referrals/" +
-                                    user.uid
-                                ),
-                                {
-                                    email: email,
-                                    joinedAt: Date.now()
-                                }
-                            );
-
-                            const grandSnap =
-                            await get(
-                                ref(
-                                    db,
-                                    "users/" +
-                                    parentData.referredBy
-                                )
-                            );
-
+                            const grandSnap = await get(ref(db, "users/" + parentData.referredBy));
                             if(grandSnap.exists()){
-
-                                const grandData =
-                                grandSnap.val();
-
-                                // Level 3 save
+                                const grandData = grandSnap.val();
                                 if(grandData.referredBy){
-
-                                    await set(
-                                        ref(
-                                            db,
-                                            "users/" +
-                                            grandData.referredBy +
-                                            "/level3Referrals/" +
-                                            user.uid
-                                        ),
-                                        {
-                                            email: email,
-                                            joinedAt: Date.now()
-                                        }
-                                    );
-
+                                    await set(ref(db, "users/" + grandData.referredBy + "/level3Referrals/" + user.uid), {
+                                        email: email,
+                                        joinedAt: Date.now()
+                                    });
                                 }
                             }
                         }
@@ -817,38 +849,17 @@
         }
 
         async function loginUser() {
-
-            const email =
-            document.getElementById("loginEmail").value;
-
-            const password =
-            document.getElementById("loginPassword").value;
+            const email = document.getElementById("loginEmail").value;
+            const password = document.getElementById("loginPassword").value;
 
             try {
-
-                const userCredential =
-                await signInWithEmailAndPassword(
-                    auth,
-                    email,
-                    password
-                );
-
-                const user =
-                userCredential.user;
-
-                localStorage.setItem(
-                    "uid",
-                    user.uid
-                );
-
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                localStorage.setItem("uid", user.uid);
                 alert("Login Successful");
-
                 closeAuthModal();
-
             } catch(error) {
-
                 alert(error.message);
-
             }
         }
     </script>
@@ -863,7 +874,6 @@
           onAuthStateChanged
         } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
         
-        // STEP 5: get function verify/import kiya
         import {
           getDatabase,
           ref,
@@ -888,14 +898,12 @@
         const auth = getAuth(app);
         const db = getDatabase(app);
 
-        // STEP 1: Firebase initialize hone ke baad ye code add kiya
         const urlParams = new URLSearchParams(window.location.search);
         const referralId = urlParams.get("ref");
         if(referralId){
             localStorage.setItem("referralId", referralId);
         }
 
-        // --- NEW ADDITION: URL se referral pakro ---
         const params = new URLSearchParams(window.location.search);
         const refCode = params.get("ref");
         if(refCode){
@@ -913,8 +921,7 @@
                 onValue(balanceRef, (snapshot) => {
                     const data = snapshot.val();
                     if (data) {
-                        document.querySelector("#walletBox span").innerText =
-                            "RS " + data.balance;
+                        document.querySelector("#walletBox span").innerText = "RS " + data.balance;
                     }
                 });
             } else {
