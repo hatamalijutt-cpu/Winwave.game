@@ -192,6 +192,7 @@
             justify-content: center;
             align-items: center;
             min-height: 110px;
+            overflow: hidden; /* Prevents coins from spilling outside the box */
         }
 
         .bet-zone:active {
@@ -223,6 +224,8 @@
             font-size: 18px;
             font-weight: 800;
             letter-spacing: 1px;
+            position: relative;
+            z-index: 20;
         }
         .zone-dragon .zone-title { color: #ef4444; }
         .zone-tiger .zone-title { color: #3b82f6; }
@@ -233,18 +236,23 @@
             color: #a3a3a3;
             margin-top: 2px;
             font-weight: 600;
+            position: relative;
+            z-index: 20;
         }
 
         /* Fake Pool UI */
         .fake-pool {
-            font-size: 11px;
-            color: #a3a3a3;
+            font-size: 13px;
+            color: #ffffff;
             margin-top: 4px;
             font-weight: bold;
+            position: relative;
+            z-index: 20;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
         }
 
         .my-bet-value {
-            background-color: rgba(0, 0, 0, 0.5);
+            background-color: rgba(0, 0, 0, 0.7);
             padding: 2px 8px;
             border-radius: 10px;
             font-size: 12px;
@@ -253,6 +261,8 @@
             font-weight: bold;
             display: none;
             border: 1px solid #444;
+            position: relative;
+            z-index: 20;
         }
 
         /* Interactive Chip Selector */
@@ -299,6 +309,31 @@
         .chip-100 { background: radial-gradient(circle, #3b82f6, #1d4ed8); }
         .chip-500 { background: radial-gradient(circle, #8b5cf6, #6d28d9); }
         .chip-1000 { background: radial-gradient(circle, #ef4444, #b91c1c); }
+
+        /* --- 3D Coin Drop Animations --- */
+        @keyframes coinDrop {
+            0% { transform: translateY(-40px) scale(1.5); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateY(0) scale(1); opacity: 1; }
+        }
+
+        .anim-coin {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 8px;
+            font-weight: 900;
+            color: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.8), inset 0 2px 4px rgba(255,255,255,0.5);
+            border: 1px dashed rgba(255, 255, 255, 0.7);
+            animation: coinDrop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            pointer-events: none; /* Allows clicking through the coins */
+            z-index: 5;
+        }
 
         /* Current Action Summary */
         .bet-summary {
@@ -452,7 +487,6 @@
           onValue
         } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
-        // Firebase Configuration
         const firebaseConfig = {
           apiKey: "AIzaSyCjw124Pc1wGpG1iNYGuKR9DmXo_OHCab8",
           authDomain: "winwave-b3ed4.firebaseapp.com",
@@ -467,10 +501,8 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // Get UID from LocalStorage
         const uid = localStorage.getItem("uid");
 
-        // Game Engine Logic States
         let currentBalance = 0;
         let selectedChipValue = 10;
         let isBettingOpen = true;
@@ -480,7 +512,6 @@
         let fakePools = { dragon: 0, tiger: 0, tie: 0 };
         let fakeBetInterval = null;
         
-        // Setup Period Tracking for Commission
         let currentPeriod = BigInt(Date.now().toString() + Math.floor(Math.random() * 1000).toString().padStart(3, '0'));
 
         const suits = [
@@ -490,7 +521,6 @@
             { icon: '♠', class: 'suit-black' }
         ];
 
-        // Card values order updated. 'A' is now 0 (lowest weight) and 'K' is 12 (highest weight).
         const cardValues = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
 
         // --- Audio Context for Ticking & Coin Sound ---
@@ -516,11 +546,10 @@
             } catch(e) {}
         }
 
-        // New Fake Coin / Chip Drop Sound
         function playCoinSound() {
             try {
                 if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                if (audioCtx.state === 'suspended') return; // Don't force resume to avoid console warnings before user interaction
+                if (audioCtx.state === 'suspended') return; 
                 
                 const osc = audioCtx.createOscillator();
                 const gainNode = audioCtx.createGain();
@@ -531,7 +560,7 @@
                 osc.frequency.setValueAtTime(2500, audioCtx.currentTime); 
                 osc.frequency.exponentialRampToValueAtTime(4000, audioCtx.currentTime + 0.05);
                 
-                gainNode.gain.setValueAtTime(0.02, audioCtx.currentTime); // Very soft sound
+                gainNode.gain.setValueAtTime(0.02, audioCtx.currentTime); 
                 gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.05);
                 
                 osc.start();
@@ -539,7 +568,6 @@
             } catch(e) {}
         }
 
-        // --- Voice Synthesis for Announcing Winner ---
         function speakWinner(text) {
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel(); 
@@ -551,7 +579,6 @@
             }
         }
 
-        // --- Random Trend History Generator ---
         function generateRandomHistory() {
             const grid = document.getElementById('historyGrid');
             grid.innerHTML = '';
@@ -566,43 +593,64 @@
             grid.scrollLeft = grid.scrollWidth;
         }
 
-        // --- Fake Live Betting Simulator ---
+        // --- Fake Live Betting Simulator (35k to 65k) ---
         function resetFakePools() {
             fakePools = { 
-                dragon: Math.floor(Math.random() * 8000) + 1000, 
-                tiger: Math.floor(Math.random() * 8000) + 1000, 
-                tie: Math.floor(Math.random() * 1000) + 200 
+                // 35000 se 64999 tak random number
+                dragon: Math.floor(Math.random() * 30000) + 35000, 
+                tiger: Math.floor(Math.random() * 30000) + 35000, 
+                tie: Math.floor(Math.random() * 3000) + 1500 
             };
             updateFakePoolUI();
         }
 
         function updateFakePoolUI() {
-            document.getElementById('pool-dragon').innerText = `Pool: ${fakePools.dragon}`;
-            document.getElementById('pool-tiger').innerText = `Pool: ${fakePools.tiger}`;
-            document.getElementById('pool-tie').innerText = `Pool: ${fakePools.tie}`;
+            document.getElementById('pool-dragon').innerText = `RS ${fakePools.dragon.toLocaleString()}`;
+            document.getElementById('pool-tiger').innerText = `RS ${fakePools.tiger.toLocaleString()}`;
+            document.getElementById('pool-tie').innerText = `RS ${fakePools.tie.toLocaleString()}`;
         }
 
         function startFakeBets() {
             clearInterval(fakeBetInterval);
             fakeBetInterval = setInterval(() => {
                 if (isBettingOpen) {
-                    if (Math.random() > 0.3) { // 70% chance to place a fake bet every tick
+                    if (Math.random() > 0.3) { // 70% chance to drop a coin
                         let amounts = [10, 50, 100, 500, 1000];
                         let amt = amounts[Math.floor(Math.random() * amounts.length)];
                         
                         let targets = ['dragon', 'tiger', 'tie'];
                         let target = targets[Math.floor(Math.random() * 3)];
-                        if (target === 'tie' && Math.random() > 0.2) target = 'dragon'; 
+                        if (target === 'tie' && Math.random() > 0.15) target = Math.random() > 0.5 ? 'dragon' : 'tiger'; 
                         
                         fakePools[target] += amt;
                         updateFakePoolUI();
                         playCoinSound();
+                        dropVisualCoin(target, amt);
                     }
                 }
-            }, 600); // Fast interval to simulate heavy traffic
+            }, 500); 
         }
 
-        // Real-time Balance Fetching
+        // --- 3D Coin Drop Logic ---
+        function dropVisualCoin(target, amount) {
+            const zone = document.querySelector(`.zone-${target}`);
+            if(!zone) return;
+
+            const coin = document.createElement('div');
+            coin.classList.add('anim-coin');
+            coin.classList.add(`chip-${amount}`); // Using chip colors
+            coin.innerText = amount === 1000 ? '1K' : amount;
+
+            // Random position inside the box
+            const x = Math.floor(Math.random() * 70) + 15; // 15% to 85% width
+            const y = Math.floor(Math.random() * 60) + 20; // 20% to 80% height
+            
+            coin.style.left = `${x}%`;
+            coin.style.top = `${y}%`;
+
+            zone.appendChild(coin);
+        }
+
         if (uid) {
             const userRef = ref(db, "users/" + uid);
             onValue(userRef, (snapshot) => {
@@ -614,10 +662,9 @@
             });
         }
 
-        // --- Commission System Implementation ---
         async function giveReferralCommission(playerUid, betAmount) {
             try {
-                const rates = [0.005, 0.003, 0.001]; // 0.5%, 0.3%, 0.1%
+                const rates = [0.005, 0.003, 0.001]; 
                 let currentUid = playerUid;
                 
                 for (let level = 0; level < 3; level++) {
@@ -654,20 +701,16 @@
             }
         }
 
-        // Chip Selector Handler
         function selectChip(value, element) {
             document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
             element.classList.add('selected');
             selectedChipValue = value;
             
-            // Resume Audio Context on interaction
             if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             if(audioCtx.state === 'suspended') audioCtx.resume();
         }
 
-        // Placing Live Bets directly to Firebase Balance
         async function placeBet(type) {
-            // Resume Audio Context on Interaction
             if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             if(audioCtx.state === 'suspended') audioCtx.resume();
 
@@ -689,6 +732,10 @@
             currentBalance -= selectedChipValue;
             bets[type] += selectedChipValue;
             totalBetAmount += selectedChipValue;
+
+            // Also show your own coin dropping
+            dropVisualCoin(type, selectedChipValue);
+            playCoinSound();
 
             await update(ref(db, "users/" + uid), { balance: currentBalance });
             localStorage.setItem("balance", currentBalance);
@@ -720,7 +767,6 @@
             });
         }
 
-        // Real Casino Automated Loop Simulation Engine
         let timeRemaining = 15;
         function gameLoopTimer() {
             setInterval(() => {
@@ -728,7 +774,6 @@
                     timeRemaining--;
                     document.getElementById('timerCountdown').innerText = `(${timeRemaining}s)`;
                     
-                    // Tick Sound for the last 5 seconds
                     if (timeRemaining <= 5 && timeRemaining > 0) {
                         playTickSound();
                     }
@@ -740,7 +785,6 @@
             }, 1000);
         }
 
-        // Dealing Cards Phase Animation & Settlement
         function executeCardDealingPhase() {
             isBettingOpen = false;
             
@@ -784,7 +828,6 @@
             `;
         }
 
-        // Evaluation State logic (Including Firebase Payout & Commission & Sound)
         async function evaluateWinner(dragon, tiger) {
             let winningSide = '';
             let trendNode = '';
@@ -804,15 +847,12 @@
                 announcement = 'Tie Round';
             }
 
-            // Speak Announcement (NO POPUPS)
             speakWinner(announcement);
 
-            // Distribute Commission if User Placed Bets
             if (uid && totalBetAmount > 0) {
                 await giveReferralCommission(uid, totalBetAmount);
             }
 
-            // Calculate active profile profit payout sheets
             if (bets[winningSide] > 0) {
                 let multiplier = winningSide === 'tie' ? 8 : 1;
                 let winPayout = bets[winningSide] + (bets[winningSide] * multiplier);
@@ -829,7 +869,6 @@
                 }
             }
 
-            // Append live outcome element onto dashboard logs
             const historyGrid = document.getElementById('historyGrid');
             historyGrid.innerHTML += trendNode;
             historyGrid.scrollLeft = historyGrid.scrollWidth;
@@ -840,7 +879,6 @@
         }
 
         function resetTableData() {
-            // Generate new Period for next round tracking
             currentPeriod = BigInt(Date.now().toString() + Math.floor(Math.random() * 1000).toString().padStart(3, '0'));
             
             bets = { dragon: 0, tiger: 0, tie: 0 };
@@ -848,34 +886,31 @@
             timeRemaining = 15;
             isBettingOpen = true;
 
-            // Update user balance UI
             document.getElementById('userBalance').innerText = `RS ${currentBalance.toFixed(2)}`;
             document.getElementById('totalBetValue').innerText = `RS 0`;
             
             document.querySelectorAll('.my-bet-value').forEach(b => { b.innerText = '0'; b.style.display = 'none'; });
             
-            // Clear Cards
+            // Remove all fake coins from table
+            document.querySelectorAll('.anim-coin').forEach(c => c.remove());
+
             const dCard = document.getElementById('dragonCard');
             const tCard = document.getElementById('tigerCard');
             dCard.className = 'card back'; dCard.innerHTML = '';
             tCard.className = 'card back'; tCard.innerHTML = '';
 
-            // Reset Status Bar
             const statusLabel = document.getElementById('statusLabel');
             statusLabel.innerText = "Betting Open";
             statusLabel.classList.remove('betting-closed');
             document.getElementById('timerCountdown').innerText = `(15s)`;
 
-            // Reset Fake Pools for the new round
             resetFakePools();
         }
 
-        // Global exposing to fix HTML module scoping
         window.selectChip = selectChip;
         window.placeBet = placeBet;
         window.clearAllBets = clearAllBets;
 
-        // Start initialization on window load
         window.onload = function() {
             generateRandomHistory();
             resetFakePools();
