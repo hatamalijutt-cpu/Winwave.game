@@ -593,13 +593,12 @@
             grid.scrollLeft = grid.scrollWidth;
         }
 
-        // --- Fake Live Betting Simulator (35k to 65k) ---
+        // --- Fake Live Betting Simulator (Start from 50) ---
         function resetFakePools() {
             fakePools = { 
-                // 35000 se 64999 tak random number
-                dragon: Math.floor(Math.random() * 30000) + 35000, 
-                tiger: Math.floor(Math.random() * 30000) + 35000, 
-                tie: Math.floor(Math.random() * 3000) + 1500 
+                dragon: 50, 
+                tiger: 50, 
+                tie: 50 
             };
             updateFakePoolUI();
         }
@@ -612,23 +611,33 @@
 
         function startFakeBets() {
             clearInterval(fakeBetInterval);
+            // Run much faster (150ms) to organically reach 35k+ within the 15-second timer
             fakeBetInterval = setInterval(() => {
                 if (isBettingOpen) {
-                    if (Math.random() > 0.3) { // 70% chance to drop a coin
-                        let amounts = [10, 50, 100, 500, 1000];
+                    // Drop 1 to 3 coins concurrently to speed up the balance
+                    let drops = Math.floor(Math.random() * 3) + 1;
+                    
+                    for (let i = 0; i < drops; i++) {
+                        // Weighted heavily towards higher chip values to reach 35k
+                        let amounts = [50, 100, 500, 500, 1000, 1000, 1000];
                         let amt = amounts[Math.floor(Math.random() * amounts.length)];
                         
                         let targets = ['dragon', 'tiger', 'tie'];
                         let target = targets[Math.floor(Math.random() * 3)];
-                        if (target === 'tie' && Math.random() > 0.15) target = Math.random() > 0.5 ? 'dragon' : 'tiger'; 
+                        
+                        // Keep Tie amount realistic and redirect most large bets to Dragon/Tiger
+                        if (target === 'tie' && Math.random() > 0.10) {
+                            target = Math.random() > 0.5 ? 'dragon' : 'tiger';
+                        } 
                         
                         fakePools[target] += amt;
-                        updateFakePoolUI();
-                        playCoinSound();
-                        dropVisualCoin(target, amt);
+                        dropVisualCoin(target, amt); // Drops the EXACT value chip
                     }
+                    
+                    updateFakePoolUI();
+                    playCoinSound();
                 }
-            }, 500); 
+            }, 150); 
         }
 
         // --- 3D Coin Drop Logic ---
@@ -638,7 +647,7 @@
 
             const coin = document.createElement('div');
             coin.classList.add('anim-coin');
-            coin.classList.add(`chip-${amount}`); // Using chip colors
+            coin.classList.add(`chip-${amount}`); // Using chip colors based on exact bet amount
             coin.innerText = amount === 1000 ? '1K' : amount;
 
             // Random position inside the box
