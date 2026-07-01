@@ -648,17 +648,7 @@
                 <i class="fa-solid fa-xmark close-modal" onclick="closeDepositModal()"></i>
                 <h3 style="text-align: center; margin-bottom: 20px; color: #10b981;">DEPOSIT FUNDS</h3>
                 
-                <div class="form-group">
-                    <label>Select Gateway</label>
-                    <div class="input-wrapper">
-                        <i class="fa-solid fa-building-columns"></i>
-                        <select id="depositMethod">
-                            <option value="easypaisa">EasyPaisa</option>
-                            <option value="jazzcash">JazzCash</option>
-                            <option value="bank">Bank Transfer</option>
-                        </select>
-                    </div>
-                </div>
+                <!-- Gateway select details removed from here -->
 
                 <div class="form-group">
                     <label>Amount (PKR)</label>
@@ -731,15 +721,18 @@
         function setAmount(val) {
             document.getElementById('depositAmount').value = val;
         }
+        
+        // --- Go To Checkout Function Update ---
         function goToCheckout() {
-            const method = document.getElementById('depositMethod').value;
             const amount = document.getElementById('depositAmount').value;
+            
             if(!amount || amount < 500) {
                 alert("Please enter a valid amount (Min RS 500)");
                 return;
             }
-            // Parameters ke sath checkout.html pe redirect karega
-            window.location.href = `checkout.html?method=${method}&amount=${amount}`;
+            
+            // Ab sirf amount ke sath checkout.html pe redirect karega
+            window.location.href = `checkout.html?amount=${amount}`;
         }
 
         function switchTab(type) {
