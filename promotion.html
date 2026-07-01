@@ -244,32 +244,65 @@ window.fetchDailyStats = async function() {
     let dailyTeamDeposit = 0;
     let dailyFirstDepositAmount = 0;
 
-    // 1. Calculate Daily Bonus from Commission History (FIXED & STRONGER MATCHING)
+    // 1. Calculate Daily Bonus from Commission History (FULLY ROBUST MATCHING)
     const commSnap = await get(ref(db, "commissionHistory/" + uid));
     if(commSnap.exists()) {
         commSnap.forEach((child) => {
             const item = child.val();
-            if(item.date) {
-                let commDate = "";
-                const rawDate = String(item.date).trim();
+            
+            // Sab mutwazir chizen check karein jahan date ho sakti hy (Field, Key, ya Timestamp)
+            const possibleDates = [
+                item && item.date ? item.date : null,
+                item && item.timestamp ? item.timestamp : null,
+                item && item.time ? item.time : null,
+                child.key // Agar aap ne date ko hi node ki Key banaya hua hy (e.g. 2026-07-01)
+            ];
+            
+            let isMatched = false;
+            
+            for (let val of possibleDates) {
+                if (!val) continue;
                 
-                // Agar date DD/MM/YYYY ya DD-MM-YYYY format me save hy tou usay YYYY-MM-DD me convert karein
-                const dmyMatch = rawDate.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+                let strVal = String(val).trim();
+                
+                // Match 1: Direct standard string match (e.g., "2026-07-01")
+                if (strVal === selectedDate || strVal.includes(selectedDate)) {
+                    isMatched = true;
+                    break;
+                }
+                
+                // Match 2: Numeric Timestamp match (e.g., 1719835251000)
+                if (!isNaN(strVal)) {
+                    try {
+                        const d = new Date(Number(strVal));
+                        if (!isNaN(d.getTime())) {
+                            const formatted = d.toLocaleDateString("en-CA", { timeZone: "Asia/Karachi" });
+                            if (formatted === selectedDate) {
+                                isMatched = true;
+                                break;
+                            }
+                        }
+                    } catch(e) {}
+                }
+                
+                // Match 3: DD/MM/YYYY ya DD-MM-YYYY format match
+                const dmyMatch = strVal.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
                 if (dmyMatch) {
                     const day = dmyMatch[1].padStart(2, '0');
                     const month = dmyMatch[2].padStart(2, '0');
                     const year = dmyMatch[3];
-                    commDate = `${year}-${month}-${day}`;
-                } else {
-                    try {
-                        commDate = new Date(item.date).toLocaleDateString("en-CA", { timeZone: "Asia/Karachi" });
-                    } catch(e) {}
+                    const formatted = `${year}-${month}-${day}`;
+                    if (formatted === selectedDate) {
+                        isMatched = true;
+                        break;
+                    }
                 }
-
-                // Agar dono formats me se koi bhi select kiye gye date se match ho jaye
-                if(commDate === selectedDate || rawDate.includes(selectedDate)) {
-                    dailyBonus += Number(item.amount || 0);
-                }
+            }
+            
+            if (isMatched) {
+                // Agar item poora object hy tou .amount nikalay, agar direct number save hy tou khud value uthaye
+                const amount = (item && typeof item === 'object') ? (item.amount || 0) : item;
+                dailyBonus += Number(amount || 0);
             }
         });
     }
