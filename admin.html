@@ -35,6 +35,20 @@ color:white;
 font-weight:bold;
 cursor:pointer;
 }
+
+/* Screenshot Button Style */
+.screenshot-btn {
+    display: inline-block;
+    background: #f59e0b;
+    color: #000;
+    padding: 8px 12px;
+    margin: 10px 0;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+}
 </style>
 
 </head>
@@ -398,12 +412,21 @@ onValue(ref(db, "depositRequests"), (snapshot) => {
     requestBox.innerHTML = "";
     snapshot.forEach((child) => {
         const data = child.val();
+        
+        // Yahan par hum check kar rahe hain ke agar screenshotUrl maujood hai tou button dikhaye
+        let screenshotButton = "";
+        if(data.screenshotUrl) {
+            screenshotButton = `<a href="${data.screenshotUrl}" target="_blank" class="screenshot-btn">📸 View Screenshot</a><br>`;
+        }
+
         requestBox.innerHTML += `
         <div class="card">
             <p><b>UID:</b> ${data.uid}</p>
             <p><b>Amount:</b> ${data.amount}</p>
             <p><b>TRX:</b> ${data.trxId}</p>
             <p><b>Status:</b> ${data.status}</p>
+            
+            ${screenshotButton}
 
             <button onclick="approveDeposit('${child.key}')">
                 Approve
