@@ -218,46 +218,6 @@
             border-color: #10b981;
         }
 
-        /* Account Details Box */
-        .account-details-box {
-            background-color: #1e1e1e;
-            border: 1px dashed #444;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 15px;
-        }
-
-        .detail-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-            font-size: 13px;
-        }
-
-        .detail-row:last-child {
-            margin-bottom: 0;
-        }
-
-        .detail-label {
-            color: #a3a3a3;
-        }
-
-        .detail-value {
-            color: #fff;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            word-break: break-all;
-        }
-
-        .copy-icon {
-            color: #10b981;
-            cursor: pointer;
-            flex-shrink: 0;
-        }
-
         /* Action Buttons */
         .submit-deposit-btn {
             width: 100%;
@@ -273,6 +233,7 @@
             letter-spacing: 1px;
             box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
             transition: 0.2s;
+            margin-top: 10px;
         }
 
         .submit-deposit-btn:hover {
@@ -314,7 +275,7 @@
         <div class="section-label">1. Select Payment Method</div>
         <div class="payment-grid">
             
-            <div class="payment-card active" onclick="selectMethod(this, 'EasyPaisa', 'PK02TMFB0000000043289073')">
+            <div class="payment-card active" onclick="selectMethod(this, 'EasyPaisa')">
                 <i class="fa-solid fa-money-bill-transfer" style="color: #22c55e;"></i>
                 <div class="method-info">
                     <div class="method-name">EasyPaisa</div>
@@ -323,7 +284,7 @@
                 <i class="fa-solid fa-circle-check check-icon"></i>
             </div>
 
-            <div class="payment-card" onclick="selectMethod(this, 'JazzCash', 'PK65JCMA2702923230736754')">
+            <div class="payment-card" onclick="selectMethod(this, 'JazzCash')">
                 <i class="fa-solid fa-building-columns" style="color: #eab308;"></i>
                 <div class="method-info">
                     <div class="method-name">JazzCash</div>
@@ -332,7 +293,7 @@
                 <i class="fa-solid fa-circle-check check-icon"></i>
             </div>
 
-            <div class="payment-card" onclick="selectMethod(this, 'Meezan Bank', 'PK36MEZN0009810110611723')">
+            <div class="payment-card" onclick="selectMethod(this, 'Meezan Bank')">
                 <i class="fa-solid fa-building" style="color: #3b82f6;"></i>
                 <div class="method-info">
                     <div class="method-name">Bank</div>
@@ -341,7 +302,7 @@
                 <i class="fa-solid fa-circle-check check-icon"></i>
             </div>
 
-            <div class="payment-card" onclick="selectMethod(this, 'USDT (TRC20)', 'T9xXX...CryptoAddress')">
+            <div class="payment-card" onclick="selectMethod(this, 'USDT (TRC20)')">
                 <i class="fa-solid fa-coins" style="color: #14b8a6;"></i>
                 <div class="method-info">
                     <div class="method-name">USDT</div>
@@ -370,31 +331,7 @@
                 </div>
             </div>
 
-            <div class="account-details-box">
-                <div class="detail-row">
-                    <span class="detail-label">Transfer To Method:</span>
-                    <span class="detail-value" id="targetMethodName">EasyPaisa</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">Admin Account No:</span>
-                    <span class="detail-value">
-                        <span id="targetAccountNo">PK02TMFB0000000043289073</span>
-                        <i class="fa-solid fa-copy copy-icon" onclick="copyAccountNumber()"></i>
-                    </span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">Account Name:</span>
-                    <span class="detail-value" style="color: #f59e0b;">WINWAVE ADMIN</span>
-                </div>
-            </div>
-
-            <div class="input-group">
-                <label>Transaction ID / TRX ID</label>
-                <div class="input-box-wrapper" style="padding-left: 0;">
-                    <i class="fa-solid fa-receipt" style="position: absolute; left: 12px; color: #666;"></i>
-                    <input type="text" id="trxId" placeholder="Enter 11 or 12 digit TRX ID" style="padding-left: 38px;">
-                </div>
-            </div>
+            <!-- Removed Account Details and TRX ID Section As Requested -->
 
             <button class="submit-deposit-btn" onclick="submitDepositForm()">Submit Deposit</button>
 
@@ -415,34 +352,19 @@
             event.target.classList.add('active');
         }
 
-        function selectMethod(element, methodName, accountNo) {
+        function selectMethod(element, methodName) {
             const cards = document.querySelectorAll('.payment-card');
             cards.forEach(card => card.classList.remove('active'));
             
             element.classList.add('active');
-            
-            document.getElementById('targetMethodName').innerText = methodName;
-            document.getElementById('targetAccountNo').innerText = accountNo;
         }
 
-        function copyAccountNumber() {
-            const accountNoText = document.getElementById('targetAccountNo').innerText;
-            navigator.clipboard.writeText(accountNoText);
-            alert("Admin account number copied successfully: " + accountNoText);
-        }
-
-        // NEW ASYNC FIREBASE DEPOSIT FUNCTION
-        async function submitDepositForm() {
+        // Updated Function: Redirects to checkout.html
+        function submitDepositForm() {
             const amount = document.getElementById('depositAmount').value;
-            const trxId = document.getElementById('trxId').value;
 
             if (!amount || amount < 500) {
                 alert("Minimum Deposit 500");
-                return;
-            }
-
-            if (!trxId.trim()) {
-                alert("Enter TRX ID");
                 return;
             }
 
@@ -454,20 +376,8 @@
                 return;
             }
 
-            // Using global 'push', 'ref', 'db' provided by the module script below
-            await push(
-                ref(db,"depositRequests"),
-                {
-                    uid:user.uid,
-                    amount:Number(amount),
-                    trxId:trxId,
-                    status:"pending",
-                    createdAt:Date.now()
-                }
-            );
-
-            alert("Deposit Request Submitted");
-            window.location.href="index.html";
+            // Directing to checkout.html as requested
+            window.location.href = "checkout.html";
         }
     </script>
 
