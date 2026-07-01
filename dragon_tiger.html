@@ -436,6 +436,7 @@
 
     </div>
 
+    <!-- Script updated to module for Firebase integration -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import {
@@ -448,7 +449,7 @@
           onValue
         } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
-        // Firebase Configuration (Same as WinGo)
+        // Firebase Configuration
         const firebaseConfig = {
           apiKey: "AIzaSyCjw124Pc1wGpG1iNYGuKR9DmXo_OHCab8",
           authDomain: "winwave-b3ed4.firebaseapp.com",
@@ -483,7 +484,46 @@
             { icon: '♣', class: 'suit-black' },
             { icon: '♠', class: 'suit-black' }
         ];
-        const cardValues = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+
+        // FIX: Card values order updated. 'A' is now 0 (lowest weight) and 'K' is 12 (highest weight).
+        const cardValues = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+
+        // --- Audio Context for Ticking Sound ---
+        let audioCtx = null;
+        function playTickSound() {
+            try {
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                const osc = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                osc.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                
+                osc.type = "sine";
+                osc.frequency.setValueAtTime(800, audioCtx.currentTime); // 800Hz Beep tone
+                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                
+                osc.start();
+                gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.1);
+                osc.stop(audioCtx.currentTime + 0.1);
+            } catch(e) { console.log("Audio not supported or ready yet."); }
+        }
+
+        // --- Voice Synthesis for Announcing Winner ---
+        function speakWinner(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel(); 
+                const msg = new SpeechSynthesisUtterance(text);
+                msg.rate = 1.0;
+                msg.pitch = 1.0;
+                msg.lang = 'en-US';
+                window.speechSynthesis.speak(msg);
+            }
+        }
 
         // Real-time Balance Fetching
         if (uid) {
@@ -503,8 +543,6 @@
                 const rates = [0.005, 0.003, 0.001]; // 0.5%, 0.3%, 0.1%
                 let currentUid = playerUid;
                 
-                console.log(`[DT] Commission Start | Bet Amount: ${betAmount}`);
-
                 for (let level = 0; level < 3; level++) {
                     const snap = await get(ref(db, "users/" + currentUid));
                     if (!snap.exists()) break;
@@ -544,10 +582,19 @@
             document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
             element.classList.add('selected');
             selectedChipValue = value;
+            
+            // Resume Audio Context on interaction
+            if(audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
         }
 
         // Placing Live Bets directly to Firebase Balance
         async function placeBet(type) {
+            // Resume Audio Context on Interaction
+            if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+
             if (!uid) {
                 alert("Login Required!");
                 return;
@@ -563,16 +610,13 @@
                 return;
             }
 
-            // Deduct locally and logically
             currentBalance -= selectedChipValue;
             bets[type] += selectedChipValue;
             totalBetAmount += selectedChipValue;
 
-            // Sync with Firebase Database instantly
             await update(ref(db, "users/" + uid), { balance: currentBalance });
             localStorage.setItem("balance", currentBalance);
 
-            // Render Updates
             document.getElementById('userBalance').innerText = `RS ${currentBalance.toFixed(2)}`;
             document.getElementById('totalBetValue').innerText = `RS ${totalBetAmount}`;
             
@@ -581,7 +625,6 @@
             betBadge.style.display = 'block';
         }
 
-        // Clear Current active panel bets and Refund
         async function clearAllBets() {
             if (!uid || !isBettingOpen || totalBetAmount === 0) return;
             
@@ -589,7 +632,6 @@
             bets = { dragon: 0, tiger: 0, tie: 0 };
             totalBetAmount = 0;
 
-            // Restore Balance in DB
             await update(ref(db, "users/" + uid), { balance: currentBalance });
             localStorage.setItem("balance", currentBalance);
 
@@ -610,6 +652,11 @@
                     timeRemaining--;
                     document.getElementById('timerCountdown').innerText = `(${timeRemaining}s)`;
                     
+                    // Tick Sound for the last 5 seconds
+                    if (timeRemaining <= 5 && timeRemaining > 0) {
+                        playTickSound();
+                    }
+                    
                     if (timeRemaining <= 0) {
                         executeCardDealingPhase();
                     }
@@ -626,7 +673,6 @@
             statusLabel.classList.add('betting-closed');
             document.getElementById('timerCountdown').innerText = "";
 
-            // Simulate server random selection calculations
             setTimeout(() => {
                 const dragonCardData = getRandomCard();
                 const tigerCardData = getRandomCard();
@@ -662,24 +708,31 @@
             `;
         }
 
-        // Evaluation State logic (Including Firebase Payout & Commission)
+        // Evaluation State logic (Including Firebase Payout & Commission & Sound)
         async function evaluateWinner(dragon, tiger) {
             let winningSide = '';
             let trendNode = '';
+            let announcement = '';
 
             if (dragon.weight > tiger.weight) {
                 winningSide = 'dragon';
                 trendNode = '<div class="history-node node-d">D</div>';
+                announcement = 'Dragon Wins';
                 alert("🎉 DRAGON WINS!");
             } else if (tiger.weight > dragon.weight) {
                 winningSide = 'tiger';
                 trendNode = '<div class="history-node node-t">T</div>';
+                announcement = 'Tiger Wins';
                 alert("🎉 TIGER WINS!");
             } else {
                 winningSide = 'tie';
                 trendNode = '<div class="history-node node-tie">Tie</div>';
+                announcement = 'Tie Round';
                 alert("🤝 TIE ROUND!");
             }
+
+            // Speak Announcement
+            speakWinner(announcement);
 
             // Distribute Commission if User Placed Bets
             if (uid && totalBetAmount > 0) {
@@ -692,7 +745,6 @@
                 let winPayout = bets[winningSide] + (bets[winningSide] * multiplier);
                 
                 if (uid) {
-                    // Pull fresh balance to avoid conflict, then update with win payout
                     const snap = await get(ref(db, "users/" + uid));
                     if (snap.exists()) {
                         let freshBalance = Number(snap.val().balance || 0);
@@ -709,7 +761,6 @@
             historyGrid.innerHTML += trendNode;
             historyGrid.scrollLeft = historyGrid.scrollWidth;
 
-            // Instantly transition back layout elements to reset system loop
             setTimeout(() => {
                 resetTableData();
             }, 3000);
@@ -748,6 +799,8 @@
         // Start initialization on window load
         window.onload = function() {
             gameLoopTimer();
+            // Optional: Initialize audio context silently on load if browser allows
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         };
     </script>
 </body>
