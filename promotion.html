@@ -244,14 +244,30 @@ window.fetchDailyStats = async function() {
     let dailyTeamDeposit = 0;
     let dailyFirstDepositAmount = 0;
 
-    // 1. Calculate Daily Bonus from Commission History
+    // 1. Calculate Daily Bonus from Commission History (FIXED & STRONGER MATCHING)
     const commSnap = await get(ref(db, "commissionHistory/" + uid));
     if(commSnap.exists()) {
         commSnap.forEach((child) => {
             const item = child.val();
             if(item.date) {
-                const commDate = new Date(item.date).toLocaleDateString("en-CA", { timeZone: "Asia/Karachi" });
-                if(commDate === selectedDate) {
+                let commDate = "";
+                const rawDate = String(item.date).trim();
+                
+                // Agar date DD/MM/YYYY ya DD-MM-YYYY format me save hy tou usay YYYY-MM-DD me convert karein
+                const dmyMatch = rawDate.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+                if (dmyMatch) {
+                    const day = dmyMatch[1].padStart(2, '0');
+                    const month = dmyMatch[2].padStart(2, '0');
+                    const year = dmyMatch[3];
+                    commDate = `${year}-${month}-${day}`;
+                } else {
+                    try {
+                        commDate = new Date(item.date).toLocaleDateString("en-CA", { timeZone: "Asia/Karachi" });
+                    } catch(e) {}
+                }
+
+                // Agar dono formats me se koi bhi select kiye gye date se match ho jaye
+                if(commDate === selectedDate || rawDate.includes(selectedDate)) {
                     dailyBonus += Number(item.amount || 0);
                 }
             }
@@ -342,7 +358,6 @@ window.fetchDailyStats = async function() {
     }
 
     // Update UI with Final Data
-    // FIX CHANGED HERE: lifetimeReferralBonus ko hata diya taake date wise correct bonus dikhe
     const totalDisplayBonus = dailyBonus; 
     
     document.getElementById("totalBonus").innerText = "RS " + totalDisplayBonus.toFixed(2);
