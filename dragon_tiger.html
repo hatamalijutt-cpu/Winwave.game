@@ -365,7 +365,7 @@
             <div class="game-title">Dragon vs Tiger</div>
             <div class="wallet-display">
                 <i class="fa-solid fa-wallet"></i>
-                <span id="userBalance">RS 5000.00</span>
+                <span id="userBalance">RS 0.00</span>
             </div>
         </header>
 
@@ -436,14 +436,46 @@
 
     </div>
 
-    <script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import {
+          getDatabase,
+          ref,
+          set,
+          get,
+          update,
+          push,
+          onValue
+        } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+        // Firebase Configuration (Same as WinGo)
+        const firebaseConfig = {
+          apiKey: "AIzaSyCjw124Pc1wGpG1iNYGuKR9DmXo_OHCab8",
+          authDomain: "winwave-b3ed4.firebaseapp.com",
+          databaseURL: "https://winwave-b3ed4-default-rtdb.firebaseio.com",
+          projectId: "winwave-b3ed4",
+          storageBucket: "winwave-b3ed4.firebasestorage.app",
+          messagingSenderId: "501831087781",
+          appId: "1:501831087781:web:ea52d559bcb1429b9a3f4c",
+          measurementId: "G-WQM3HS90CL"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Get UID from LocalStorage
+        const uid = localStorage.getItem("uid");
+
         // Game Engine Logic States
-        let currentBalance = 5000;
+        let currentBalance = 0;
         let selectedChipValue = 10;
         let isBettingOpen = true;
         
         let bets = { dragon: 0, tiger: 0, tie: 0 };
         let totalBetAmount = 0;
+        
+        // Setup Period Tracking for Commission
+        let currentPeriod = BigInt(Date.now().toString() + Math.floor(Math.random() * 1000).toString().padStart(3, '0'));
 
         const suits = [
             { icon: '♦', class: 'suit-red' },
@@ -453,6 +485,60 @@
         ];
         const cardValues = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
 
+        // Real-time Balance Fetching
+        if (uid) {
+            const userRef = ref(db, "users/" + uid);
+            onValue(userRef, (snapshot) => {
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    currentBalance = Number(data.balance || 0);
+                    document.getElementById('userBalance').innerText = `RS ${currentBalance.toFixed(2)}`;
+                }
+            });
+        }
+
+        // --- Commission System Implementation ---
+        async function giveReferralCommission(playerUid, betAmount) {
+            try {
+                const rates = [0.005, 0.003, 0.001]; // 0.5%, 0.3%, 0.1%
+                let currentUid = playerUid;
+                
+                console.log(`[DT] Commission Start | Bet Amount: ${betAmount}`);
+
+                for (let level = 0; level < 3; level++) {
+                    const snap = await get(ref(db, "users/" + currentUid));
+                    if (!snap.exists()) break;
+
+                    const user = snap.val();
+                    if (!user.refBy) break;
+
+                    const parentUid = user.refBy;
+                    const parentSnap = await get(ref(db, "users/" + parentUid));
+                    if (!parentSnap.exists()) break;
+
+                    const commission = Number(betAmount) * rates[level];
+                    const newBalance = Number(parentSnap.val().balance || 0) + commission;
+
+                    await update(ref(db, "users/" + parentUid), {
+                        balance: newBalance
+                    });
+
+                    await push(ref(db, "commissionHistory/" + parentUid), {
+                        from: playerUid,
+                        level: level + 1,
+                        amount: commission,
+                        period: currentPeriod.toString(),
+                        game: "DragonTiger",
+                        time: Date.now()
+                    });
+
+                    currentUid = parentUid;
+                }
+            } catch (e) {
+                console.error("Commission Error:", e);
+            }
+        }
+
         // Chip Selector Handler
         function selectChip(value, element) {
             document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
@@ -460,8 +546,13 @@
             selectedChipValue = value;
         }
 
-        // Placing Local Bets
-        function placeBet(type) {
+        // Placing Live Bets directly to Firebase Balance
+        async function placeBet(type) {
+            if (!uid) {
+                alert("Login Required!");
+                return;
+            }
+
             if (!isBettingOpen) {
                 alert("Betting is CLOSED for this round!");
                 return;
@@ -472,10 +563,14 @@
                 return;
             }
 
-            // Deduct & Track bets
+            // Deduct locally and logically
             currentBalance -= selectedChipValue;
             bets[type] += selectedChipValue;
             totalBetAmount += selectedChipValue;
+
+            // Sync with Firebase Database instantly
+            await update(ref(db, "users/" + uid), { balance: currentBalance });
+            localStorage.setItem("balance", currentBalance);
 
             // Render Updates
             document.getElementById('userBalance').innerText = `RS ${currentBalance.toFixed(2)}`;
@@ -486,13 +581,17 @@
             betBadge.style.display = 'block';
         }
 
-        // Clear Current active panel bets
-        function clearAllBets() {
-            if (!isBettingOpen) return;
+        // Clear Current active panel bets and Refund
+        async function clearAllBets() {
+            if (!uid || !isBettingOpen || totalBetAmount === 0) return;
             
             currentBalance += totalBetAmount;
             bets = { dragon: 0, tiger: 0, tie: 0 };
             totalBetAmount = 0;
+
+            // Restore Balance in DB
+            await update(ref(db, "users/" + uid), { balance: currentBalance });
+            localStorage.setItem("balance", currentBalance);
 
             document.getElementById('userBalance').innerText = `RS ${currentBalance.toFixed(2)}`;
             document.getElementById('totalBetValue').innerText = `RS 0`;
@@ -563,8 +662,8 @@
             `;
         }
 
-        // Evaluation State logic
-        function evaluateWinner(dragon, tiger) {
+        // Evaluation State logic (Including Firebase Payout & Commission)
+        async function evaluateWinner(dragon, tiger) {
             let winningSide = '';
             let trendNode = '';
 
@@ -582,11 +681,27 @@
                 alert("🤝 TIE ROUND!");
             }
 
+            // Distribute Commission if User Placed Bets
+            if (uid && totalBetAmount > 0) {
+                await giveReferralCommission(uid, totalBetAmount);
+            }
+
             // Calculate active profile profit payout sheets
             if (bets[winningSide] > 0) {
                 let multiplier = winningSide === 'tie' ? 8 : 1;
                 let winPayout = bets[winningSide] + (bets[winningSide] * multiplier);
-                currentBalance += winPayout;
+                
+                if (uid) {
+                    // Pull fresh balance to avoid conflict, then update with win payout
+                    const snap = await get(ref(db, "users/" + uid));
+                    if (snap.exists()) {
+                        let freshBalance = Number(snap.val().balance || 0);
+                        freshBalance += winPayout;
+                        
+                        await update(ref(db, "users/" + uid), { balance: freshBalance });
+                        localStorage.setItem("balance", freshBalance);
+                    }
+                }
             }
 
             // Append live outcome element onto dashboard logs
@@ -601,6 +716,9 @@
         }
 
         function resetTableData() {
+            // Generate new Period for next round tracking
+            currentPeriod = BigInt(Date.now().toString() + Math.floor(Math.random() * 1000).toString().padStart(3, '0'));
+            
             bets = { dragon: 0, tiger: 0, tie: 0 };
             totalBetAmount = 0;
             timeRemaining = 15;
@@ -621,6 +739,11 @@
             statusLabel.classList.remove('betting-closed');
             document.getElementById('timerCountdown').innerText = `(15s)`;
         }
+
+        // Global exposing to fix HTML module scoping
+        window.selectChip = selectChip;
+        window.placeBet = placeBet;
+        window.clearAllBets = clearAllBets;
 
         // Start initialization on window load
         window.onload = function() {
