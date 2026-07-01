@@ -3,238 +3,315 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WinWave Plinko</title>
+    <title>Winwave - Plinko</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            -webkit-user-select: none;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             user-select: none;
         }
 
         body {
-            background-color: #0b0e14;
+            background-color: #121212;
             color: #ffffff;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            padding: 10px;
         }
 
-        /* Responsive Mobile Layout for WinWave */
-        .app-container {
+        .game-container {
             width: 100%;
-            max-width: 412px;
-            background-color: #171d26;
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.7);
+            max-width: 450px;
+            background: linear-gradient(180deg, #1a0f1a 0%, #110711 100%);
+            min-height: 100vh;
+            border-left: 1px solid #2d162d;
+            border-right: 1px solid #2d162d;
             display: flex;
             flex-direction: column;
-            border: 1px solid #263143;
+            align-items: center;
+            padding-bottom: 20px;
+            position: relative;
         }
 
-        /* Premium WinWave Top Bar */
-        .header-panel {
-            background-color: #0f141c;
-            padding: 14px 18px;
+        /* Standard Winwave Header */
+        .game-header {
+            width: 100%;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 2px solid #263143;
+            padding: 12px 15px;
+            background-color: #231223;
+            border-bottom: 2px solid #ef4444;
+            margin-bottom: 20px;
         }
 
-        .logo {
-            font-size: 20px;
-            font-weight: 900;
-            color: #38bdf8;
+        .back-btn {
+            color: #a3a3a3;
+            text-decoration: none;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .game-title {
+            font-size: 16px;
+            font-weight: bold;
             letter-spacing: 1px;
+            background: linear-gradient(90deg, #ef4444, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
         }
-        .logo span { color: #ffffff; }
 
-        .balance-box {
-            background-color: #1e293b;
-            padding: 6px 14px;
-            border-radius: 8px;
-            font-weight: 700;
-            font-size: 14px;
-            color: #10b981;
+        .wallet-display {
+            background-color: #341a34;
+            padding: 5px 12px;
+            border-radius: 15px;
+            color: #f59e0b;
+            font-weight: 600;
+            font-size: 13px;
             display: flex;
             align-items: center;
-            border: 1px solid #334155;
+            gap: 5px;
+            border: 1px solid #d97706;
         }
 
-        .canvas-container {
-            width: 100%;
-            padding: 12px;
-            background-color: #0b0e14;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
+        /* Canvas Panel */
         canvas {
-            background-color: #0b0e14;
+            background-color: #0f141c;
             border-radius: 12px;
-            width: 100%;
-            max-width: 390px;
-            height: auto;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.6);
+            margin-bottom: 20px;
+            max-width: 95%; /* Responsive fit */
         }
 
-        /* Bet Settings Dashboard */
-        .controls-panel {
-            padding: 18px;
-            background-color: #171d26;
+        /* Control Board */
+        .controls {
+            width: 90%;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #1e1e1e;
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid #2a2a2a;
+        }
+
+        .input-group {
             display: flex;
             flex-direction: column;
-            gap: 14px;
-        }
-
-        .input-row {
-            display: flex;
-            background-color: #0b0e14;
-            border-radius: 10px;
-            padding: 6px;
-            align-items: center;
-            border: 1px solid #384656;
-        }
-
-        .input-label {
-            font-size: 11px;
-            color: #94a3b8;
-            font-weight: 800;
-            padding-left: 10px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .bet-input {
+            gap: 5px;
             flex: 1;
-            background: transparent;
-            border: none;
-            color: white;
-            text-align: right;
-            padding-right: 10px;
-            font-size: 17px;
-            font-weight: 700;
-            outline: none;
+        }
+
+        .input-group label {
+            font-size: 11px;
+            color: #a3a3a3;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 10px;
+            color: #666;
+            font-size: 12px;
+        }
+
+        .input-wrapper input {
             width: 100%;
+            background-color: #121212;
+            border: 1px solid #333;
+            padding: 10px 10px 10px 28px;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+            font-weight: bold;
+        }
+
+        .input-wrapper input:focus {
+            border-color: #10b981;
         }
 
         .btn-drop {
-            width: 100%;
-            background: linear-gradient(180deg, #0284c7 0%, #0369a1 100%);
+            background: linear-gradient(180deg, #ff4d4d 0%, #cc0000 100%);
             color: white;
             border: none;
-            padding: 15px;
-            font-size: 19px;
+            padding: 12px 25px;
+            font-size: 16px;
             font-weight: 800;
-            border-radius: 12px;
+            border-radius: 8px;
             cursor: pointer;
-            box-shadow: 0 4px 0 #075985;
+            box-shadow: 0 4px 0 #990000;
             transition: transform 0.1s;
+            text-transform: uppercase;
         }
 
         .btn-drop:active {
-            transform: scale(0.98);
-            box-shadow: 0 2px 0 #075985;
+            transform: scale(0.95);
+            box-shadow: 0 2px 0 #990000;
+        }
+
+        .btn-drop:disabled {
+            background: #4a5568;
+            box-shadow: none;
+            cursor: not-allowed;
         }
     </style>
 </head>
 <body>
 
-<div class="app-container">
-    <div class="header-panel">
-        <div class="logo">WIN<span>WAVE</span></div>
-        <div class="balance-box">₨&nbsp;<span id="balance">1000.00</span></div>
-    </div>
+<div class="game-container">
+    <header class="game-header">
+        <a href="index.html" class="back-btn">
+            <i class="fa-solid fa-chevron-left"></i>
+        </a>
+        <div class="game-title">Plinko</div>
+        <div class="wallet-display">
+            <i class="fa-solid fa-wallet"></i>
+            <span id="userBalance">RS 0.00</span>
+        </div>
+    </header>
 
-    <div class="canvas-container">
-        <canvas id="plinkoBoard" width="400" height="480"></canvas>
-    </div>
+    <canvas id="plinkoBoard" width="400" height="450"></canvas>
 
-    <div class="controls-panel">
-        <div class="input-row">
-            <span class="input-label">Bet Amount</span>
-            <input type="number" id="betAmount" value="10" min="1">
+    <div class="controls">
+        <div class="input-group">
+            <label>Bet Amount</label>
+            <div class="input-wrapper">
+                <i class="fa-solid fa-coins"></i>
+                <input type="number" id="betAmount" value="10" min="1">
+            </div>
         </div>
         
-        <button class="btn-drop" id="dropBtn">DROP BALL</button>
+        <button class="btn-drop" id="dropBtn">Drop</button>
     </div>
 </div>
 
-<script>
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import {
+      getDatabase,
+      ref,
+      get,
+      update,
+      push,
+      onValue
+    } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyCjw124Pc1wGpG1iNYGuKR9DmXo_OHCab8",
+      authDomain: "winwave-b3ed4.firebaseapp.com",
+      databaseURL: "https://winwave-b3ed4-default-rtdb.firebaseio.com",
+      projectId: "winwave-b3ed4",
+      storageBucket: "winwave-b3ed4.firebasestorage.app",
+      messagingSenderId: "501831087781",
+      appId: "1:501831087781:web:ea52d559bcb1429b9a3f4c",
+      measurementId: "G-WQM3HS90CL"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const uid = localStorage.getItem("uid");
+
     const canvas = document.getElementById('plinkoBoard');
     const ctx = canvas.getContext('2d');
-    const balanceDisplay = document.getElementById('balance');
+    const balanceDisplay = document.getElementById('userBalance');
     const betInput = document.getElementById('betAmount');
     const dropBtn = document.getElementById('dropBtn');
 
-    let balance = 1000.00;
-    const rows = 9; 
+    // Game Variables
+    let currentBalance = 0;
+    const rows = 8; // Number of peg rows
     const pegs = [];
-    let balls = [];
+    const balls = [];
     
-    // Balanced High-Loss Layout (4x blocked in engine, looks regular to players)
-    const multipliers = [4, 2, 0.7, 0.4, 0, 0.4, 0.7, 2, 4];
+    // Period tracker for commission
+    let currentPeriod = BigInt(Date.now().toString() + Math.floor(Math.random() * 1000).toString().padStart(3, '0'));
+
+    // Multipliers distribution layout
+    const multipliers = [5, 2, 0.5, 0.2, 0.2, 0.5, 2, 5];
     const bucketCount = multipliers.length;
     const bucketWidth = canvas.width / bucketCount;
 
-    const gravity = 0.18;
-    const bounceEfficiency = 0.38;
+    // Physics constants
+    const gravity = 0.15;
+    const bounce = 0.5;
 
-    // --- Web Audio Synthesizer Setup (No external assets required) ---
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    // Real-time Balance Sync
+    if (uid) {
+        const userRef = ref(db, "users/" + uid);
+        onValue(userRef, (snapshot) => {
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+                currentBalance = Number(data.balance || 0);
+                balanceDisplay.innerText = `RS ${currentBalance.toFixed(2)}`;
+            }
+        });
+    }
 
-    function playSound(type) {
-        if (audioCtx.state === 'suspended') {
-            audioCtx.resume();
-        }
-        
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
+    // --- Commission System ---
+    async function giveReferralCommission(playerUid, betAmt) {
+        try {
+            const rates = [0.005, 0.003, 0.001]; // 0.5%, 0.3%, 0.1%
+            let currentUid = playerUid;
+            
+            for (let level = 0; level < 3; level++) {
+                const snap = await get(ref(db, "users/" + currentUid));
+                if (!snap.exists()) break;
 
-        if (type === 'peg') {
-            // Light wood/plastic click sound for peg bounces
-            osc.frequency.setValueAtTime(600, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 0.04);
-            gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
-            gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.04);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.04);
-        } else if (type === 'loss') {
-            // Dull down tone for loss boxes
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(180, audioCtx.currentTime);
-            osc.frequency.linearRampToValueAtTime(80, audioCtx.currentTime + 0.15);
-            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-            gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.15);
-        } else if (type === 'win') {
-            // Happy ringing chime for 2x win
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5 note
-            osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.08); // E5 note
-            gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
-            gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.25);
+                const user = snap.val();
+                if (!user.refBy) break;
+
+                const parentUid = user.refBy;
+                const parentSnap = await get(ref(db, "users/" + parentUid));
+                if (!parentSnap.exists()) break;
+
+                const commission = Number(betAmt) * rates[level];
+                const newBalance = Number(parentSnap.val().balance || 0) + commission;
+
+                await update(ref(db, "users/" + parentUid), {
+                    balance: newBalance
+                });
+
+                await push(ref(db, "commissionHistory/" + parentUid), {
+                    from: playerUid,
+                    level: level + 1,
+                    amount: commission,
+                    period: currentPeriod.toString(),
+                    game: "Plinko",
+                    time: Date.now()
+                });
+
+                currentUid = parentUid;
+            }
+        } catch (e) {
+            console.error("Commission Error:", e);
         }
     }
 
+    // 1. Generate Pegs Grid (Triangle Layout)
     function initPegs() {
         const startY = 50;
         const spacingY = 40;
         
         for (let i = 0; i < rows; i++) {
             const count = i + 3; 
-            const spacingX = 32;
+            const spacingX = 35;
             const rowWidth = (count - 1) * spacingX;
             const startX = (canvas.width - rowWidth) / 2;
 
@@ -242,16 +319,17 @@
                 pegs.push({
                     x: startX + (j * spacingX),
                     y: startY + (i * spacingY),
-                    radius: 3.5
+                    radius: 4
                 });
             }
         }
     }
 
+    // 2. Main Draw Engine
     function draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Draw Pins
+        // Draw Pegs (Pins)
         ctx.fillStyle = '#ffffff';
         pegs.forEach(peg => {
             ctx.beginPath();
@@ -260,144 +338,127 @@
             ctx.closePath();
         });
 
-        // Draw Slots
-        const bucketHeight = 35;
-        const bucketY = canvas.height - bucketHeight - 5;
-        
+        // Draw Multiplier Buckets at the bottom
         for (let i = 0; i < bucketCount; i++) {
             const x = i * bucketWidth;
+            const y = canvas.height - 40;
             
-            if (multipliers[i] === 4) ctx.fillStyle = '#1e1b4b'; // Deep Dark Indigo (Safe Area)
-            else if (multipliers[i] === 2) ctx.fillStyle = '#0284c7'; // Light Blue
-            else if (multipliers[i] === 0.7 || multipliers[i] === 0.4) ctx.fillStyle = '#f59e0b'; // Amber
-            else ctx.fillStyle = '#334155'; // Grey (0x)
+            if (multipliers[i] >= 2) ctx.fillStyle = '#ff4d4d'; // Red (High)
+            else if (multipliers[i] === 0.5) ctx.fillStyle = '#ffb703'; // Yellow (Medium)
+            else ctx.fillStyle = '#242f3d'; // Dark Blue (Low)
 
-            ctx.fillRect(x + 2, bucketY, bucketWidth - 4, bucketHeight);
+            ctx.fillRect(x + 2, y, bucketWidth - 4, 35);
             
             ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 12px sans-serif';
+            ctx.font = 'bold 12px Arial';
             ctx.textAlign = 'center';
-            ctx.fillText(multipliers[i] + 'x', x + (bucketWidth / 2), bucketY + 22);
+            ctx.fillText(multipliers[i] + 'x', x + (bucketWidth / 2), y + 22);
         }
 
-        // Processing Active Balls Engine
-        for (let i = balls.length - 1; i >= 0; i--) {
-            let ball = balls[i];
-            
-            ball.vy += gravity;
+        // Handle Active Balls Physics Updates
+        for (let index = balls.length - 1; index >= 0; index--) {
+            let ball = balls[index];
+            ball.vy += gravity; 
             ball.x += ball.vx;
             ball.y += ball.vy;
 
-            // Fluid Trajectory Forcing Core
-            let currentBucket = Math.floor(ball.x / bucketWidth);
-            if (currentBucket !== ball.targetBucket && ball.y < bucketY - 80) {
-                if (currentBucket < ball.targetBucket) {
-                    ball.vx += 0.09;
-                } else {
-                    ball.vx -= 0.09;
-                }
-            }
-
-            // Pins Hit Deflections
+            // Collision Detection with Pegs
             pegs.forEach(peg => {
-                const dx = ball.x - peg.x;
-                const dy = ball.y - peg.y;
-                const distance = Math.hypot(dx, dy);
-                const minDist = ball.radius + peg.radius;
-
-                if (distance < minDist) {
-                    const angle = Math.atan2(dy, dx);
+                const dist = Math.hypot(ball.x - peg.x, ball.y - peg.y);
+                if (dist < ball.radius + peg.radius) {
+                    const angle = Math.atan2(ball.y - peg.y, ball.x - peg.x);
+                    const randomShift = (Math.random() - 0.5) * 0.3;
                     
-                    ball.x = peg.x + Math.cos(angle) * minDist;
-                    ball.y = peg.y + Math.sin(angle) * minDist;
-
-                    const speed = Math.hypot(ball.vx, ball.vy);
-                    const force = Math.max(speed, 2.1); 
+                    ball.vx = Math.cos(angle + randomShift) * 2.5;
+                    ball.vy = Math.sin(angle) * 2.5 * bounce;
                     
-                    ball.vx = Math.cos(angle + (Math.random() - 0.5) * 0.1) * force * bounceEfficiency;
-                    ball.vy = Math.abs(Math.sin(angle) * force * bounceEfficiency) + 0.1; 
-                    
-                    // Trigger dynamic bounce click noise
-                    playSound('peg');
+                    ball.x = peg.x + Math.cos(angle) * (ball.radius + peg.radius);
+                    ball.y = peg.y + Math.sin(angle) * (ball.radius + peg.radius);
                 }
             });
 
-            if (ball.x - ball.radius < 0) {
-                ball.x = ball.radius;
-                ball.vx *= -0.3;
-            } else if (ball.x + ball.radius > canvas.width) {
-                ball.x = canvas.width - ball.radius;
-                ball.vx *= -0.3;
+            // Boundary Walls collision fallback check
+            if (ball.x - ball.radius < 0 || ball.x + ball.radius > canvas.width) {
+                ball.vx *= -1;
+                // keep inside bounds
+                ball.x = Math.max(ball.radius, Math.min(canvas.width - ball.radius, ball.x));
             }
 
-            // Draw Pink Ball Asset
-            ctx.fillStyle = '#f43f5e';
+            // Draw Active Ball
+            ctx.fillStyle = '#ff007f';
             ctx.beginPath();
             ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
             ctx.fill();
             ctx.closePath();
 
-            // Landing calculation
-            if (ball.y >= bucketY + 2) {
-                const index = Math.min(Math.floor(ball.x / bucketWidth), bucketCount - 1);
-                const finalMultiplier = multipliers[index];
+            // Check if Ball reached the bottom buckets
+            if (ball.y >= canvas.height - 40) {
+                const bucketIndex = Math.floor(ball.x / bucketWidth);
+                const safeIndex = Math.max(0, Math.min(bucketCount - 1, bucketIndex)); // clamp index
+                const finalMultiplier = multipliers[safeIndex];
                 
-                balance += ball.bet * finalMultiplier;
-                balanceDisplay.innerText = balance.toFixed(2);
+                // Calculate Payout
+                const winAmount = ball.bet * finalMultiplier;
                 
-                // Sound logic matching results
-                if (finalMultiplier >= 2) {
-                    playSound('win');
-                } else {
-                    playSound('loss');
+                // Add winnings to Firebase
+                if (uid && winAmount > 0) {
+                    get(ref(db, "users/" + uid)).then(snap => {
+                        if (snap.exists()) {
+                            let freshBalance = Number(snap.val().balance || 0);
+                            freshBalance += winAmount;
+                            update(ref(db, "users/" + uid), { balance: freshBalance });
+                        }
+                    });
                 }
                 
-                balls.splice(i, 1);
+                // Remove processed ball
+                balls.splice(index, 1);
             }
         }
 
         requestAnimationFrame(draw);
     }
 
-    // High House-Edge Controls Setup (0% to 4x, highly loss active)
-    dropBtn.addEventListener('click', () => {
+    // 3. Drop Trigger Click Handling
+    dropBtn.addEventListener('click', async () => {
+        if (!uid) {
+            alert("Login Required!");
+            return;
+        }
+
         const bet = parseFloat(betInput.value);
-        if (isNaN(bet) || bet <= 0) return;
+        
+        if (isNaN(bet) || bet <= 0) {
+            alert("Invalid Bet Amount!");
+            return;
+        }
 
-        if (balance >= bet) {
-            balance -= bet;
-            balanceDisplay.innerText = balance.toFixed(2);
+        if (currentBalance >= bet) {
+            currentBalance -= bet;
+            balanceDisplay.innerText = `RS ${currentBalance.toFixed(2)}`;
 
-            let targetBucket = 4; // Default center loss
-            let rand = Math.random() * 100;
+            // Deduct balance directly from Firebase
+            await update(ref(db, "users/" + uid), { balance: currentBalance });
 
-            if (rand < 55) {
-                // 55% Low Return Options (0.4x and 0.7x)
-                let lowOptions = [2, 3, 5, 6];
-                targetBucket = lowOptions[Math.floor(Math.random() * lowOptions.length)];
-            } else if (rand < 95) {
-                // 40% Complete Zero Void (0x center)
-                targetBucket = 4;
-            } else {
-                // 5% Tiny recovery wins (2x slots) -> 4x completely mathematically out.
-                let miniWinOptions = [1, 7];
-                targetBucket = miniWinOptions[Math.floor(Math.random() * miniWinOptions.length)];
-            }
+            // Trigger Commission
+            currentPeriod = BigInt(Date.now().toString() + Math.floor(Math.random() * 1000).toString().padStart(3, '0'));
+            giveReferralCommission(uid, bet);
 
+            // Spawning a new Ball at top center
             balls.push({
-                x: (canvas.width / 2) + (Math.random() - 0.5) * 4,
-                y: 15,
-                vx: (Math.random() - 0.5) * 0.1,
+                x: (canvas.width / 2) + (Math.random() - 0.5) * 10,
+                y: 10,
+                vx: 0,
                 vy: 0,
                 radius: 6,
-                bet: bet,
-                targetBucket: targetBucket
+                bet: bet
             });
         } else {
             alert("Insufficient Balance!");
         }
     });
 
+    // Run Engine Initializers
     initPegs();
     draw();
 </script>
