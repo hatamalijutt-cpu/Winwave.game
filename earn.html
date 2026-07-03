@@ -133,6 +133,37 @@
             background-color: #059669;
         }
 
+        /* Date Filter Section (NEW) */
+        .filter-section {
+            display: flex;
+            gap: 10px;
+            padding: 0 15px 15px 15px;
+        }
+        
+        .date-input {
+            flex: 1;
+            background: #121212;
+            border: 1px solid #444;
+            padding: 12px;
+            color: white;
+            border-radius: 8px;
+        }
+        
+        .btn-search {
+            background: #10b981;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        
+        .btn-search:hover {
+            background: #059669;
+        }
+
         /* Referral Stats Matrix Grid */
         .stats-grid {
             display: grid;
@@ -304,6 +335,12 @@
             </div>
         </div>
 
+        <div class="filter-section">
+            <input type="date" id="filterDate" class="date-input">
+            <button class="btn-search" onclick="fetchDailyStats()">Search</button>
+        </div>
+        <div style="text-align: center; font-size: 12px; color: #a3a3a3; margin-top: -10px; margin-bottom: 15px;" id="statusText">Showing Lifetime Data</div>
+
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-icon" style="color: #3b82f6;"><i class="fa-solid fa-users"></i></div>
@@ -350,7 +387,8 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+        // Added 'get' for daily search functionality
+        import { getDatabase, ref, onValue, get } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
         const firebaseConfig = {
           apiKey: "AIzaSyCjw124Pc1wGpG1iNYGuKR9DmXo_OHCab8",
@@ -367,6 +405,10 @@
         const auth = getAuth(app);
         const db = getDatabase(app);
 
+        // Global Variables for Date Tracking
+        window.isDailyView = false;
+        window.currentFilterDate = null;
+
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 const uid = user.uid;
@@ -377,9 +419,10 @@
 
                 document.getElementById("referralCodeText").innerText = uid;
 
-                // Total referrals calculation
+                // Total referrals calculation (Lifetime)
                 const referralsRef = ref(db, "users/" + uid + "/referrals");
                 onValue(referralsRef, (snapshot) => {
+                    if (window.isDailyView) return; // Daily search on hai toh ignore karein
                     if(snapshot.exists()){
                         const referrals = snapshot.val();
                         document.getElementById("totalTeamCount").innerText = 
@@ -389,9 +432,10 @@
                     }
                 });
 
-                // Total Team Deposit Calculation
+                // Total Team Deposit Calculation (Lifetime)
                 const userRef = ref(db, "users/" + uid);
                 onValue(userRef, (snapshot)=>{
+                    if (window.isDailyView) return; // Daily search on hai toh ignore karein
                     if(snapshot.exists()){
                         const data = snapshot.val();
                         const teamDepositTotal = data.teamDepositTotal || 0;
@@ -425,15 +469,97 @@
             if(level === 3) loadLevel3(user.uid);
         }
 
+        // --- NEW: Daily Stats Search Function ---
+        window.fetchDailyStats = async function() {
+            const selectedDate = document.getElementById("filterDate").value;
+            const user = auth.currentUser;
+            if(!user) return;
+            const uid = user.uid;
+
+            // Agar Date khali chhor ke search dabaya toh sab wapas Lifetime hojayega
+            if(!selectedDate) {
+                window.isDailyView = false;
+                window.currentFilterDate = null;
+                document.getElementById("statusText").innerText = "Showing Lifetime Data";
+                document.getElementById("statusText").style.color = "#a3a3a3";
+                
+                // Force reload tabs
+                const activeTab = document.querySelector(".level-tab-btn.active");
+                const level = activeTab.innerText.includes("1") ? 1 : activeTab.innerText.includes("2") ? 2 : 3;
+                switchLevelTab(level, activeTab);
+
+                // Fetch Lifetime Stats again manually
+                get(ref(db, "users/" + uid + "/referrals")).then(snap => {
+                    document.getElementById("totalTeamCount").innerText = snap.exists() ? Object.keys(snap.val()).length : 0;
+                });
+                get(ref(db, "users/" + uid)).then(snap => {
+                    document.getElementById("teamDeposit").innerText = "RS " + (snap.exists() ? (snap.val().teamDepositTotal || 0) : 0);
+                });
+                return;
+            }
+
+            window.isDailyView = true;
+            window.currentFilterDate = selectedDate;
+            document.getElementById("statusText").innerText = "Showing Data for: " + selectedDate;
+            document.getElementById("statusText").style.color = "#10b981";
+
+            let dailyTeamCount = 0;
+            let allTeamUids = [];
+
+            // 1. Calculate Daily Team Count from all 3 levels
+            const levels = ["referrals", "level2Referrals", "level3Referrals"];
+            for (let lvl of levels) {
+                const snap = await get(ref(db, "users/" + uid + "/" + lvl));
+                if (snap.exists()) {
+                    const members = snap.val();
+                    for (let mUid in members) {
+                        allTeamUids.push(mUid);
+                        const joinedAt = members[mUid].joinedAt;
+                        if (joinedAt) {
+                            const d = new Date(joinedAt);
+                            if (!isNaN(d)) {
+                                const formatted = d.toLocaleDateString("en-CA", { timeZone: "Asia/Karachi" });
+                                if (formatted === selectedDate) {
+                                    dailyTeamCount++;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            document.getElementById("totalTeamCount").innerText = dailyTeamCount;
+
+            // 2. Calculate Daily Team Deposit
+            let dailyTeamDeposit = 0;
+            for (let mUid of allTeamUids) {
+                const depSnap = await get(ref(db, "depositHistory/" + mUid));
+                if (depSnap.exists()) {
+                    depSnap.forEach(child => {
+                        const dep = child.val();
+                        if (dep.date) {
+                            const depDate = new Date(dep.date).toLocaleDateString("en-CA", { timeZone: "Asia/Karachi" });
+                            if (depDate === selectedDate) {
+                                dailyTeamDeposit += Number(dep.amount || 0);
+                            }
+                        }
+                    });
+                }
+            }
+            document.getElementById("teamDeposit").innerText = "RS " + dailyTeamDeposit;
+
+            // 3. Refresh Active Level Tab list
+            const activeTab = document.querySelector(".level-tab-btn.active");
+            const level = activeTab.innerText.includes("1") ? 1 : activeTab.innerText.includes("2") ? 2 : 3;
+            switchLevelTab(level, activeTab);
+        }
+
+        // Modified Loading Functions to support Daily View
         function loadLevel1(uid){
             const referralsRef = ref(db,"users/"+uid+"/referrals");
             onValue(referralsRef,(snapshot)=>{
                 const container = document.getElementById("memberRowsContainer");
                 if(!snapshot.exists()){
-                    container.innerHTML = `
-                    <div class="no-data">
-                        No Level 1 Members
-                    </div>`;
+                    container.innerHTML = `<div class="no-data"><i class="fa-solid fa-folder-open"></i>No Level 1 Members</div>`;
                     return;
                 }
 
@@ -443,6 +569,13 @@
                 snapshot.forEach((child)=>{
                     const data = child.val();
                     const memberUid = child.key;
+                    
+                    // NEW: Filter Logic
+                    const dateStr = new Date(data.joinedAt).toLocaleDateString("en-CA", { timeZone: "Asia/Karachi" });
+                    if (window.isDailyView && dateStr !== window.currentFilterDate) {
+                        return; // Agar daily view hai toh sirf matching date waly show hongy
+                    }
+
                     memberUids.push(memberUid);
                     const date = new Date(data.joinedAt).toLocaleDateString();
 
@@ -460,18 +593,37 @@
                     </div>`;
                 });
 
+                if(html === "") {
+                    html = `<div class="no-data"><i class="fa-solid fa-folder-open"></i>No Level 1 members found for selected date.</div>`;
+                }
                 container.innerHTML = html;
 
-                // Live fetching deposit for each member
                 memberUids.forEach(memberUid => {
-                    onValue(ref(db, "users/" + memberUid), (userSnap) => {
-                        if(userSnap.exists()){
-                            const userData = userSnap.val();
-                            const deposit = userData.deposit || userData.totalDeposit || 0;
+                    if (window.isDailyView) {
+                        get(ref(db, "depositHistory/" + memberUid)).then(historySnap => {
+                            let dailyUserDep = 0;
+                            if(historySnap.exists()){
+                                historySnap.forEach(h => {
+                                    const dVal = h.val();
+                                    if(dVal.date){
+                                         const depDate = new Date(dVal.date).toLocaleDateString("en-CA", { timeZone: "Asia/Karachi" });
+                                         if(depDate === window.currentFilterDate){ dailyUserDep += Number(dVal.amount || 0); }
+                                    }
+                                });
+                            }
                             const el = document.getElementById(`lvl1-dep-${memberUid}`);
-                            if(el) el.innerText = "RS " + deposit;
-                        }
-                    });
+                            if(el) el.innerText = "RS " + dailyUserDep;
+                        });
+                    } else {
+                        onValue(ref(db, "users/" + memberUid), (userSnap) => {
+                            if(userSnap.exists()){
+                                const userData = userSnap.val();
+                                const deposit = userData.deposit || userData.totalDeposit || 0;
+                                const el = document.getElementById(`lvl1-dep-${memberUid}`);
+                                if(el) el.innerText = "RS " + deposit;
+                            }
+                        });
+                    }
                 });
             });
         }
@@ -481,10 +633,7 @@
             onValue(level2Ref,(snapshot)=>{
                 const container = document.getElementById("memberRowsContainer");
                 if(!snapshot.exists()){
-                    container.innerHTML = `
-                    <div class="no-data">
-                        No Level 2 Members
-                    </div>`;
+                    container.innerHTML = `<div class="no-data"><i class="fa-solid fa-folder-open"></i>No Level 2 Members</div>`;
                     return;
                 }
 
@@ -494,6 +643,10 @@
                 snapshot.forEach((child)=>{
                     const data = child.val();
                     const memberUid = child.key;
+                    
+                    const dateStr = new Date(data.joinedAt).toLocaleDateString("en-CA", { timeZone: "Asia/Karachi" });
+                    if (window.isDailyView && dateStr !== window.currentFilterDate) return;
+
                     memberUids.push(memberUid);
                     const date = new Date(data.joinedAt).toLocaleDateString();
 
@@ -511,17 +664,35 @@
                     </div>`;
                 });
 
+                if(html === "") html = `<div class="no-data"><i class="fa-solid fa-folder-open"></i>No Level 2 members found for selected date.</div>`;
                 container.innerHTML = html;
 
                 memberUids.forEach(memberUid => {
-                    onValue(ref(db, "users/" + memberUid), (userSnap) => {
-                        if(userSnap.exists()){
-                            const userData = userSnap.val();
-                            const deposit = userData.deposit || userData.totalDeposit || 0;
+                    if (window.isDailyView) {
+                        get(ref(db, "depositHistory/" + memberUid)).then(historySnap => {
+                            let dailyUserDep = 0;
+                            if(historySnap.exists()){
+                                historySnap.forEach(h => {
+                                    const dVal = h.val();
+                                    if(dVal.date){
+                                         const depDate = new Date(dVal.date).toLocaleDateString("en-CA", { timeZone: "Asia/Karachi" });
+                                         if(depDate === window.currentFilterDate){ dailyUserDep += Number(dVal.amount || 0); }
+                                    }
+                                });
+                            }
                             const el = document.getElementById(`lvl2-dep-${memberUid}`);
-                            if(el) el.innerText = "RS " + deposit;
-                        }
-                    });
+                            if(el) el.innerText = "RS " + dailyUserDep;
+                        });
+                    } else {
+                        onValue(ref(db, "users/" + memberUid), (userSnap) => {
+                            if(userSnap.exists()){
+                                const userData = userSnap.val();
+                                const deposit = userData.deposit || userData.totalDeposit || 0;
+                                const el = document.getElementById(`lvl2-dep-${memberUid}`);
+                                if(el) el.innerText = "RS " + deposit;
+                            }
+                        });
+                    }
                 });
             });
         }
@@ -531,10 +702,7 @@
             onValue(level3Ref,(snapshot)=>{
                 const container = document.getElementById("memberRowsContainer");
                 if(!snapshot.exists()){
-                    container.innerHTML = `
-                    <div class="no-data">
-                        No Level 3 Members
-                    </div>`;
+                    container.innerHTML = `<div class="no-data"><i class="fa-solid fa-folder-open"></i>No Level 3 Members</div>`;
                     return;
                 }
 
@@ -544,6 +712,10 @@
                 snapshot.forEach((child)=>{
                     const data = child.val();
                     const memberUid = child.key;
+                    
+                    const dateStr = new Date(data.joinedAt).toLocaleDateString("en-CA", { timeZone: "Asia/Karachi" });
+                    if (window.isDailyView && dateStr !== window.currentFilterDate) return;
+
                     memberUids.push(memberUid);
                     const date = new Date(data.joinedAt).toLocaleDateString();
 
@@ -561,17 +733,35 @@
                     </div>`;
                 });
 
+                if(html === "") html = `<div class="no-data"><i class="fa-solid fa-folder-open"></i>No Level 3 members found for selected date.</div>`;
                 container.innerHTML = html;
 
                 memberUids.forEach(memberUid => {
-                    onValue(ref(db, "users/" + memberUid), (userSnap) => {
-                        if(userSnap.exists()){
-                            const userData = userSnap.val();
-                            const deposit = userData.deposit || userData.totalDeposit || 0;
+                    if (window.isDailyView) {
+                        get(ref(db, "depositHistory/" + memberUid)).then(historySnap => {
+                            let dailyUserDep = 0;
+                            if(historySnap.exists()){
+                                historySnap.forEach(h => {
+                                    const dVal = h.val();
+                                    if(dVal.date){
+                                         const depDate = new Date(dVal.date).toLocaleDateString("en-CA", { timeZone: "Asia/Karachi" });
+                                         if(depDate === window.currentFilterDate){ dailyUserDep += Number(dVal.amount || 0); }
+                                    }
+                                });
+                            }
                             const el = document.getElementById(`lvl3-dep-${memberUid}`);
-                            if(el) el.innerText = "RS " + deposit;
-                        }
-                    });
+                            if(el) el.innerText = "RS " + dailyUserDep;
+                        });
+                    } else {
+                        onValue(ref(db, "users/" + memberUid), (userSnap) => {
+                            if(userSnap.exists()){
+                                const userData = userSnap.val();
+                                const deposit = userData.deposit || userData.totalDeposit || 0;
+                                const el = document.getElementById(`lvl3-dep-${memberUid}`);
+                                if(el) el.innerText = "RS " + deposit;
+                            }
+                        });
+                    }
                 });
             });
         }
