@@ -171,13 +171,25 @@
             const randomIndex = Math.floor(Math.random() * methodAccounts.length);
             const data = methodAccounts[randomIndex];
 
+            // Added a copy button/icon next to the account number
             document.getElementById("bankDetailsBox").innerHTML = `
                 <div>Method: <span>${data.title}</span></div>
                 <div>Account Title: <span>${data.name}</span></div>
-                <div>Account Number: <span>${data.number}</span></div>
+                <div>Account Number: <span id="accNum">${data.number}</span> 
+                    <i class="fa-regular fa-copy" style="cursor: pointer; color: #10b981; margin-left: 8px;" onclick="copyAccountNumber('${data.number}')" title="Copy Number"></i>
+                </div>
             `;
             document.getElementById("qrCodeImage").src = data.qr_image;
         }
+
+        // Global Copy Function
+        window.copyAccountNumber = function(number) {
+            navigator.clipboard.writeText(number).then(() => {
+                alert("Account Number Copied: " + number);
+            }).catch(err => {
+                console.error("Failed to copy: ", err);
+            });
+        };
 
         // Instant Image Processing (Avoids Firebase Storage hanging issues)
         const getCompressedBase64 = (file) => {
