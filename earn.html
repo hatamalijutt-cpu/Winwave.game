@@ -389,15 +389,29 @@
                     }
                 });
 
-                // Team Commission calculation
+                // Team Commission calculation (Matching promotion.html exactly)
+                let totalBetCommission = 0;
+                let referralBonus = 0;
+                
+                onValue(ref(db, "commissionHistory/" + uid), (snapshot) => {
+                    totalBetCommission = 0;
+                    if(snapshot.exists()) {
+                        snapshot.forEach((child) => {
+                            totalBetCommission += Number(child.val().amount || 0);
+                        });
+                    }
+                    document.getElementById("teamCommission").innerText = "RS " + (totalBetCommission + referralBonus).toFixed(2);
+                });
+
                 const userRef = ref(db, "users/" + uid);
                 onValue(userRef, (snapshot)=>{
                     if(snapshot.exists()){
                         const data = snapshot.val();
-                        document.getElementById("teamCommission").innerText = 
-                        "RS " + (data.referralBonus || 0);
+                        referralBonus = Number(data.referralBonus || 0);
+                        document.getElementById("teamCommission").innerText = "RS " + (totalBetCommission + referralBonus).toFixed(2);
                     }
                 });
+
             } else {
                 document.getElementById("referralCodeText").innerText = "Not Logged In";
                 document.getElementById("referralLinkText").innerText = "Please log in first";
