@@ -41,11 +41,11 @@
         /* Loader */
         #loader { display: none; color: #10b981; margin-top: 10px; font-size: 14px; }
 
-        /* Important Note Box */
-        .note-box { background-color: #262626; border-left: 4px solid #f59e0b; padding: 15px; margin-top: 20px; text-align: left; border-radius: 6px; font-size: 13px; color: #d4d4d4; }
-        .note-box strong { color: #f59e0b; font-size: 14px; display: block; margin-bottom: 8px; }
-        .note-box ul { padding-left: 15px; margin: 0; }
-        .note-box ul li { margin-bottom: 5px; }
+        /* Important Note Box (Urdu Styled) */
+        .note-box { background-color: #262626; border-right: 4px solid #f59e0b; padding: 15px; margin-top: 20px; text-align: right; direction: rtl; border-radius: 6px; font-size: 14px; color: #d4d4d4; line-height: 1.6; }
+        .note-box strong { color: #f59e0b; font-size: 16px; display: block; margin-bottom: 8px; }
+        .note-box ul { padding-right: 20px; margin: 0; }
+        .note-box ul li { margin-bottom: 6px; }
     </style>
 </head>
 <body>
@@ -62,7 +62,8 @@
             <div class="amount-display" id="displayAmount">RS 0</div>
 
             <div class="bank-details" id="bankDetailsBox">
-                </div>
+                <!-- Details will appear here -->
+            </div>
 
             <div class="qr-section">
                 <img id="qrCodeImage" src="" alt="QR Code" class="qr-image" onerror="this.src='https://via.placeholder.com/200?text=No+QR+Code'">
@@ -81,14 +82,18 @@
             <button class="submit-btn" id="submitBtn" onclick="submitDepositRequest()">SUBMIT DEPOSIT</button>
             <div id="loader"><i class="fa-solid fa-spinner fa-spin"></i> Submitting... please wait</div>
 
+            <!-- Deposit Note Section (Urdu) -->
             <div class="note-box">
-                <strong><i class="fa-solid fa-circle-info"></i> Zaroori Hidayat:</strong>
+                <strong><i class="fa-solid fa-circle-info" style="margin-left: 6px;"></i> ضروری ہدایت (ڈپازٹ کا طریقہ):</strong>
                 <ul>
-                    <li><strong>Deposit ka Tarika:</strong> Upar diye gaye account number ko copy karein aur payment send karne ke baad <strong>Transaction ID</strong> aur <strong>Screenshot</strong> attach kar ke Submit karein.</li>
-                    <li>Apka deposit <strong>15 second</strong> ke andar aapke account mein add kar diya jaye ga!</li>
+                    <li>آپ اوپر دیے گئے <strong>اکاؤنٹ نمبر کو کاپی</strong> کریں یا پھر <strong>QR کوڈ کو اسکین</strong> کر کے پیمنٹ سینڈ کریں۔</li>
+                    <li>پیمنٹ بھیجنے کے بعد اپنی <strong>Transaction ID (TRX ID)</strong> درج کریں اور پیمنٹ کا <strong>اسکرین شاٹ</strong> اپلوڈ کر کے سبمٹ کریں۔</li>
+                    <li>آپ کا ڈپازٹ صرف <strong>15 سیکنڈ</strong> کے اندر آپ کے اکاؤنٹ میں شامل کر دیا جائے گا!</li>
                 </ul>
             </div>
-            </div>
+            <!-- Note Section Ends -->
+
+        </div>
     </div>
 
     <script type="module">
