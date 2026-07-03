@@ -331,7 +331,7 @@
 
             <div class="member-list-box">
                 <div class="table-header">
-                    <div class="col-user">Username</div>
+                    <div class="col-user">User UID</div>
                     <div class="col-date">Join Date</div>
                     <div class="col-comm">Deposit</div>
                 </div>
@@ -467,8 +467,8 @@
                     html += `
                     <div class="member-row">
 
-                        <div class="col-user">
-                            ${data.email}
+                        <div class="col-user" style="word-break: break-all;">
+                            ${child.key}
                         </div>
 
                         <div class="col-date">
@@ -518,8 +518,8 @@
                     html += `
                     <div class="member-row">
 
-                        <div class="col-user">
-                            ${data.email}
+                        <div class="col-user" style="word-break: break-all;">
+                            ${child.key}
                         </div>
 
                         <div class="col-date">
@@ -572,8 +572,8 @@
                     html += `
                     <div class="member-row">
 
-                        <div class="col-user">
-                            ${data.email}
+                        <div class="col-user" style="word-break: break-all;">
+                            ${child.key}
                         </div>
 
                         <div class="col-date">
