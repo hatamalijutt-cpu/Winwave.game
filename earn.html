@@ -389,12 +389,11 @@
                     }
                 });
 
-                // Total Team Deposit Calculation (Fixed to match promotion.html exactly)
+                // Total Team Deposit Calculation
                 const userRef = ref(db, "users/" + uid);
                 onValue(userRef, (snapshot)=>{
                     if(snapshot.exists()){
                         const data = snapshot.val();
-                        // Getting teamDepositTotal from user data
                         const teamDepositTotal = data.teamDepositTotal || 0;
                         document.getElementById("teamDeposit").innerText = "RS " + teamDepositTotal;
                     }
@@ -406,7 +405,6 @@
             }
         });
 
-        // Global Copy Handlers clipboards operations
         window.copyValue = function(elementId, labelName) {
             const textToCopy = document.getElementById(elementId).innerText;
             navigator.clipboard.writeText(textToCopy);
@@ -414,7 +412,6 @@
         };
 
         window.switchLevelTab = function(level, btn){
-
             document.querySelectorAll(".level-tab-btn")
             .forEach(tab => tab.classList.remove("active"));
 
@@ -423,28 +420,15 @@
             const user = auth.currentUser;
             if(!user) return;
 
-            if(level === 1){
-                loadLevel1(user.uid);
-            }
-
-            if(level === 2){
-                loadLevel2(user.uid);
-            }
-
-            if(level === 3){
-                loadLevel3(user.uid);
-            }
+            if(level === 1) loadLevel1(user.uid);
+            if(level === 2) loadLevel2(user.uid);
+            if(level === 3) loadLevel3(user.uid);
         }
 
         function loadLevel1(uid){
-
             const referralsRef = ref(db,"users/"+uid+"/referrals");
-
             onValue(referralsRef,(snapshot)=>{
-
-                const container =
-                document.getElementById("memberRowsContainer");
-
+                const container = document.getElementById("memberRowsContainer");
                 if(!snapshot.exists()){
                     container.innerHTML = `
                     <div class="no-data">
@@ -454,48 +438,48 @@
                 }
 
                 let html = "";
+                let memberUids = [];
 
                 snapshot.forEach((child)=>{
-
                     const data = child.val();
+                    const memberUid = child.key;
+                    memberUids.push(memberUid);
+                    const date = new Date(data.joinedAt).toLocaleDateString();
 
-                    const date =
-                    new Date(data.joinedAt)
-                    .toLocaleDateString();
-
-                    // Yahan 'data.deposit' referral ka deposit show karega
                     html += `
                     <div class="member-row">
-
                         <div class="col-user" style="word-break: break-all;">
-                            ${child.key}
+                            ${memberUid}
                         </div>
-
                         <div class="col-date">
                             ${date}
                         </div>
-
-                        <div class="col-comm">
-                            RS ${data.deposit || 0}
+                        <div class="col-comm" id="lvl1-dep-${memberUid}">
+                            RS 0
                         </div>
-
                     </div>`;
                 });
 
                 container.innerHTML = html;
 
+                // Live fetching deposit for each member
+                memberUids.forEach(memberUid => {
+                    onValue(ref(db, "users/" + memberUid), (userSnap) => {
+                        if(userSnap.exists()){
+                            const userData = userSnap.val();
+                            const deposit = userData.deposit || userData.totalDeposit || 0;
+                            const el = document.getElementById(`lvl1-dep-${memberUid}`);
+                            if(el) el.innerText = "RS " + deposit;
+                        }
+                    });
+                });
             });
         }
 
         function loadLevel2(uid){
-
             const level2Ref = ref(db,"users/"+uid+"/level2Referrals");
-
             onValue(level2Ref,(snapshot)=>{
-
-                const container =
-                document.getElementById("memberRowsContainer");
-
+                const container = document.getElementById("memberRowsContainer");
                 if(!snapshot.exists()){
                     container.innerHTML = `
                     <div class="no-data">
@@ -505,92 +489,91 @@
                 }
 
                 let html = "";
+                let memberUids = [];
 
                 snapshot.forEach((child)=>{
-
                     const data = child.val();
+                    const memberUid = child.key;
+                    memberUids.push(memberUid);
+                    const date = new Date(data.joinedAt).toLocaleDateString();
 
-                    const date =
-                    new Date(data.joinedAt)
-                    .toLocaleDateString();
-
-                    // Yahan 'data.deposit' referral ka deposit show karega
                     html += `
                     <div class="member-row">
-
                         <div class="col-user" style="word-break: break-all;">
-                            ${child.key}
+                            ${memberUid}
                         </div>
-
                         <div class="col-date">
                             ${date}
                         </div>
-
-                        <div class="col-comm">
-                            RS ${data.deposit || 0}
+                        <div class="col-comm" id="lvl2-dep-${memberUid}">
+                            RS 0
                         </div>
-
                     </div>`;
                 });
 
                 container.innerHTML = html;
 
+                memberUids.forEach(memberUid => {
+                    onValue(ref(db, "users/" + memberUid), (userSnap) => {
+                        if(userSnap.exists()){
+                            const userData = userSnap.val();
+                            const deposit = userData.deposit || userData.totalDeposit || 0;
+                            const el = document.getElementById(`lvl2-dep-${memberUid}`);
+                            if(el) el.innerText = "RS " + deposit;
+                        }
+                    });
+                });
             });
         }
 
         function loadLevel3(uid){
-
-            const level3Ref =
-            ref(db,"users/"+uid+"/level3Referrals");
-
+            const level3Ref = ref(db,"users/"+uid+"/level3Referrals");
             onValue(level3Ref,(snapshot)=>{
-
-                const container =
-                document.getElementById("memberRowsContainer");
-
+                const container = document.getElementById("memberRowsContainer");
                 if(!snapshot.exists()){
-
                     container.innerHTML = `
                     <div class="no-data">
                         No Level 3 Members
                     </div>`;
-
                     return;
                 }
 
                 let html = "";
+                let memberUids = [];
 
                 snapshot.forEach((child)=>{
-
                     const data = child.val();
+                    const memberUid = child.key;
+                    memberUids.push(memberUid);
+                    const date = new Date(data.joinedAt).toLocaleDateString();
 
-                    const date =
-                    new Date(data.joinedAt)
-                    .toLocaleDateString();
-
-                    // Yahan 'data.deposit' referral ka deposit show karega
                     html += `
                     <div class="member-row">
-
                         <div class="col-user" style="word-break: break-all;">
-                            ${child.key}
+                            ${memberUid}
                         </div>
-
                         <div class="col-date">
                             ${date}
                         </div>
-
-                        <div class="col-comm">
-                            RS ${data.deposit || 0}
+                        <div class="col-comm" id="lvl3-dep-${memberUid}">
+                            RS 0
                         </div>
-
                     </div>`;
                 });
 
                 container.innerHTML = html;
 
+                memberUids.forEach(memberUid => {
+                    onValue(ref(db, "users/" + memberUid), (userSnap) => {
+                        if(userSnap.exists()){
+                            const userData = userSnap.val();
+                            const deposit = userData.deposit || userData.totalDeposit || 0;
+                            const el = document.getElementById(`lvl3-dep-${memberUid}`);
+                            if(el) el.innerText = "RS " + deposit;
+                        }
+                    });
+                });
             });
-
         }
     </script>
 </body>
