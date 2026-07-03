@@ -20,7 +20,7 @@
             justify-content: center;
         }
 
-        /* Mobile Container (Dashboard Aur Profile Page Ke Same Size Ka) */
+        /* Mobile Container */
         .app-container {
             width: 100%;
             max-width: 450px;
@@ -253,6 +253,13 @@
             display: block;
         }
 
+        .loading-text {
+            text-align: center;
+            padding: 20px;
+            color: #a3a3a3;
+            font-size: 13px;
+        }
+
         /* Member Row styling dynamic design */
         .member-row {
             display: flex;
@@ -339,7 +346,7 @@
                 <div class="member-rows-container" id="memberRowsContainer">
                     <div class="no-data">
                         <i class="fa-solid fa-folder-open"></i>
-                        No team records found at Level 1 yet.
+                        Loading...
                     </div>
                 </div>
             </div>
@@ -350,7 +357,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+        import { getDatabase, ref, onValue, get } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
         const firebaseConfig = {
           apiKey: "AIzaSyCjw124Pc1wGpG1iNYGuKR9DmXo_OHCab8",
@@ -370,7 +377,9 @@
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 const uid = user.uid;
-                loadLevel1(uid);
+                
+                // By default load level 1
+                loadLevelData(1, uid);
 
                 document.getElementById("referralLinkText").innerText = 
                 "https://hatamalijutt-cpu.github.io/Winwave.game/index.html?ref=" + uid;
@@ -382,19 +391,17 @@
                 onValue(referralsRef, (snapshot) => {
                     if(snapshot.exists()){
                         const referrals = snapshot.val();
-                        document.getElementById("totalTeamCount").innerText = 
-                        Object.keys(referrals).length;
-                    }else{
+                        document.getElementById("totalTeamCount").innerText = Object.keys(referrals).length;
+                    } else {
                         document.getElementById("totalTeamCount").innerText = "0";
                     }
                 });
 
-                // Total Team Deposit Calculation (Fixed to match promotion.html exactly)
+                // Total Team Deposit Calculation
                 const userRef = ref(db, "users/" + uid);
                 onValue(userRef, (snapshot)=>{
                     if(snapshot.exists()){
                         const data = snapshot.val();
-                        // Getting teamDepositTotal from user data
                         const teamDepositTotal = data.teamDepositTotal || 0;
                         document.getElementById("teamDeposit").innerText = "RS " + teamDepositTotal;
                     }
@@ -406,191 +413,75 @@
             }
         });
 
-        // Global Copy Handlers clipboards operations
+        // Global Copy Handlers
         window.copyValue = function(elementId, labelName) {
             const textToCopy = document.getElementById(elementId).innerText;
             navigator.clipboard.writeText(textToCopy);
             alert(labelName + " successfully copied to clipboard!");
         };
 
+        // Tab Switching Logic
         window.switchLevelTab = function(level, btn){
-
-            document.querySelectorAll(".level-tab-btn")
-            .forEach(tab => tab.classList.remove("active"));
-
+            document.querySelectorAll(".level-tab-btn").forEach(tab => tab.classList.remove("active"));
             btn.classList.add("active");
 
             const user = auth.currentUser;
             if(!user) return;
 
-            if(level === 1){
-                loadLevel1(user.uid);
-            }
-
-            if(level === 2){
-                loadLevel2(user.uid);
-            }
-
-            if(level === 3){
-                loadLevel3(user.uid);
-            }
+            loadLevelData(level, user.uid);
         }
 
-        function loadLevel1(uid){
+        // Smart Function: Har level aur har member ka actual deposit fetch karega
+        function loadLevelData(levelNum, uid){
+            let refPath = "";
+            if(levelNum === 1) refPath = "users/" + uid + "/referrals";
+            if(levelNum === 2) refPath = "users/" + uid + "/level2Referrals";
+            if(levelNum === 3) refPath = "users/" + uid + "/level3Referrals";
 
-            const referralsRef = ref(db,"users/"+uid+"/referrals");
-
-            onValue(referralsRef,(snapshot)=>{
-
-                const container =
-                document.getElementById("memberRowsContainer");
-
+            const container = document.getElementById("memberRowsContainer");
+            container.innerHTML = `<div class="loading-text">Fetching live data...</div>`;
+            
+            onValue(ref(db, refPath), async (snapshot) => {
                 if(!snapshot.exists()){
                     container.innerHTML = `
                     <div class="no-data">
-                        No Level 1 Members
+                        <i class="fa-solid fa-folder-open"></i>
+                        No team records found at Level ${levelNum} yet.
                     </div>`;
                     return;
                 }
 
-                let html = "";
+                let promises = [];
 
-                snapshot.forEach((child)=>{
-
+                snapshot.forEach((child) => {
                     const data = child.val();
+                    const memberUid = data.uid || child.key; // Member ka actual UID
+                    const date = new Date(data.joinedAt).toLocaleDateString();
 
-                    const date =
-                    new Date(data.joinedAt)
-                    .toLocaleDateString();
-
-                    // Yahan 'data.deposit' referral ka deposit show karega
-                    html += `
-                    <div class="member-row">
-
-                        <div class="col-user">
-                            ${data.email}
-                        </div>
-
-                        <div class="col-date">
-                            ${date}
-                        </div>
-
-                        <div class="col-comm">
-                            RS ${data.deposit || 0}
-                        </div>
-
-                    </div>`;
+                    // Member ki real-time profile check karna taake uska actual deposit uthaya ja sake
+                    const p = get(ref(db, "users/" + memberUid)).then((memberSnap) => {
+                        let actualDeposit = 0;
+                        if(memberSnap.exists()){
+                            const memberProfile = memberSnap.val();
+                            // Database mein deposit kis naam se save hai usko check kar raha hai
+                            actualDeposit = memberProfile.totalDeposit || memberProfile.deposit || 0; 
+                        }
+                        
+                        return `
+                        <div class="member-row">
+                            <div class="col-user">${data.email || 'Unknown'}</div>
+                            <div class="col-date">${date}</div>
+                            <div class="col-comm">RS ${actualDeposit}</div>
+                        </div>`;
+                    });
+                    
+                    promises.push(p);
                 });
 
-                container.innerHTML = html;
-
+                // Jab sab members ka data fetch ho jaye to table mein show karwa do
+                const htmlArray = await Promise.all(promises);
+                container.innerHTML = htmlArray.join('');
             });
-        }
-
-        function loadLevel2(uid){
-
-            const level2Ref = ref(db,"users/"+uid+"/level2Referrals");
-
-            onValue(level2Ref,(snapshot)=>{
-
-                const container =
-                document.getElementById("memberRowsContainer");
-
-                if(!snapshot.exists()){
-                    container.innerHTML = `
-                    <div class="no-data">
-                        No Level 2 Members
-                    </div>`;
-                    return;
-                }
-
-                let html = "";
-
-                snapshot.forEach((child)=>{
-
-                    const data = child.val();
-
-                    const date =
-                    new Date(data.joinedAt)
-                    .toLocaleDateString();
-
-                    // Yahan 'data.deposit' referral ka deposit show karega
-                    html += `
-                    <div class="member-row">
-
-                        <div class="col-user">
-                            ${data.email}
-                        </div>
-
-                        <div class="col-date">
-                            ${date}
-                        </div>
-
-                        <div class="col-comm">
-                            RS ${data.deposit || 0}
-                        </div>
-
-                    </div>`;
-                });
-
-                container.innerHTML = html;
-
-            });
-        }
-
-        function loadLevel3(uid){
-
-            const level3Ref =
-            ref(db,"users/"+uid+"/level3Referrals");
-
-            onValue(level3Ref,(snapshot)=>{
-
-                const container =
-                document.getElementById("memberRowsContainer");
-
-                if(!snapshot.exists()){
-
-                    container.innerHTML = `
-                    <div class="no-data">
-                        No Level 3 Members
-                    </div>`;
-
-                    return;
-                }
-
-                let html = "";
-
-                snapshot.forEach((child)=>{
-
-                    const data = child.val();
-
-                    const date =
-                    new Date(data.joinedAt)
-                    .toLocaleDateString();
-
-                    // Yahan 'data.deposit' referral ka deposit show karega
-                    html += `
-                    <div class="member-row">
-
-                        <div class="col-user">
-                            ${data.email}
-                        </div>
-
-                        <div class="col-date">
-                            ${date}
-                        </div>
-
-                        <div class="col-comm">
-                            RS ${data.deposit || 0}
-                        </div>
-
-                    </div>`;
-                });
-
-                container.innerHTML = html;
-
-            });
-
         }
     </script>
 </body>
