@@ -239,21 +239,6 @@
         .submit-deposit-btn:hover {
             background-color: #059669;
         }
-
-        /* Notice Notes */
-        .deposit-notice {
-            margin-top: 15px;
-            background-color: rgba(245, 158, 11, 0.1);
-            border: 1px solid rgba(245, 158, 11, 0.2);
-            padding: 12px;
-            border-radius: 8px;
-        }
-
-        .deposit-notice p {
-            font-size: 11px;
-            color: #f59e0b;
-            line-height: 1.5;
-        }
     </style>
 </head>
 <body>
@@ -331,19 +316,15 @@
                 </div>
             </div>
 
-            <!-- Removed Account Details and TRX ID Section As Requested -->
-
             <button class="submit-deposit-btn" onclick="submitDepositForm()">Submit Deposit</button>
-
-            <div class="deposit-notice">
-                <p><i class="fa-solid fa-circle-exclamation"></i> <b>Note:</b> Pehle ooper diye gaye admin account par paise bhejein, phir uski Transaction ID (TRX ID) yahan likh kar submit karein. Deposit balance 5 se 15 mint mein verify ho kar add ho jayega.</p>
-            </div>
 
         </div>
 
     </div>
 
     <script>
+        let selectedMethodKey = 'easypaisa';
+
         function setAmount(value) {
             document.getElementById('depositAmount').value = value;
             
@@ -357,9 +338,14 @@
             cards.forEach(card => card.classList.remove('active'));
             
             element.classList.add('active');
+
+            if (methodName.includes('EasyPaisa')) selectedMethodKey = 'easypaisa';
+            else if (methodName.includes('JazzCash')) selectedMethodKey = 'jazzcash';
+            else if (methodName.includes('Bank') || methodName.includes('Meezan')) selectedMethodKey = 'bank';
+            else if (methodName.includes('USDT')) selectedMethodKey = 'usdt';
+            else selectedMethodKey = 'easypaisa';
         }
 
-        // Updated Function: Redirects to checkout.html
         function submitDepositForm() {
             const amount = document.getElementById('depositAmount').value;
 
@@ -368,7 +354,6 @@
                 return;
             }
 
-            // Using global 'auth' provided by the module script below
             const user = auth.currentUser;
 
             if(!user){
@@ -376,8 +361,8 @@
                 return;
             }
 
-            // Directing to checkout.html as requested
-            window.location.href = "checkout.html";
+            // Redirect with URL parameters so checkout page can display exact amount & details
+            window.location.href = `checkout.html?method=${selectedMethodKey}&amount=${amount}`;
         }
     </script>
 
@@ -407,7 +392,6 @@
         const db = getDatabase(app);
         const auth = getAuth(app);
 
-        // Making Firebase objects globally available for the script above
         window.db = db;
         window.auth = auth;
         window.ref = ref;
