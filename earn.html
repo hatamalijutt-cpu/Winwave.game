@@ -20,7 +20,7 @@
             justify-content: center;
         }
 
-        /* Mobile Container (Dashboard Aur Profile Page Ke Same Size Ka) */
+        /* Mobile Container */
         .app-container {
             width: 100%;
             max-width: 450px;
@@ -233,7 +233,7 @@
 
         .col-user { flex: 2; text-align: left; }
         .col-date { flex: 2; text-align: center; }
-        .col-comm { flex: 1.5; text-align: right; }
+        .col-dep { flex: 1.5; text-align: right; } /* Changed from col-comm to col-dep */
 
         .member-rows-container {
             max-height: 250px;
@@ -281,7 +281,7 @@
 
         <div class="invite-banner">
             <h2>Invite Friends</h2>
-            <p>Share your link with friends to earn up to 3 Levels of Commission instantly!</p>
+            <p>Share your link with friends to build your team and grow your deposits!</p>
             
             <div class="share-box">
                 <div class="share-details">
@@ -312,9 +312,7 @@
             </div>
             <div class="stat-card">
                 <div class="stat-icon" style="color: #eab308;"><i class="fa-solid fa-hand-holding-dollar"></i></div>
-                <div class="stat-num" id="teamCommission">RS 0.00</div>
-                <div class="stat-title">Total Team Commission</div>
-            </div>
+                <div class="stat-num" id="teamDeposit">RS 0.00</div> <div class="stat-title">Total Team Deposit</div> </div>
         </div>
 
         <div class="team-section">
@@ -333,8 +331,7 @@
                 <div class="table-header">
                     <div class="col-user">Username</div>
                     <div class="col-date">Join Date</div>
-                    <div class="col-comm">Commission</div>
-                </div>
+                    <div class="col-dep">Deposit</div> </div>
 
                 <div class="member-rows-container" id="memberRowsContainer">
                     <div class="no-data">
@@ -389,26 +386,15 @@
                     }
                 });
 
-                // Team Commission calculation (Matching promotion.html exactly)
-                let totalBetCommission = 0;
-                let referralBonus = 0;
-                
-                onValue(ref(db, "commissionHistory/" + uid), (snapshot) => {
-                    totalBetCommission = 0;
-                    if(snapshot.exists()) {
-                        snapshot.forEach((child) => {
-                            totalBetCommission += Number(child.val().amount || 0);
-                        });
-                    }
-                    document.getElementById("teamCommission").innerText = "RS " + (totalBetCommission + referralBonus).toFixed(2);
-                });
-
+                // Total Team Deposit calculation
+                // Note: Aapki database structure ke hisab se ye logic adjust kar lein. 
+                // Abhi ye 'users/UID' mein se 'teamDeposit' node ko parh raha hai.
                 const userRef = ref(db, "users/" + uid);
                 onValue(userRef, (snapshot)=>{
                     if(snapshot.exists()){
                         const data = snapshot.val();
-                        referralBonus = Number(data.referralBonus || 0);
-                        document.getElementById("teamCommission").innerText = "RS " + (totalBetCommission + referralBonus).toFixed(2);
+                        let totalDeposit = Number(data.teamDeposit || 0); // Yahan 'teamDeposit' check hoga
+                        document.getElementById("teamDeposit").innerText = "RS " + totalDeposit.toFixed(2);
                     }
                 });
 
@@ -449,13 +435,10 @@
         }
 
         function loadLevel1(uid){
-
             const referralsRef = ref(db,"users/"+uid+"/referrals");
 
             onValue(referralsRef,(snapshot)=>{
-
-                const container =
-                document.getElementById("memberRowsContainer");
+                const container = document.getElementById("memberRowsContainer");
 
                 if(!snapshot.exists()){
                     container.innerHTML = `
@@ -466,47 +449,34 @@
                 }
 
                 let html = "";
-
                 snapshot.forEach((child)=>{
-
                     const data = child.val();
+                    const date = new Date(data.joinedAt).toLocaleDateString();
 
-                    const date =
-                    new Date(data.joinedAt)
-                    .toLocaleDateString();
-
-                    // Yahan 'data.commission' referral ka commission show karega
+                    // Yahan 'data.deposit' referral ka deposit show karega (Pehle commission tha)
                     html += `
                     <div class="member-row">
-
                         <div class="col-user">
                             ${data.email}
                         </div>
-
                         <div class="col-date">
                             ${date}
                         </div>
-
-                        <div class="col-comm">
-                            RS ${data.commission || 0}
+                        <div class="col-dep">
+                            RS ${data.deposit || 0}
                         </div>
-
                     </div>`;
                 });
 
                 container.innerHTML = html;
-
             });
         }
 
         function loadLevel2(uid){
-
             const level2Ref = ref(db,"users/"+uid+"/level2Referrals");
 
             onValue(level2Ref,(snapshot)=>{
-
-                const container =
-                document.getElementById("memberRowsContainer");
+                const container = document.getElementById("memberRowsContainer");
 
                 if(!snapshot.exists()){
                     container.innerHTML = `
@@ -517,92 +487,65 @@
                 }
 
                 let html = "";
-
                 snapshot.forEach((child)=>{
-
                     const data = child.val();
+                    const date = new Date(data.joinedAt).toLocaleDateString();
 
-                    const date =
-                    new Date(data.joinedAt)
-                    .toLocaleDateString();
-
-                    // Yahan 'data.commission' referral ka commission show karega
+                    // Yahan 'data.deposit' referral ka deposit show karega
                     html += `
                     <div class="member-row">
-
                         <div class="col-user">
                             ${data.email}
                         </div>
-
                         <div class="col-date">
                             ${date}
                         </div>
-
-                        <div class="col-comm">
-                            RS ${data.commission || 0}
+                        <div class="col-dep">
+                            RS ${data.deposit || 0}
                         </div>
-
                     </div>`;
                 });
 
                 container.innerHTML = html;
-
             });
         }
 
         function loadLevel3(uid){
-
-            const level3Ref =
-            ref(db,"users/"+uid+"/level3Referrals");
+            const level3Ref = ref(db,"users/"+uid+"/level3Referrals");
 
             onValue(level3Ref,(snapshot)=>{
-
-                const container =
-                document.getElementById("memberRowsContainer");
+                const container = document.getElementById("memberRowsContainer");
 
                 if(!snapshot.exists()){
-
                     container.innerHTML = `
                     <div class="no-data">
                         No Level 3 Members
                     </div>`;
-
                     return;
                 }
 
                 let html = "";
-
                 snapshot.forEach((child)=>{
-
                     const data = child.val();
+                    const date = new Date(data.joinedAt).toLocaleDateString();
 
-                    const date =
-                    new Date(data.joinedAt)
-                    .toLocaleDateString();
-
-                    // Yahan 'data.commission' referral ka commission show karega
+                    // Yahan 'data.deposit' referral ka deposit show karega
                     html += `
                     <div class="member-row">
-
                         <div class="col-user">
                             ${data.email}
                         </div>
-
                         <div class="col-date">
                             ${date}
                         </div>
-
-                        <div class="col-comm">
-                            RS ${data.commission || 0}
+                        <div class="col-dep">
+                            RS ${data.deposit || 0}
                         </div>
-
                     </div>`;
                 });
 
                 container.innerHTML = html;
-
             });
-
         }
     </script>
 </body>
