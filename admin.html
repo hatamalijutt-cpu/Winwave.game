@@ -194,7 +194,7 @@ window.addBalance = async function(){
 }
 
 window.approveDeposit = async function(requestId){
-    const requestSnap = await get(ref(db,"depositRequests/"+requestId));
+    const requestSnap = await get(ref(db,"deposit_requests/"+requestId));
     if(!requestSnap.exists()) return;
     const request = requestSnap.val();
     if(request.status === "approved"){
@@ -260,17 +260,17 @@ window.approveDeposit = async function(requestId){
         await update(ref(db,"users/"+request.uid), { firstDepositBonusGiven:true });
     }
 
-    await update(ref(db,"depositRequests/"+requestId), { status:"approved" });
+    await update(ref(db,"deposit_requests/"+requestId), { status:"approved" });
     alert("Deposit Approved");
 }
 
 window.rejectDeposit = async function(requestId){
-    await update(ref(db,"depositRequests/"+requestId), { status:"rejected" });
+    await update(ref(db,"deposit_requests/"+requestId), { status:"rejected" });
     alert("Deposit Rejected");
 }
 
 const requestBox = document.getElementById("requestBox");
-onValue(ref(db, "depositRequests"), (snapshot) => {
+onValue(ref(db, "deposit_requests"), (snapshot) => {
     requestBox.innerHTML = "";
     snapshot.forEach((child) => {
         const data = child.val();
