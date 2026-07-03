@@ -19,9 +19,13 @@
         
         /* Bank Details Card */
         .bank-details { background-color: #262626; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: left; border: 1px dashed #444; }
-        .bank-details div { margin-bottom: 8px; font-size: 14px; }
-        .bank-details span { color: #10b981; font-weight: bold; }
+        .bank-details div { margin-bottom: 8px; font-size: 14px; display: flex; align-items: center; flex-wrap: wrap; }
+        .bank-details span { color: #10b981; font-weight: bold; margin-left: 5px; }
         
+        /* Copy Button Style */
+        .copy-btn { background-color: #10b981; color: white; border: none; padding: 4px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; margin-left: 10px; font-weight: bold; }
+        .copy-btn:hover { background-color: #0d9668; }
+
         /* QR Code */
         .qr-section { margin-bottom: 20px; }
         .qr-image { width: 200px; height: 200px; border-radius: 10px; border: 2px solid #333; object-fit: contain; background: #fff; }
@@ -36,6 +40,12 @@
         
         /* Loader */
         #loader { display: none; color: #10b981; margin-top: 10px; font-size: 14px; }
+
+        /* Important Note Box */
+        .note-box { background-color: #262626; border-left: 4px solid #f59e0b; padding: 15px; margin-top: 20px; text-align: left; border-radius: 6px; font-size: 13px; color: #d4d4d4; }
+        .note-box strong { color: #f59e0b; font-size: 14px; display: block; margin-bottom: 8px; }
+        .note-box ul { padding-left: 15px; margin: 0; }
+        .note-box ul li { margin-bottom: 5px; }
     </style>
 </head>
 <body>
@@ -70,7 +80,15 @@
 
             <button class="submit-btn" id="submitBtn" onclick="submitDepositRequest()">SUBMIT DEPOSIT</button>
             <div id="loader"><i class="fa-solid fa-spinner fa-spin"></i> Submitting... please wait</div>
-        </div>
+
+            <div class="note-box">
+                <strong><i class="fa-solid fa-circle-info"></i> Zaroori Hidayat:</strong>
+                <ul>
+                    <li><strong>Deposit ka Tarika:</strong> Upar diye gaye account number ko copy karein aur payment send karne ke baad <strong>Transaction ID</strong> aur <strong>Screenshot</strong> attach kar ke Submit karein.</li>
+                    <li>Apka deposit <strong>15 second</strong> ke andar aapke account mein add kar diya jaye ga!</li>
+                </ul>
+            </div>
+            </div>
     </div>
 
     <script type="module">
@@ -155,7 +173,7 @@
             ]
         };
 
-        // Extract Params from URL (Jo deposit.html se aaye hain)
+        // Extract Params from URL
         const urlParams = new URLSearchParams(window.location.search);
         const method = urlParams.get("method") || "easypaisa";
         const amount = urlParams.get("amount") || "0";
@@ -171,12 +189,11 @@
             const randomIndex = Math.floor(Math.random() * methodAccounts.length);
             const data = methodAccounts[randomIndex];
 
-            // Added a copy button/icon next to the account number
             document.getElementById("bankDetailsBox").innerHTML = `
                 <div>Method: <span>${data.title}</span></div>
                 <div>Account Title: <span>${data.name}</span></div>
-                <div>Account Number: <span id="accNum">${data.number}</span> 
-                    <i class="fa-regular fa-copy" style="cursor: pointer; color: #10b981; margin-left: 8px;" onclick="copyAccountNumber('${data.number}')" title="Copy Number"></i>
+                <div style="margin-top: 10px;">Account Number: <span id="accNum">${data.number}</span> 
+                    <button class="copy-btn" onclick="copyAccountNumber('${data.number}')"><i class="fa-solid fa-copy"></i> Copy</button>
                 </div>
             `;
             document.getElementById("qrCodeImage").src = data.qr_image;
@@ -188,10 +205,11 @@
                 alert("Account Number Copied: " + number);
             }).catch(err => {
                 console.error("Failed to copy: ", err);
+                alert("Failed to copy! Please select and copy manually.");
             });
         };
 
-        // Instant Image Processing (Avoids Firebase Storage hanging issues)
+        // Instant Image Processing
         const getCompressedBase64 = (file) => {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
