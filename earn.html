@@ -352,7 +352,6 @@
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
-        // Aapki di hui Firebase config yahan add ki gayi hai
         const firebaseConfig = {
           apiKey: "AIzaSyCjw124Pc1wGpG1iNYGuKR9DmXo_OHCab8",
           authDomain: "winwave-b3ed4.firebaseapp.com",
@@ -373,11 +372,9 @@
                 const uid = user.uid;
                 loadLevel1(uid);
 
-                // Referral link ko replace kiya hai
                 document.getElementById("referralLinkText").innerText = 
                 "https://hatamalijutt-cpu.github.io/Winwave.game/index.html?ref=" + uid;
 
-                // Referral code update kiya hai
                 document.getElementById("referralCodeText").innerText = uid;
 
                 // Total referrals calculation
@@ -402,7 +399,6 @@
                     }
                 });
             } else {
-                // Agar user login nahi hai
                 document.getElementById("referralCodeText").innerText = "Not Logged In";
                 document.getElementById("referralLinkText").innerText = "Please log in first";
             }
@@ -465,6 +461,7 @@
                     new Date(data.joinedAt)
                     .toLocaleDateString();
 
+                    // Yahan 'data.commission' referral ka commission show karega
                     html += `
                     <div class="member-row">
 
@@ -515,6 +512,7 @@
                     new Date(data.joinedAt)
                     .toLocaleDateString();
 
+                    // Yahan 'data.commission' referral ka commission show karega
                     html += `
                     <div class="member-row">
 
@@ -568,6 +566,7 @@
                     new Date(data.joinedAt)
                     .toLocaleDateString();
 
+                    // Yahan 'data.commission' referral ka commission show karega
                     html += `
                     <div class="member-row">
 
