@@ -5,49 +5,91 @@
 <title>Admin Panel</title>
 
 <style>
-body{
-background:#121212;
-color:white;
-font-family:Arial;
-padding:20px;
+body {
+    background: #121212;
+    color: white;
+    font-family: Arial;
+    padding: 20px;
 }
 
-.card{
-background:#222;
-padding:15px;
-margin-bottom:15px;
-border-radius:10px;
+/* Grid Layout for Requests (5x5 Style Boxes) */
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
 }
 
-input{
-width:100%;
-padding:10px;
-margin-top:10px;
-margin-bottom:10px;
+.card {
+    background: #222;
+    padding: 15px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border: 1px solid #333;
 }
 
-button{
-width:100%;
-padding:12px;
-background:#10b981;
-border:none;
-color:white;
-font-weight:bold;
-cursor:pointer;
+.card p {
+    margin: 5px 0;
+    font-size: 14px;
+    word-break: break-all;
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    box-sizing: border-box;
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    background: #10b981;
+    border: none;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 5px;
 }
 
 /* Screenshot Button Style */
 .screenshot-btn {
-    display: inline-block;
-    background: #f59e0b;
-    color: #000;
-    padding: 8px 12px;
-    margin: 10px 0;
-    border-radius: 5px;
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: bold;
-    text-align: center;
+    display: block;
+    background: #f59e0b;
+    color: #000;
+    padding: 8px 12px;
+    margin: 10px 0;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+}
+
+/* View Request Button */
+.view-btn {
+    background: #3b82f6; /* Blue Color */
+    margin-top: 10px;
+}
+
+/* Hidden Details Box */
+.details-box {
+    display: none; 
+    margin-top: 15px; 
+    border-top: 1px dashed #555; 
+    padding-top: 15px;
+}
+
+/* Top Section Forms */
+.form-card {
+    background: #222;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 10px;
+    max-width: 400px;
 }
 </style>
 
@@ -56,74 +98,46 @@ cursor:pointer;
 
 <h2>Admin Panel</h2>
 
-<div class="card">
+<div style="display: flex; flex-wrap: wrap; gap: 15px;">
+    <div class="form-card" style="flex: 1; min-width: 300px;">
+        <h3>Referral Deposit Checker</h3>
+        <input type="text" id="checkUid" placeholder="Enter User UID">
+        <input type="date" id="reportDate">
+        <button onclick="checkReferralDeposits()">Check Deposits</button>
+        <div id="referralResult" style="margin-top:10px;"></div>
+    </div>
 
-<h3>Referral Deposit Checker</h3>
-
-<input
-type="text"
-id="checkUid"
-placeholder="Enter User UID">
-
-<input
-type="date"
-id="reportDate">
-
-<button onclick="checkReferralDeposits()">
-Check Deposits
-</button>
-
-<div id="referralResult"></div>
-
+    <div class="form-card" style="flex: 1; min-width: 300px;">
+        <h3>Add Balance</h3>
+        <input type="text" id="userUid" placeholder="User UID">
+        <input type="number" id="amount" placeholder="Amount">
+        <button onclick="addBalance()">Add Balance</button>
+    </div>
 </div>
 
-<div class="card">
-<input type="text" id="userUid" placeholder="User UID">
-
-<input type="number" id="amount" placeholder="Amount">
-
-<button onclick="addBalance()">
-Add Balance
-</button>
-</div>
-
-<div style="display:flex;gap:10px;margin:20px 0;">
-    
-    <button onclick="showDeposits()">
-        Deposit Requests
-    </button>
-
-    <button onclick="showWithdraws()">
-        Withdraw Requests
-    </button>
-
+<div style="display:flex;gap:10px;margin:20px 0; max-width: 400px;">
+    <button onclick="showDeposits()">Deposit Requests</button>
+    <button onclick="showWithdraws()">Withdraw Requests</button>
 </div>
 
 <div id="depositSection">
-
-<h3 style="margin-top: 30px;">
-Deposit Requests
-</h3>
-
-<div id="requestBox"></div>
-
+    <h3 style="margin-top: 30px; border-bottom: 2px solid #10b981; padding-bottom: 5px; display: inline-block;">
+        Deposit Requests
+    </h3>
+    <div id="requestBox" class="grid-container"></div> 
 </div>
 
 <div id="withdrawSection" style="display:none;">
-
-<h3 style="margin-top:30px;">
-Withdraw Requests
-</h3>
-
-<div id="withdrawBox"></div>
-
+    <h3 style="margin-top:30px; border-bottom: 2px solid #10b981; padding-bottom: 5px; display: inline-block;">
+        Withdraw Requests
+    </h3>
+    <div id="withdrawBox" class="grid-container"></div>
 </div>
 
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 
-// Step 2: onValue, set aur ab remove import mein add kar diye gaye hain
 import {
 getDatabase,
 ref,
@@ -135,310 +149,327 @@ remove
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCjw124Pc1wGpG1iNYGuKR9DmXo_OHCab8",
-  authDomain: "winwave-b3ed4.firebaseapp.com",
-  projectId: "winwave-b3ed4",
-  storageBucket: "winwave-b3ed4.firebasestorage.app",
-  messagingSenderId: "501831087781",
-  appId: "1:501831087781:web:ea52d559bcb1429b9a3f4c"
+  apiKey: "AIzaSyCjw124Pc1wGpG1iNYGuKR9DmXo_OHCab8",
+  authDomain: "winwave-b3ed4.firebaseapp.com",
+  projectId: "winwave-b3ed4",
+  storageBucket: "winwave-b3ed4.firebasestorage.app",
+  messagingSenderId: "501831087781",
+  appId: "1:501831087781:web:ea52d559bcb1429b9a3f4c"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
+// Tab Toggle Logic
+window.toggleDetails = function(id) {
+    const box = document.getElementById("details-" + id);
+    if (box.style.display === "none") {
+        box.style.display = "block";
+    } else {
+        box.style.display = "none";
+    }
+}
+
 window.addBalance = async function(){
 
-    const uid =
-    document.getElementById("userUid").value;
+    const uid =
+    document.getElementById("userUid").value;
 
-    const amount =
-    Number(document.getElementById("amount").value);
+    const amount =
+    Number(document.getElementById("amount").value);
 
-    const snap =
-    await get(ref(db,"users/"+uid));
+    const snap =
+    await get(ref(db,"users/"+uid));
 
-    if(!snap.exists()){
-        alert("User Not Found");
-        return;
-    }
+    if(!snap.exists()){
+        alert("User Not Found");
+        return;
+    }
 
-    const currentBalance =
-    snap.val().balance || 0;
+    const currentBalance =
+    snap.val().balance || 0;
 
-    await update(
-        ref(db,"users/"+uid),
-        {
-            balance: currentBalance + amount
-        }
-    );
+    await update(
+        ref(db,"users/"+uid),
+        {
+            balance: currentBalance + amount
+        }
+    );
 
-    alert("Balance Added Successfully");
+    alert("Balance Added Successfully");
 }
 
 // Step 3: Approve Deposit function
 window.approveDeposit = async function(requestId){
 
-    const requestSnap =
-    await get(ref(db,"depositRequests/"+requestId));
+    const requestSnap =
+    await get(ref(db,"depositRequests/"+requestId));
 
-    if(!requestSnap.exists()) return;
+    if(!requestSnap.exists()) return;
 
-    const request = requestSnap.val();
+    const request = requestSnap.val();
 
-    if(request.status === "approved"){
-        alert("Already Approved");
-        return;
-    }
+    if(request.status === "approved"){
+        alert("Already Approved");
+        return;
+    }
 
-    const userSnap =
-    await get(ref(db,"users/"+request.uid));
+    const userSnap =
+    await get(ref(db,"users/"+request.uid));
 
-    if(!userSnap.exists()){
-        alert("User Not Found");
-        return;
-    }
+    if(!userSnap.exists()){
+        alert("User Not Found");
+        return;
+    }
 
-    const userData = userSnap.val();
+    const userData = userSnap.val();
 
-    const depositCount =
-    userData.depositCount || 0;
+    const depositCount =
+    userData.depositCount || 0;
 
-    const isFirstDeposit =
-    depositCount === 0;
+    const isFirstDeposit =
+    depositCount === 0;
 
-    const balance =
-    userSnap.val().balance || 0;
+    const balance =
+    userSnap.val().balance || 0;
 
-    alert(
-    "Balance=" + balance +
-    "\nAmount=" + request.amount +
-    "\nOld Deposit=" + (userSnap.val().totalDeposit || 0)
-    );
+    alert(
+    "Balance=" + balance +
+    "\nAmount=" + request.amount +
+    "\nOld Deposit=" + (userSnap.val().totalDeposit || 0)
+    );
 
-    alert(
-    "Amount Type = " + typeof request.amount +
-    "\nAmount Value = " + request.amount
-    );
+    alert(
+    "Amount Type = " + typeof request.amount +
+    "\nAmount Value = " + request.amount
+    );
 
-    await update(
-        ref(db,"users/"+request.uid),
-        {
-            balance:
-            Number(balance) + Number(request.amount),
-            totalDeposit:
-            Number(userData.totalDeposit || 0)
-            + Number(request.amount),
-            depositCount:
-            depositCount + 1
-        }
-    );
+    await update(
+        ref(db,"users/"+request.uid),
+        {
+            balance:
+            Number(balance) + Number(request.amount),
+            totalDeposit:
+            Number(userData.totalDeposit || 0)
+            + Number(request.amount),
+            depositCount:
+            depositCount + 1
+        }
+    );
 
-    await set(
-        ref(
-            db,
-            "depositHistory/" +
-            request.uid +
-            "/" +
-            Date.now()
-        ),
-        {
-            amount: Number(request.amount),
-            date:
-            new Date().toISOString(),
-            isFirstDeposit:
-            isFirstDeposit
-        }
-    );
+    await set(
+        ref(
+            db,
+            "depositHistory/" +
+            request.uid +
+            "/" +
+            Date.now()
+        ),
+        {
+            amount: Number(request.amount),
+            date:
+            new Date().toISOString(),
+            isFirstDeposit:
+            isFirstDeposit
+        }
+    );
 
-    const checkSnap = await get(
-        ref(db,"users/"+request.uid)
-    );
+    const checkSnap = await get(
+        ref(db,"users/"+request.uid)
+    );
 
-    alert(
-    "New totalDeposit = " +
-    checkSnap.val().totalDeposit
-    );
+    alert(
+    "New totalDeposit = " +
+    checkSnap.val().totalDeposit
+    );
 
-    // --- NEW CODE ADDED HERE ---
-    console.log("Depositor UID:", request.uid);
-    console.log("User Data:", userData);
-    console.log("Level1 Referrer:", userData.referredBy);
+    // --- NEW CODE ADDED HERE ---
+    console.log("Depositor UID:", request.uid);
+    console.log("User Data:", userData);
+    console.log("Level1 Referrer:", userData.referredBy);
 
-    if (
-        userData.referredBy
-    ) {
+    if (
+        userData.referredBy
+    ) {
 
-        const depositAmount = Number(request.amount);
+        const depositAmount = Number(request.amount);
 
-        const level1Commission = 0;
-        console.log("=== COMMISSION DEBUG ===");
-        console.log("Depositor:", request.uid);
-        console.log("User referredBy:", userData.referredBy);
-        const level2Commission = 0;
-        const level3Commission = 0;
+        const level1Commission = 0;
+        console.log("=== COMMISSION DEBUG ===");
+        console.log("Depositor:", request.uid);
+        console.log("User referredBy:", userData.referredBy);
+        const level2Commission = 0;
+        const level3Commission = 0;
 
-        // LEVEL 1
-        const level1Id = userData.referredBy;
+        // LEVEL 1
+        const level1Id = userData.referredBy;
 
-        const level1Snap =
-        await get(ref(db,"users/"+level1Id));
+        const level1Snap =
+        await get(ref(db,"users/"+level1Id));
 
-        if(level1Snap.exists()){
+        if(level1Snap.exists()){
 
-            const level1Data =
-            level1Snap.val();
-            console.log("Level1 Data:", level1Data);
-            console.log("Level2 Referrer:", level1Data.referredBy);
+            const level1Data =
+            level1Snap.val();
+            console.log("Level1 Data:", level1Data);
+            console.log("Level2 Referrer:", level1Data.referredBy);
 
-            await update(
-                ref(db,"users/"+level1Id),
-                {
-                    firstDepositAmount:
-                    (level1Data.firstDepositAmount||0) +
-                    (
-                     !userData.firstDepositBonusGiven
-                     ? Number(depositAmount)
-                     : 0
-                    ),
+            await update(
+                ref(db,"users/"+level1Id),
+                {
+                    firstDepositAmount:
+                    (level1Data.firstDepositAmount||0) +
+                    (
+                     !userData.firstDepositBonusGiven
+                     ? Number(depositAmount)
+                     : 0
+                    ),
 
-                    teamDepositTotal:
-                    (level1Data.teamDepositTotal||0)
-                    + Number(depositAmount)
-                }
-            );
+                    teamDepositTotal:
+                    (level1Data.teamDepositTotal||0)
+                    + Number(depositAmount)
+                }
+            );
 
-            // LEVEL 2
-            console.log("Level1 User:", level1Id);
-            console.log("Level1 referredBy:", level1Data.referredBy);
+            // LEVEL 2
+            console.log("Level1 User:", level1Id);
+            console.log("Level1 referredBy:", level1Data.referredBy);
 
-            if(level1Data.referredBy){
+            if(level1Data.referredBy){
 
-                const level2Id =
-                level1Data.referredBy;
+                const level2Id =
+                level1Data.referredBy;
 
-                const level2Snap =
-                await get(
-                ref(db,"users/"+level2Id)
-                );
+                const level2Snap =
+                await get(
+                ref(db,"users/"+level2Id)
+                );
 
-                if(level2Snap.exists()){
+                if(level2Snap.exists()){
 
-                    const level2Data =
-                    level2Snap.val();
+                    const level2Data =
+                    level2Snap.val();
 
-                    await update(
-                        ref(db,"users/"+level2Id),
-                        {
-                            balance:
-                            (level2Data.balance||0)
-                            + level2Commission,
+                    await update(
+                        ref(db,"users/"+level2Id),
+                        {
+                            balance:
+                            (level2Data.balance||0)
+                            + level2Commission,
 
-                            totalCommission:
-                            (level2Data.totalCommission||0)
-                            + level2Commission,
+                            totalCommission:
+                            (level2Data.totalCommission||0)
+                            + level2Commission,
 
-                            teamDepositTotal:
-                            (level2Data.teamDepositTotal||0)
-                            + Number(depositAmount)
-                        }
-                    );
+                            teamDepositTotal:
+                            (level2Data.teamDepositTotal||0)
+                            + Number(depositAmount)
+                        }
+                    );
 
-                    // LEVEL 3
-                    if(level2Data.referredBy){
+                    // LEVEL 3
+                    if(level2Data.referredBy){
 
-                        const level3Id =
-                        level2Data.referredBy;
+                        const level3Id =
+                        level2Data.referredBy;
 
-                        const level3Snap =
-                        await get(
-                        ref(db,"users/"+level3Id)
-                        );
+                        const level3Snap =
+                        await get(
+                        ref(db,"users/"+level3Id)
+                        );
 
-                        if(level3Snap.exists()){
+                        if(level3Snap.exists()){
 
-                            const level3Data =
-                            level3Snap.val();
+                            const level3Data =
+                            level3Snap.val();
 
-                            await update(
-                                ref(db,"users/"+level3Id),
-                                {
-                                    teamDepositTotal:
-                                    (level3Data.teamDepositTotal||0)
-                                    + Number(depositAmount)
-                                }
-                            );
-                        }
-                    }
-                }
-            }
-        }
+                            await update(
+                                ref(db,"users/"+level3Id),
+                                {
+                                    teamDepositTotal:
+                                    (level3Data.teamDepositTotal||0)
+                                    + Number(depositAmount)
+                                }
+                            );
+                        }
+                    }
+                }
+            }
+        }
 
-        await update(
-            ref(db,"users/"+request.uid),
-            {
-                firstDepositBonusGiven:true
-            }
-        );
-    }
-    // --- END OF NEW CODE ---
+        await update(
+            ref(db,"users/"+request.uid),
+            {
+                firstDepositBonusGiven:true
+            }
+        );
+    }
+    // --- END OF NEW CODE ---
 
-    await update(
-        ref(db,"depositRequests/"+requestId),
-        {
-            status:"approved"
-        }
-    );
+    await update(
+        ref(db,"depositRequests/"+requestId),
+        {
+            status:"approved"
+        }
+    );
 
-    alert("Deposit Approved");
+    alert("Deposit Approved");
 }
 
 // Step 4: Reject Deposit function
 window.rejectDeposit = async function(requestId){
 
-    await update(
-        ref(db,"depositRequests/"+requestId),
-        {
-            status:"rejected"
-        }
-    );
+    await update(
+        ref(db,"depositRequests/"+requestId),
+        {
+            status:"rejected"
+        }
+    );
 
-    alert("Deposit Rejected");
+    alert("Deposit Rejected");
 }
 
 // Step 1: Code replacing (Deposit requests list with Approve/Reject buttons)
 const requestBox = document.getElementById("requestBox");
 
 onValue(ref(db, "depositRequests"), (snapshot) => {
-    requestBox.innerHTML = "";
-    snapshot.forEach((child) => {
-        const data = child.val();
-        
-        // Yahan par hum check kar rahe hain ke agar screenshotUrl maujood hai tou button dikhaye
-        let screenshotButton = "";
-        if(data.screenshotUrl) {
-            screenshotButton = `<a href="${data.screenshotUrl}" target="_blank" class="screenshot-btn">📸 View Screenshot</a><br>`;
-        }
+    requestBox.innerHTML = "";
+    snapshot.forEach((child) => {
+        const data = child.val();
+        
+        let screenshotButton = "";
+        if(data.screenshotUrl) {
+            screenshotButton = `<a href="${data.screenshotUrl}" target="_blank" class="screenshot-btn">📸 View Screenshot</a>`;
+        }
 
-        requestBox.innerHTML += `
-        <div class="card">
-            <p><b>UID:</b> ${data.uid}</p>
-            <p><b>Amount:</b> ${data.amount}</p>
-            <p><b>TRX:</b> ${data.trxId}</p>
-            <p><b>Status:</b> ${data.status}</p>
-            
-            ${screenshotButton}
+        // Updated HTML with Grid Support
+        requestBox.innerHTML += `
+        <div class="card">
+            <div>
+                <p style="color:#a3a3a3; font-size:12px;">UID: ${data.uid.substring(0, 8)}...</p>
+                <h3 style="color:#10b981; margin: 10px 0;">RS ${data.amount}</h3>
+                <p>Status: <span style="color: ${data.status === 'Pending' ? '#f59e0b' : '#fff'};">${data.status}</span></p>
+            </div>
+            
+            <button class="view-btn" onclick="toggleDetails('${child.key}')">
+                🔍 View Request
+            </button>
 
-            <button onclick="approveDeposit('${child.key}')">
-                Approve
-            </button>
+            <div id="details-${child.key}" class="details-box">
+                <p><b>TRX:</b> ${data.trxId}</p>
+                ${screenshotButton}
 
-            <button onclick="rejectDeposit('${child.key}')"
-            style="background:red;margin-top:10px;">
-                Reject
-            </button>
-        </div>
-        `;
-    });
+                <button onclick="approveDeposit('${child.key}')" style="margin-top:10px;">
+                    Approve
+                </button>
+
+                <button onclick="rejectDeposit('${child.key}')" style="background:red;margin-top:10px;">
+                    Reject
+                </button>
+            </div>
+        </div>
+        `;
+    });
 });
 
 const withdrawBox =
@@ -446,257 +477,238 @@ document.getElementById("withdrawBox");
 
 onValue(ref(db,"withdrawRequests"),(snapshot)=>{
 
-    withdrawBox.innerHTML = "";
+    withdrawBox.innerHTML = "";
 
-    snapshot.forEach((child)=>{
+    snapshot.forEach((child)=>{
 
-        const data = child.val();
+        const data = child.val();
 
-        withdrawBox.innerHTML += `
-        <div class="card">
-            <p><b>User UID:</b> ${data.uid}</p>
-            <p><b>Amount:</b> ${data.amount}</p>
-            <p><b>Method:</b> ${data.method}</p>
-            <p><b>Account:</b> ${data.accountNumber}</p>
-            <p><b>Status:</b> ${data.status}</p>
+        withdrawBox.innerHTML += `
+        <div class="card">
+            <div>
+                <p style="color:#a3a3a3; font-size:12px;">UID: ${data.uid.substring(0, 8)}...</p>
+                <h3 style="color:#ef4444; margin: 10px 0;">RS ${data.amount}</h3>
+                <p>Method: ${data.method}</p>
+                <p>Acc: ${data.accountNumber}</p>
+                <p>Status: <span style="color: ${data.status === 'Pending' ? '#f59e0b' : '#fff'};">${data.status}</span></p>
+            </div>
 
-            <button
-            onclick="approveWithdraw('${child.key}')">
-            Mark Paid
-            </button>
+            <div style="margin-top:15px;">
+                <button onclick="approveWithdraw('${child.key}')">
+                    Mark Paid
+                </button>
 
-            <button
-            onclick="rejectWithdraw('${child.key}')"
-            style="background:red;margin-top:10px;">
-            Reject
-            </button>
-
-        </div>
-        `;
-    });
+                <button onclick="rejectWithdraw('${child.key}')" style="background:red;margin-top:10px;">
+                    Reject
+                </button>
+            </div>
+        </div>
+        `;
+    });
 
 });
 
 window.approveWithdraw =
 async function(requestId){
 
-    await update(
-        ref(db,
-        "withdrawRequests/"+requestId),
-        {
-            status:"paid"
-        }
-    );
+    await update(
+        ref(db,
+        "withdrawRequests/"+requestId),
+        {
+            status:"paid"
+        }
+    );
 
-    alert("Withdraw Marked Paid");
+    alert("Withdraw Marked Paid");
 
 }
 
 window.rejectWithdraw =
 async function(requestId){
 
-    const requestSnap =
-    await get(
-    ref(db,
-    "withdrawRequests/"+requestId)
-    );
+    const requestSnap =
+    await get(
+    ref(db,
+    "withdrawRequests/"+requestId)
+    );
 
-    if(!requestSnap.exists()) return;
+    if(!requestSnap.exists()) return;
 
-    const request =
-    requestSnap.val();
+    const request =
+    requestSnap.val();
 
-    const userSnap =
-    await get(
-    ref(db,
-    "users/"+request.uid)
-    );
+    const userSnap =
+    await get(
+    ref(db,
+    "users/"+request.uid)
+    );
 
-    if(userSnap.exists()){
+    if(userSnap.exists()){
 
-        const balance =
-        userSnap.val().balance || 0;
+        const balance =
+        userSnap.val().balance || 0;
 
-        await update(
-        ref(db,
-        "users/"+request.uid),
-        {
-            balance:
-            balance + request.amount
-        });
-    }
+        await update(
+        ref(db,
+        "users/"+request.uid),
+        {
+            balance:
+            balance + request.amount
+        });
+    }
 
-    await update(
-    ref(db,
-    "withdrawRequests/"+requestId),
-    {
-        status:"rejected"
-    });
+    await update(
+    ref(db,
+    "withdrawRequests/"+requestId),
+    {
+        status:"rejected"
+    });
 
-    alert("Withdraw Rejected & Balance Returned");
+    alert("Withdraw Rejected & Balance Returned");
 
 }
 
 window.showDeposits = function(){
 
-    document.getElementById("depositSection")
-    .style.display = "block";
+    document.getElementById("depositSection")
+    .style.display = "block";
 
-    document.getElementById("withdrawSection")
-    .style.display = "none";
+    document.getElementById("withdrawSection")
+    .style.display = "none";
 
 }
 
 async function getAllDownlines(uid){
 
-    let members = [];
+    let members = [];
 
-    const referralsSnap =
-    await get(
-        ref(db,"users/"+uid+"/referrals")
-    );
+    const referralsSnap =
+    await get(
+        ref(db,"users/"+uid+"/referrals")
+    );
 
-    if(!referralsSnap.exists()){
-        return members;
-    }
+    if(!referralsSnap.exists()){
+        return members;
+    }
 
-    const referrals =
-    referralsSnap.val();
+    const referrals =
+    referralsSnap.val();
 
-    for(const childUid in referrals){
+    for(const childUid in referrals){
 
-        members.push(childUid);
+        members.push(childUid);
 
-        const childMembers =
-        await getAllDownlines(childUid);
+        const childMembers =
+        await getAllDownlines(childUid);
 
-        members =
-        members.concat(childMembers);
-    }
+        members =
+        members.concat(childMembers);
+    }
 
-    return members;
+    return members;
 }
 
 window.checkReferralDeposits = async function(){
 
-    const uid =
-    document.getElementById("checkUid").value;
+    const uid =
+    document.getElementById("checkUid").value;
 
-    const resultBox =
-    document.getElementById("referralResult");
+    const resultBox =
+    document.getElementById("referralResult");
 
-    const today =
-    document.getElementById("reportDate").value;
+    const today =
+    document.getElementById("reportDate").value;
 
-    if(!today){
-        alert("Select Date");
-        return;
-    }
+    if(!today){
+        alert("Select Date");
+        return;
+    }
 
-    resultBox.innerHTML = "Loading...";
+    resultBox.innerHTML = "Loading...";
 
-    const allMembers =
-    await getAllDownlines(uid);
+    const allMembers =
+    await getAllDownlines(uid);
 
-    if(allMembers.length === 0){
+    if(allMembers.length === 0){
 
-        resultBox.innerHTML =
-        "No Team Found";
+        resultBox.innerHTML =
+        "No Team Found";
 
-        return;
-    }
+        return;
+    }
 
-    let todayFirstMembers = 0;
-    let todayFirstDeposit = 0;
-    let todayTeamDeposit = 0;
+    let todayFirstMembers = 0;
+    let todayFirstDeposit = 0;
+    let todayTeamDeposit = 0;
 
-    for(const referralUid of allMembers){
+    for(const referralUid of allMembers){
 
-        const userSnap =
-        await get(
-            ref(db,"users/"+referralUid)
-        );
+        const userSnap =
+        await get(
+            ref(db,"users/"+referralUid)
+        );
 
-        if(userSnap.exists()){
+        if(userSnap.exists()){
 
-            const user =
-            userSnap.val();
+            const user =
+            userSnap.val();
 
-            const historySnap = await get(
-                ref(db,"depositHistory/"+referralUid)
-            );
+            const historySnap = await get(
+                ref(db,"depositHistory/"+referralUid)
+            );
 
-            if(historySnap.exists()){
+            if(historySnap.exists()){
 
-                historySnap.forEach((h)=>{
+                historySnap.forEach((h)=>{
 
-                    const item = h.val();
+                    const item = h.val();
 
-                    const depositDate =
-                    new Date(item.date)
-                    .toLocaleDateString(
-                    "en-CA",
-                    {
-                    timeZone:"Asia/Karachi"
-                    }
-                    );
+                    const depositDate =
+                    new Date(item.date)
+                    .toLocaleDateString(
+                    "en-CA",
+                    {
+                    timeZone:"Asia/Karachi"
+                    }
+                    );
 
-                    if(depositDate === today){
+                    if(depositDate === today){
 
-                        todayTeamDeposit +=
-                        Number(item.amount || 0);
+                        todayTeamDeposit +=
+                        Number(item.amount || 0);
 
-                        if(item.isFirstDeposit){
+                        if(item.isFirstDeposit){
 
-                            todayFirstMembers++;
+                            todayFirstMembers++;
 
-                            todayFirstDeposit +=
-                            Number(item.amount || 0);
-                        }
-                    }
+                            todayFirstDeposit +=
+                            Number(item.amount || 0);
+                        }
+                    }
 
-                });
+                });
 
-            }
-        }
-    }
+            }
+        }
+    }
 
-    resultBox.innerHTML = `
-<div class="card">
-
-<h3>Report Date: ${today}</h3>
-
-<p>
-<b>First Deposit Members:</b>
-${todayFirstMembers}
-</p>
-
-<p>
-<b>First Deposit Amount:</b>
-${todayFirstDeposit}
-</p>
-
-<p>
-<b>Total Team Deposit Today:</b>
-${todayTeamDeposit}
-</p>
-
-<p>
-<b>Total Team Members:</b>
-${allMembers.length}
-</p>
-
+    resultBox.innerHTML = `
+<div style="margin-top:10px;">
+    <p><b>First Deposit Members:</b> ${todayFirstMembers}</p>
+    <p><b>First Deposit Amount:</b> ${todayFirstDeposit}</p>
+    <p><b>Total Team Deposit Today:</b> ${todayTeamDeposit}</p>
+    <p><b>Total Team Members:</b> ${allMembers.length}</p>
 </div>
 `;
 }
 
 window.showWithdraws = function(){
 
-    document.getElementById("depositSection")
-    .style.display = "none";
+    document.getElementById("depositSection")
+    .style.display = "none";
 
-    document.getElementById("withdrawSection")
-    .style.display = "block";
+    document.getElementById("withdrawSection")
+    .style.display = "block";
 
 }
 
