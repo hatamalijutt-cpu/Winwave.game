@@ -12,7 +12,7 @@ body {
     padding: 15px;
 }
 
-/* Grid Layout for Extra Small Boxes (10-15 per row on Desktop) */
+/* Grid Layout for Extra Small Boxes */
 .grid-container {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
@@ -35,7 +35,6 @@ body {
     margin: 3px 0;
 }
 
-/* Specific styling for UID to make sure it doesn't break the box */
 .uid-text {
     word-break: break-all;
     font-size: 10px;
@@ -81,13 +80,23 @@ button {
     text-align: center;
 }
 
-/* View Request Button */
+.no-screenshot {
+    display: block;
+    background: #333;
+    color: #ef4444;
+    padding: 6px;
+    margin: 6px 0;
+    border-radius: 4px;
+    font-size: 10px;
+    text-align: center;
+    border: 1px dashed #ef4444;
+}
+
 .view-btn {
-    background: #3b82f6; /* Blue Color */
+    background: #3b82f6; 
     margin-top: 5px;
 }
 
-/* Hidden Details Box */
 .details-box {
     display: none; 
     margin-top: 10px; 
@@ -95,7 +104,6 @@ button {
     padding-top: 8px;
 }
 
-/* Top Section Forms */
 .form-card {
     background: #222;
     padding: 15px;
@@ -163,7 +171,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// Tab Toggle Logic
 window.toggleDetails = function(id) {
     const box = document.getElementById("details-" + id);
     if (box.style.display === "none" || box.style.display === "") {
@@ -262,16 +269,18 @@ window.rejectDeposit = async function(requestId){
     alert("Deposit Rejected");
 }
 
-// Deposit Requests Render Logic
 const requestBox = document.getElementById("requestBox");
 onValue(ref(db, "depositRequests"), (snapshot) => {
     requestBox.innerHTML = "";
     snapshot.forEach((child) => {
         const data = child.val();
         
+        // Yahan Screenshot ka logic update kiya gaya hai
         let screenshotButton = "";
-        if(data.screenshotUrl) {
+        if(data.screenshotUrl && data.screenshotUrl.trim() !== "") {
             screenshotButton = `<a href="${data.screenshotUrl}" target="_blank" class="screenshot-btn">📸 View Screenshot</a>`;
+        } else {
+            screenshotButton = `<span class="no-screenshot">🚫 No Screenshot</span>`;
         }
 
         requestBox.innerHTML += `
