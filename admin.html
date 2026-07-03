@@ -275,12 +275,17 @@ onValue(ref(db, "deposit_requests"), (snapshot) => {
     snapshot.forEach((child) => {
         const data = child.val();
         
-        // Yahan Screenshot ka logic update kiya gaya hai
-        let screenshotButton = "";
+        // Screenshot Logic Updated (Inline Display)
+        let screenshotHTML = "";
         if(data.screenshotUrl && data.screenshotUrl.trim() !== "") {
-            screenshotButton = `<a href="${data.screenshotUrl}" target="_blank" class="screenshot-btn">📸 View Screenshot</a>`;
+            screenshotHTML = `
+                <div style="margin: 8px 0; text-align: center;">
+                    <img src="${data.screenshotUrl}" style="max-width: 100%; border-radius: 4px; border: 1px solid #444;" alt="Screenshot"/>
+                    <a href="${data.screenshotUrl}" download="payment_proof.png" class="screenshot-btn" style="background:#3b82f6; color:#fff; margin-top:5px;">⬇️ Download</a>
+                </div>
+            `;
         } else {
-            screenshotButton = `<span class="no-screenshot">🚫 No Screenshot</span>`;
+            screenshotHTML = `<span class="no-screenshot">🚫 No Screenshot</span>`;
         }
 
         requestBox.innerHTML += `
@@ -299,7 +304,7 @@ onValue(ref(db, "deposit_requests"), (snapshot) => {
                 <div class="uid-text">${data.uid}</div>
                 <p style="margin-top:5px;"><b>TRX:</b> ${data.trxId}</p>
                 
-                ${screenshotButton}
+                ${screenshotHTML}
 
                 <button onclick="approveDeposit('${child.key}')" style="margin-top:8px;">Approve</button>
                 <button onclick="rejectDeposit('${child.key}')" style="background:red;margin-top:5px;">Reject</button>
