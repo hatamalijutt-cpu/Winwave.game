@@ -83,6 +83,14 @@ button {
     font-size: 11px;
 }
 
+.logout-btn {
+    background: #ef4444;
+    width: auto;
+    padding: 8px 15px;
+    float: right;
+    margin-top: 5px;
+}
+
 /* Screenshot Button Style */
 .screenshot-btn {
     display: block;
@@ -133,7 +141,6 @@ button {
 </head>
 <body>
 
-<!-- Login Screen -->
 <div id="loginBox">
     <h2>Admin Login</h2>
     <input type="text" id="adminUser" placeholder="Username">
@@ -141,12 +148,14 @@ button {
     <button onclick="checkLogin()" style="margin-top: 15px; font-size: 14px; padding: 10px;">Login</button>
 </div>
 
-<!-- Main Admin Panel (Hidden by default) -->
 <div id="adminContent" style="display: none;">
 
-    <h2>Admin Panel</h2>
+    <div>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+        <h2>Admin Panel</h2>
+    </div>
 
-    <div style="display: flex; flex-wrap: wrap; gap: 15px;">
+    <div style="display: flex; flex-wrap: wrap; gap: 15px; clear: both;">
         <div class="form-card" style="flex: 1; min-width: 250px;">
             <h3>Referral Deposit Checker</h3>
             <input type="text" id="checkUid" placeholder="Enter User UID">
@@ -194,20 +203,43 @@ button {
         <div id="withdrawBox" class="grid-container"></div>
     </div>
 
-</div> <!-- End of Admin Content -->
+</div> <script>
+    // Check if user is already logged in when the page loads
+    window.onload = function() {
+        if (localStorage.getItem("isAdminLoggedIn") === "true") {
+            document.getElementById("loginBox").style.display = "none";
+            document.getElementById("adminContent").style.display = "block";
+        }
+    };
 
-<script>
     // Login Verification Logic
     function checkLogin() {
         var user = document.getElementById("adminUser").value;
         var pass = document.getElementById("adminPass").value;
 
         if (user === "Qasam Ali Jutt" && pass === "Asamalijutt786@") {
+            // Save login state in local storage
+            localStorage.setItem("isAdminLoggedIn", "true");
+            
             document.getElementById("loginBox").style.display = "none";
             document.getElementById("adminContent").style.display = "block";
         } else {
             alert("Galat Username ya Password!");
         }
+    }
+
+    // Logout Logic
+    function logout() {
+        // Remove login state
+        localStorage.removeItem("isAdminLoggedIn");
+        
+        // Show login box, hide admin panel
+        document.getElementById("loginBox").style.display = "block";
+        document.getElementById("adminContent").style.display = "none";
+        
+        // Clear input fields
+        document.getElementById("adminUser").value = "";
+        document.getElementById("adminPass").value = "";
     }
 </script>
 
