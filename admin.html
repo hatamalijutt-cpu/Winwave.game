@@ -145,10 +145,10 @@ button {
         Deposit Requests
     </h3>
     
-    <!-- NEW DATE FILTER FOR DEPOSITS -->
-    <div style="margin-top: 10px; margin-bottom: 10px; display: flex; gap: 10px; max-width: 300px;">
-        <input type="date" id="depositDateFilter">
-        <button onclick="filterDeposits()" style="padding: 8px;">Filter Date</button>
+    <!-- ADDED: Date Filter for Deposit Requests -->
+    <div style="margin-top: 10px; max-width: 200px;">
+        <label style="font-size: 12px; color: #a3a3a3;">Filter Date:</label>
+        <input type="date" id="depositFilterDate" onchange="renderDeposits()">
     </div>
     
     <div id="requestBox" class="grid-container"></div> 
@@ -276,32 +276,29 @@ window.rejectDeposit = async function(requestId){
     alert("Deposit Rejected");
 }
 
-// Deposit Requests Rendering and Filtering Logic
 const requestBox = document.getElementById("requestBox");
-let depositSnapshotData = null;
+let depositDataStore = []; // Store data globally to handle date filtering easily
 
-// Set Default Date to Today (Karachi Time - Resets exactly at 12 AM)
-document.getElementById("depositDateFilter").value = new Date().toLocaleDateString("en-CA", {timeZone: "Asia/Karachi"});
-
-window.filterDeposits = function() {
-    if(depositSnapshotData) {
-        renderDeposits(depositSnapshotData);
-    }
-}
-
-function renderDeposits(snapshot) {
+window.renderDeposits = function() {
+    const filterDate = document.getElementById("depositFilterDate").value;
     requestBox.innerHTML = "";
-    const filterDate = document.getElementById("depositDateFilter").value;
-
-    snapshot.forEach((child) => {
+    
+    depositDataStore.forEach((child) => {
         const data = child.val();
         
-        // Date Check (Raat 12 bje filter timezone update hoga)
-        if (filterDate && data.date) {
-            const depositDate = new Date(data.date).toLocaleDateString("en-CA", {timeZone: "Asia/Karachi"});
-            if (depositDate !== filterDate) return; // Ignore if date doesn't match
+        // Date Wise Checking (Timezone Asia/Karachi triggers strictly after 12:00 AM)
+        if (filterDate) {
+            let reqDate = "";
+            if (data.date) {
+                reqDate = new Date(data.date).toLocaleDateString("en-CA", {timeZone: "Asia/Karachi"});
+            } else if (data.timestamp) {
+                reqDate = new Date(data.timestamp).toLocaleDateString("en-CA", {timeZone: "Asia/Karachi"});
+            }
+            
+            // Skip rendering if a date exists but does not match the selected date
+            if (reqDate && reqDate !== filterDate) return; 
         }
-        
+
         // Screenshot Logic Updated (Inline Display)
         let screenshotHTML = "";
         if(data.screenshotUrl && data.screenshotUrl.trim() !== "") {
@@ -342,8 +339,18 @@ function renderDeposits(snapshot) {
 }
 
 onValue(ref(db, "deposit_requests"), (snapshot) => {
-    depositSnapshotData = snapshot;
-    renderDeposits(snapshot);
+    depositDataStore = [];
+    snapshot.forEach((child) => {
+        depositDataStore.push(child);
+    });
+    
+    // Auto set today's date in Pakistan Time if input is empty
+    const filterInput = document.getElementById("depositFilterDate");
+    if (!filterInput.value) {
+        filterInput.value = new Date().toLocaleDateString("en-CA", {timeZone: "Asia/Karachi"});
+    }
+    
+    renderDeposits();
 });
 
 const withdrawBox = document.getElementById("withdrawBox");
