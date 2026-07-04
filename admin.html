@@ -174,17 +174,15 @@ button {
         <!-- NEW LOCK BALANCE CONTAINER ADDED HERE -->
         <div class="form-card" style="flex: 1; min-width: 250px;">
             <h3>Lock / Unlock Balance</h3>
-            <input type="text" id="lockUid" placeholder="Enter User UID">
-            <button onclick="checkUserLockStatus()" style="background: #f59e0b; margin-bottom: 10px;">Check User Info</button>
+            <input type="text" id="lockUid" placeholder="Enter User UID" oninput="checkLockStatus()">
             
+            <!-- ADDED: Balance and Status Display -->
+            <div id="lockStatusDisplay" style="margin-top: 5px; font-size: 13px; font-weight: bold; min-height: 15px; color: #10b981;"></div>
+
             <div style="display: flex; gap: 10px; margin-top: 5px;">
                 <button onclick="setBalanceLock(true)" style="background: #ef4444;">Lock Balance</button>
                 <button onclick="setBalanceLock(false)" style="background: #3b82f6;">Unlock Balance</button>
             </div>
-            
-            <!-- RESULT DISPLAY AREA -->
-            <div id="lockStatusDisplay" style="margin-top: 12px; font-size: 13px; font-weight: bold; line-height: 1.6; padding: 8px; background: #1a1a1a; border-radius: 6px; display: none;"></div>
-
             <div style="margin-top: 10px; font-size: 10px; color: #a3a3a3;">
                 Locking balance prevents the user from playing games.
             </div>
@@ -303,33 +301,27 @@ window.addBalance = async function(){
     alert("Balance Added Successfully");
 }
 
-// CHECK USER INFO FUNCTION
-window.checkUserLockStatus = async function() {
-    const uid = document.getElementById("lockUid").value;
+// ADDED: Function to check and display user balance & lock status
+window.checkLockStatus = async function() {
+    const uid = document.getElementById("lockUid").value.trim();
     const display = document.getElementById("lockStatusDisplay");
-    
-    if(!uid) {
-        alert("Please enter User UID first");
+    if (!uid) {
+        display.innerHTML = "";
         return;
     }
-    
-    display.style.display = "block";
-    display.innerHTML = "Loading...";
-    
+    display.innerHTML = "Checking...";
     const snap = await get(ref(db, "users/" + uid));
-    if(!snap.exists()){
-        display.innerHTML = "<span style='color:#ef4444;'>User Not Found</span>";
-        return;
+    if (snap.exists()) {
+        const userData = snap.val();
+        const balance = userData.balance || 0;
+        const isLocked = userData.isBalanceLocked ? "<span style='color:#ef4444'>Locked</span>" : "<span style='color:#3b82f6'>Unlocked</span>";
+        display.innerHTML = `Balance: RS ${balance} | Status: ${isLocked}`;
+    } else {
+        display.innerHTML = "<span style='color:#ef4444'>User Not Found</span>";
     }
-    
-    const data = snap.val();
-    const balance = data.balance || 0;
-    const isLocked = data.isBalanceLocked ? "<span style='color:#ef4444;'>Locked 🔒</span>" : "<span style='color:#10b981;'>Unlocked 🔓</span>";
-    
-    display.innerHTML = `Balance: RS ${balance} <br> Status: ${isLocked}`;
 }
 
-// MODIFIED LOCK/UNLOCK FUNCTION TO UPDATE DISPLAY AUTOMATICALLY
+// NEW FUNCTION FOR BALANCE LOCK/UNLOCK
 window.setBalanceLock = async function(isLocked) {
     const uid = document.getElementById("lockUid").value;
     if(!uid) {
@@ -341,7 +333,6 @@ window.setBalanceLock = async function(isLocked) {
         alert("User Not Found");
         return;
     }
-    
     // Set isBalanceLocked to true (locked) or false (unlocked)
     await update(ref(db, "users/" + uid), { isBalanceLocked: isLocked });
     
@@ -351,8 +342,8 @@ window.setBalanceLock = async function(isLocked) {
         alert("Success: User's balance has been UNLOCKED.");
     }
     
-    // Refresh User Info Display
-    window.checkUserLockStatus();
+    // Refresh the displayed status after update
+    window.checkLockStatus();
 }
 
 window.approveDeposit = async function(requestId){
