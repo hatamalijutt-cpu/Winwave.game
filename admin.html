@@ -12,6 +12,23 @@ body {
     padding: 15px;
 }
 
+/* Login Box Styles */
+#loginBox {
+    max-width: 300px;
+    margin: 100px auto;
+    background: #222;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    border: 1px solid #333;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+#loginBox h2 {
+    color: #10b981;
+    margin-bottom: 20px;
+}
+
 /* Grid Layout for Extra Small Boxes */
 .grid-container {
     display: grid;
@@ -116,55 +133,83 @@ button {
 </head>
 <body>
 
-<h2>Admin Panel</h2>
-
-<div style="display: flex; flex-wrap: wrap; gap: 15px;">
-    <div class="form-card" style="flex: 1; min-width: 250px;">
-        <h3>Referral Deposit Checker</h3>
-        <input type="text" id="checkUid" placeholder="Enter User UID">
-        <input type="date" id="reportDate">
-        <button onclick="checkReferralDeposits()">Check Deposits</button>
-        <div id="referralResult" style="margin-top:10px; font-size:12px;"></div>
-    </div>
-
-    <div class="form-card" style="flex: 1; min-width: 250px;">
-        <h3>Add Balance</h3>
-        <input type="text" id="userUid" placeholder="User UID">
-        <input type="number" id="amount" placeholder="Amount">
-        <button onclick="addBalance()">Add Balance</button>
-    </div>
+<!-- Login Screen -->
+<div id="loginBox">
+    <h2>Admin Login</h2>
+    <input type="text" id="adminUser" placeholder="Username">
+    <input type="password" id="adminPass" placeholder="Password">
+    <button onclick="checkLogin()" style="margin-top: 15px; font-size: 14px; padding: 10px;">Login</button>
 </div>
 
-<div style="display:flex;gap:10px;margin:15px 0; max-width: 400px;">
-    <button onclick="showDeposits()" style="padding: 10px;">Deposit Requests</button>
-    <button onclick="showWithdraws()" style="padding: 10px;">Withdraw Requests</button>
-</div>
+<!-- Main Admin Panel (Hidden by default) -->
+<div id="adminContent" style="display: none;">
 
-<div id="depositSection">
-    <h3 style="margin-top: 15px; border-bottom: 2px solid #10b981; padding-bottom: 5px; display: inline-block;">
-        Deposit Requests
-    </h3>
-    
-    <div style="margin-top: 10px; max-width: 200px;">
-        <label style="font-size: 12px; color: #a3a3a3;">Filter Date:</label>
-        <input type="date" id="depositFilterDate" onchange="renderDeposits()">
-    </div>
-    
-    <div id="requestBox" class="grid-container"></div> 
-</div>
+    <h2>Admin Panel</h2>
 
-<div id="withdrawSection" style="display:none;">
-    <h3 style="margin-top: 15px; border-bottom: 2px solid #10b981; padding-bottom: 5px; display: inline-block;">
-        Withdraw Requests
-    </h3>
+    <div style="display: flex; flex-wrap: wrap; gap: 15px;">
+        <div class="form-card" style="flex: 1; min-width: 250px;">
+            <h3>Referral Deposit Checker</h3>
+            <input type="text" id="checkUid" placeholder="Enter User UID">
+            <input type="date" id="reportDate">
+            <button onclick="checkReferralDeposits()">Check Deposits</button>
+            <div id="referralResult" style="margin-top:10px; font-size:12px;"></div>
+        </div>
 
-    <div style="margin-top: 10px; max-width: 200px;">
-        <label style="font-size: 12px; color: #a3a3a3;">Filter Date:</label>
-        <input type="date" id="withdrawFilterDate" onchange="renderWithdraws()">
+        <div class="form-card" style="flex: 1; min-width: 250px;">
+            <h3>Add Balance</h3>
+            <input type="text" id="userUid" placeholder="User UID">
+            <input type="number" id="amount" placeholder="Amount">
+            <button onclick="addBalance()">Add Balance</button>
+        </div>
     </div>
 
-    <div id="withdrawBox" class="grid-container"></div>
-</div>
+    <div style="display:flex;gap:10px;margin:15px 0; max-width: 400px;">
+        <button onclick="showDeposits()" style="padding: 10px;">Deposit Requests</button>
+        <button onclick="showWithdraws()" style="padding: 10px;">Withdraw Requests</button>
+    </div>
+
+    <div id="depositSection">
+        <h3 style="margin-top: 15px; border-bottom: 2px solid #10b981; padding-bottom: 5px; display: inline-block;">
+            Deposit Requests
+        </h3>
+        
+        <div style="margin-top: 10px; max-width: 200px;">
+            <label style="font-size: 12px; color: #a3a3a3;">Filter Date:</label>
+            <input type="date" id="depositFilterDate" onchange="renderDeposits()">
+        </div>
+        
+        <div id="requestBox" class="grid-container"></div> 
+    </div>
+
+    <div id="withdrawSection" style="display:none;">
+        <h3 style="margin-top: 15px; border-bottom: 2px solid #10b981; padding-bottom: 5px; display: inline-block;">
+            Withdraw Requests
+        </h3>
+
+        <div style="margin-top: 10px; max-width: 200px;">
+            <label style="font-size: 12px; color: #a3a3a3;">Filter Date:</label>
+            <input type="date" id="withdrawFilterDate" onchange="renderWithdraws()">
+        </div>
+
+        <div id="withdrawBox" class="grid-container"></div>
+    </div>
+
+</div> <!-- End of Admin Content -->
+
+<script>
+    // Login Verification Logic
+    function checkLogin() {
+        var user = document.getElementById("adminUser").value;
+        var pass = document.getElementById("adminPass").value;
+
+        if (user === "Qasam Ali Jutt" && pass === "Asamalijutt786@") {
+            document.getElementById("loginBox").style.display = "none";
+            document.getElementById("adminContent").style.display = "block";
+        } else {
+            alert("Galat Username ya Password!");
+        }
+    }
+</script>
 
 <script type="module">
 
@@ -365,7 +410,7 @@ window.renderWithdraws = function() {
     withdrawDataStore.forEach((child) => {
         const data = child.val();
         
-        // Date Wise Checking (Timezone Asia/Karachi triggers strictly after 12:00 AM)
+        // Date Wise Checking
         if (filterDate) {
             let reqDate = "";
             if (data.date) {
@@ -408,7 +453,6 @@ onValue(ref(db,"withdrawRequests"),(snapshot)=>{
         withdrawDataStore.push(child);
     });
     
-    // Auto set today's date in Pakistan Time if input is empty
     const filterInput = document.getElementById("withdrawFilterDate");
     if (!filterInput.value) {
         filterInput.value = new Date().toLocaleDateString("en-CA", {timeZone: "Asia/Karachi"});
