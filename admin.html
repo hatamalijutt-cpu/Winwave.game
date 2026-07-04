@@ -143,7 +143,8 @@ button {
 
 <div id="loginBox">
     <h2>Admin Login</h2>
-    <input type="text" id="adminUser" placeholder="Username">
+    <!-- Username ki jagah Email kar diya hai -->
+    <input type="email" id="adminUser" placeholder="Email Address">
     <input type="password" id="adminPass" placeholder="Password">
     <button onclick="checkLogin()" style="margin-top: 15px; font-size: 14px; padding: 10px;">Login</button>
 </div>
@@ -171,12 +172,10 @@ button {
             <button onclick="addBalance()">Add Balance</button>
         </div>
 
-        <!-- NEW LOCK BALANCE CONTAINER ADDED HERE -->
         <div class="form-card" style="flex: 1; min-width: 250px;">
             <h3>Lock / Unlock Balance</h3>
             <input type="text" id="lockUid" placeholder="Enter User UID" oninput="checkLockStatus()">
             
-            <!-- ADDED: Balance and Status Display -->
             <div id="lockStatusDisplay" style="margin-top: 5px; font-size: 13px; font-weight: bold; min-height: 15px; color: #10b981;"></div>
 
             <div style="display: flex; gap: 10px; margin-top: 5px;">
@@ -222,50 +221,11 @@ button {
 
 </div> 
 
-<script>
-    // Check if user is already logged in when the page loads
-    window.onload = function() {
-        if (localStorage.getItem("isAdminLoggedIn") === "true") {
-            document.getElementById("loginBox").style.display = "none";
-            document.getElementById("adminContent").style.display = "block";
-        }
-    };
-
-    // Login Verification Logic
-    function checkLogin() {
-        var user = document.getElementById("adminUser").value;
-        var pass = document.getElementById("adminPass").value;
-
-        if (user === "Qasam Ali Jutt" && pass === "Asamalijutt786@") {
-            // Save login state in local storage
-            localStorage.setItem("isAdminLoggedIn", "true");
-            
-            document.getElementById("loginBox").style.display = "none";
-            document.getElementById("adminContent").style.display = "block";
-        } else {
-            alert("Galat Username ya Password!");
-        }
-    }
-
-    // Logout Logic
-    function logout() {
-        // Remove login state
-        localStorage.removeItem("isAdminLoggedIn");
-        
-        // Show login box, hide admin panel
-        document.getElementById("loginBox").style.display = "block";
-        document.getElementById("adminContent").style.display = "none";
-        
-        // Clear input fields
-        document.getElementById("adminUser").value = "";
-        document.getElementById("adminPass").value = "";
-    }
-</script>
-
 <script type="module">
-
+// Naye Auth Imports shamil kiye gaye hain
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 import { getDatabase, ref, get, update, onValue, set, remove } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCjw124Pc1wGpG1iNYGuKR9DmXo_OHCab8",
@@ -278,6 +238,71 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
+const auth = getAuth(app); // Auth initialize kiya
+
+// Auto-Login Check: Agar admin pehle se login hai toh seedha panel dikhao
+onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        // User login hai, par kya woh admin hai? Double check.
+        const userSnap = await get(ref(db, "users/" + user.uid));
+        if (userSnap.exists() && userSnap.val().isAdmin === true) {
+            document.getElementById("loginBox").style.display = "none";
+            document.getElementById("adminContent").style.display = "block";
+        } else {
+            // Agar admin nahi hai toh logout kar do
+            await signOut(auth);
+            document.getElementById("loginBox").style.display = "block";
+            document.getElementById("adminContent").style.display = "none";
+        }
+    } else {
+        document.getElementById("loginBox").style.display = "block";
+        document.getElementById("adminContent").style.display = "none";
+    }
+});
+
+// NAYA SECURE LOGIN FUNCTION
+window.checkLogin = async function() {
+    var email = document.getElementById("adminUser").value.trim();
+    var pass = document.getElementById("adminPass").value;
+
+    if (!email || !pass) {
+        alert("Email aur Password dono likhein.");
+        return;
+    }
+
+    try {
+        // Firebase se user ko login karo
+        const userCredential = await signInWithEmailAndPassword(auth, email, pass);
+        const loggedInUser = userCredential.user;
+
+        // Login successful, ab check karo kya iske paas isAdmin ki power hai
+        const userSnap = await get(ref(db, "users/" + loggedInUser.uid));
+        
+        if (userSnap.exists() && userSnap.val().isAdmin === true) {
+            // Success! onAuthStateChanged khud baqi kaam sambhal lega
+            document.getElementById("adminUser").value = "";
+            document.getElementById("adminPass").value = "";
+        } else {
+            // Agar normal user hai, usay foran bahar nikalo
+            await signOut(auth);
+            alert("Access Denied! Aap panel ke Admin nahi hain.");
+        }
+    } catch (error) {
+        alert("Galat Email ya Password! Ya account mojood nahi hai.");
+        console.error(error);
+    }
+}
+
+// NAYA SECURE LOGOUT FUNCTION
+window.logout = async function() {
+    try {
+        await signOut(auth);
+        // onAuthStateChanged khud hi screen refresh/hide kar dega
+    } catch (error) {
+        alert("Logout fail ho gaya.");
+    }
+}
+
 
 window.toggleDetails = function(id) {
     const box = document.getElementById("details-" + id);
@@ -301,7 +326,6 @@ window.addBalance = async function(){
     alert("Balance Added Successfully");
 }
 
-// ADDED: Function to check and display user balance & lock status
 window.checkLockStatus = async function() {
     const uid = document.getElementById("lockUid").value.trim();
     const display = document.getElementById("lockStatusDisplay");
@@ -321,7 +345,6 @@ window.checkLockStatus = async function() {
     }
 }
 
-// NEW FUNCTION FOR BALANCE LOCK/UNLOCK
 window.setBalanceLock = async function(isLocked) {
     const uid = document.getElementById("lockUid").value;
     if(!uid) {
@@ -333,7 +356,6 @@ window.setBalanceLock = async function(isLocked) {
         alert("User Not Found");
         return;
     }
-    // Set isBalanceLocked to true (locked) or false (unlocked)
     await update(ref(db, "users/" + uid), { isBalanceLocked: isLocked });
     
     if (isLocked) {
@@ -341,8 +363,6 @@ window.setBalanceLock = async function(isLocked) {
     } else {
         alert("Success: User's balance has been UNLOCKED.");
     }
-    
-    // Refresh the displayed status after update
     window.checkLockStatus();
 }
 
@@ -432,7 +452,6 @@ window.renderDeposits = function() {
     depositDataStore.forEach((child) => {
         const data = child.val();
         
-        // Date Wise Checking
         if (filterDate) {
             let reqDate = "";
             if (data.date) {
@@ -440,7 +459,6 @@ window.renderDeposits = function() {
             } else if (data.timestamp) {
                 reqDate = new Date(data.timestamp).toLocaleDateString("en-CA", {timeZone: "Asia/Karachi"});
             }
-            
             if (reqDate && reqDate !== filterDate) return; 
         }
 
@@ -492,7 +510,6 @@ onValue(ref(db, "deposit_requests"), (snapshot) => {
     if (!filterInput.value) {
         filterInput.value = new Date().toLocaleDateString("en-CA", {timeZone: "Asia/Karachi"});
     }
-    
     renderDeposits();
 });
 
@@ -506,7 +523,6 @@ window.renderWithdraws = function() {
     withdrawDataStore.forEach((child) => {
         const data = child.val();
         
-        // Date Wise Checking
         if (filterDate) {
             let reqDate = "";
             if (data.date) {
@@ -514,7 +530,6 @@ window.renderWithdraws = function() {
             } else if (data.timestamp) {
                 reqDate = new Date(data.timestamp).toLocaleDateString("en-CA", {timeZone: "Asia/Karachi"});
             }
-            
             if (reqDate && reqDate !== filterDate) return; 
         }
 
@@ -553,7 +568,6 @@ onValue(ref(db,"withdrawRequests"),(snapshot)=>{
     if (!filterInput.value) {
         filterInput.value = new Date().toLocaleDateString("en-CA", {timeZone: "Asia/Karachi"});
     }
-    
     renderWithdraws();
 });
 
