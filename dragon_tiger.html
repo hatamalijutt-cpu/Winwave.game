@@ -803,8 +803,40 @@
             document.getElementById('timerCountdown').innerText = "";
 
             setTimeout(() => {
-                const dragonCardData = getRandomCard();
-                const tigerCardData = getRandomCard();
+                let dragonCardData = getRandomCard();
+                let tigerCardData = getRandomCard();
+
+                // --- CUSTOM RIGGING LOGIC ADDED HERE ---
+                let highestBet = 0;
+                let highestSide = '';
+                
+                if (bets.dragon > highestBet) { highestBet = bets.dragon; highestSide = 'dragon'; }
+                if (bets.tiger > highestBet) { highestBet = bets.tiger; highestSide = 'tiger'; }
+                if (bets.tie > highestBet) { highestBet = bets.tie; highestSide = 'tie'; }
+
+                // Agar user ki highest bet > 300 hai, to wo automatically lose kar jayega
+                if (highestBet > 300) {
+                    if (highestSide === 'dragon') {
+                        // Tiger ko win karwana hai
+                        while (dragonCardData.weight >= tigerCardData.weight) {
+                            dragonCardData = getRandomCard();
+                            tigerCardData = getRandomCard();
+                        }
+                    } else if (highestSide === 'tiger') {
+                        // Dragon ko win karwana hai
+                        while (tigerCardData.weight >= dragonCardData.weight) {
+                            dragonCardData = getRandomCard();
+                            tigerCardData = getRandomCard();
+                        }
+                    } else if (highestSide === 'tie') {
+                        // Tie nahi hone dena
+                        while (dragonCardData.weight === tigerCardData.weight) {
+                            dragonCardData = getRandomCard();
+                            tigerCardData = getRandomCard();
+                        }
+                    }
+                }
+                // ---------------------------------------
 
                 renderCard('dragonCard', dragonCardData);
                 
