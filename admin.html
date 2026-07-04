@@ -145,7 +145,6 @@ button {
         Deposit Requests
     </h3>
     
-    <!-- ADDED: Date Filter for Deposit Requests -->
     <div style="margin-top: 10px; max-width: 200px;">
         <label style="font-size: 12px; color: #a3a3a3;">Filter Date:</label>
         <input type="date" id="depositFilterDate" onchange="renderDeposits()">
@@ -158,6 +157,12 @@ button {
     <h3 style="margin-top: 15px; border-bottom: 2px solid #10b981; padding-bottom: 5px; display: inline-block;">
         Withdraw Requests
     </h3>
+
+    <div style="margin-top: 10px; max-width: 200px;">
+        <label style="font-size: 12px; color: #a3a3a3;">Filter Date:</label>
+        <input type="date" id="withdrawFilterDate" onchange="renderWithdraws()">
+    </div>
+
     <div id="withdrawBox" class="grid-container"></div>
 </div>
 
@@ -277,7 +282,7 @@ window.rejectDeposit = async function(requestId){
 }
 
 const requestBox = document.getElementById("requestBox");
-let depositDataStore = []; // Store data globally to handle date filtering easily
+let depositDataStore = []; 
 
 window.renderDeposits = function() {
     const filterDate = document.getElementById("depositFilterDate").value;
@@ -286,7 +291,7 @@ window.renderDeposits = function() {
     depositDataStore.forEach((child) => {
         const data = child.val();
         
-        // Date Wise Checking (Timezone Asia/Karachi triggers strictly after 12:00 AM)
+        // Date Wise Checking
         if (filterDate) {
             let reqDate = "";
             if (data.date) {
@@ -295,11 +300,9 @@ window.renderDeposits = function() {
                 reqDate = new Date(data.timestamp).toLocaleDateString("en-CA", {timeZone: "Asia/Karachi"});
             }
             
-            // Skip rendering if a date exists but does not match the selected date
             if (reqDate && reqDate !== filterDate) return; 
         }
 
-        // Screenshot Logic Updated (Inline Display)
         let screenshotHTML = "";
         if(data.screenshotUrl && data.screenshotUrl.trim() !== "") {
             screenshotHTML = `
@@ -344,7 +347,6 @@ onValue(ref(db, "deposit_requests"), (snapshot) => {
         depositDataStore.push(child);
     });
     
-    // Auto set today's date in Pakistan Time if input is empty
     const filterInput = document.getElementById("depositFilterDate");
     if (!filterInput.value) {
         filterInput.value = new Date().toLocaleDateString("en-CA", {timeZone: "Asia/Karachi"});
@@ -354,10 +356,26 @@ onValue(ref(db, "deposit_requests"), (snapshot) => {
 });
 
 const withdrawBox = document.getElementById("withdrawBox");
-onValue(ref(db,"withdrawRequests"),(snapshot)=>{
+let withdrawDataStore = [];
+
+window.renderWithdraws = function() {
+    const filterDate = document.getElementById("withdrawFilterDate").value;
     withdrawBox.innerHTML = "";
-    snapshot.forEach((child)=>{
+    
+    withdrawDataStore.forEach((child) => {
         const data = child.val();
+        
+        // Date Wise Checking (Timezone Asia/Karachi triggers strictly after 12:00 AM)
+        if (filterDate) {
+            let reqDate = "";
+            if (data.date) {
+                reqDate = new Date(data.date).toLocaleDateString("en-CA", {timeZone: "Asia/Karachi"});
+            } else if (data.timestamp) {
+                reqDate = new Date(data.timestamp).toLocaleDateString("en-CA", {timeZone: "Asia/Karachi"});
+            }
+            
+            if (reqDate && reqDate !== filterDate) return; 
+        }
 
         withdrawBox.innerHTML += `
         <div class="card">
@@ -382,6 +400,21 @@ onValue(ref(db,"withdrawRequests"),(snapshot)=>{
         </div>
         `;
     });
+}
+
+onValue(ref(db,"withdrawRequests"),(snapshot)=>{
+    withdrawDataStore = [];
+    snapshot.forEach((child)=>{
+        withdrawDataStore.push(child);
+    });
+    
+    // Auto set today's date in Pakistan Time if input is empty
+    const filterInput = document.getElementById("withdrawFilterDate");
+    if (!filterInput.value) {
+        filterInput.value = new Date().toLocaleDateString("en-CA", {timeZone: "Asia/Karachi"});
+    }
+    
+    renderWithdraws();
 });
 
 window.approveWithdraw = async function(requestId){
