@@ -12,6 +12,15 @@ body {
     padding: 15px;
 }
 
+/* Loading Box */
+#loadingBox {
+    text-align: center;
+    margin-top: 100px;
+    font-size: 18px;
+    color: #10b981;
+    font-weight: bold;
+}
+
 /* Login Box Styles */
 #loginBox {
     max-width: 300px;
@@ -141,7 +150,11 @@ button {
 </head>
 <body>
 
-<div id="loginBox">
+<div id="loadingBox">
+    Loading Admin Panel...
+</div>
+
+<div id="loginBox" style="display: none;">
     <h2>Admin Login</h2>
     <input type="email" id="adminUser" placeholder="Email Address">
     <input type="password" id="adminPass" placeholder="Password">
@@ -221,10 +234,8 @@ button {
 </div> 
 
 <script type="module">
-// Naye Auth Imports shamil kiye gaye hain
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 import { getDatabase, ref, get, update, onValue, set, remove } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
-// FIX: setPersistence aur browserLocalPersistence add kiya gaya hai
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
 const firebaseConfig = {
@@ -238,32 +249,31 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-const auth = getAuth(app); // Auth initialize kiya
+const auth = getAuth(app); 
 
-// FIX: Session ko local storage me save karne ke liye persistence add kiya taake refresh par logout na ho
 setPersistence(auth, browserLocalPersistence).then(() => {
-    // Auto-Login Check: Agar admin pehle se login hai toh seedha panel dikhao
     onAuthStateChanged(auth, async (user) => {
+        // Loading hide karo jab state check ho jaye
+        document.getElementById("loadingBox").style.display = "none";
+
         if (user) {
-            // User login hai, par kya woh admin hai? Double check.
             const userSnap = await get(ref(db, "users/" + user.uid));
             if (userSnap.exists() && userSnap.val().isAdmin === true) {
                 document.getElementById("loginBox").style.display = "none";
                 document.getElementById("adminContent").style.display = "block";
             } else {
-                // Agar admin nahi hai toh logout kar do
                 await signOut(auth);
                 document.getElementById("loginBox").style.display = "block";
                 document.getElementById("adminContent").style.display = "none";
             }
         } else {
+            // Agar user login nahi hai tou direct login box show karo
             document.getElementById("loginBox").style.display = "block";
             document.getElementById("adminContent").style.display = "none";
         }
     });
 });
 
-// NAYA SECURE LOGIN FUNCTION
 window.checkLogin = async function() {
     var email = document.getElementById("adminUser").value.trim();
     var pass = document.getElementById("adminPass").value;
@@ -274,19 +284,16 @@ window.checkLogin = async function() {
     }
 
     try {
-        // Firebase se user ko login karo
         const userCredential = await signInWithEmailAndPassword(auth, email, pass);
         const loggedInUser = userCredential.user;
 
-        // Login successful, ab check karo kya iske paas isAdmin ki power hai
         const userSnap = await get(ref(db, "users/" + loggedInUser.uid));
         
         if (userSnap.exists() && userSnap.val().isAdmin === true) {
-            // Success! onAuthStateChanged khud baqi kaam sambhal lega
             document.getElementById("adminUser").value = "";
             document.getElementById("adminPass").value = "";
+            // UI update onAuthStateChanged khud handle kar lega
         } else {
-            // Agar normal user hai, usay foran bahar nikalo
             await signOut(auth);
             alert("Access Denied! Aap panel ke Admin nahi hain.");
         }
@@ -296,16 +303,15 @@ window.checkLogin = async function() {
     }
 }
 
-// NAYA SECURE LOGOUT FUNCTION
 window.logout = async function() {
     try {
         await signOut(auth);
-        // onAuthStateChanged khud hi screen refresh/hide kar dega
+        // Page reload kar dete hain taake pura state clear ho jaye
+        window.location.reload();
     } catch (error) {
         alert("Logout fail ho gaya.");
     }
 }
-
 
 window.toggleDetails = function(id) {
     const box = document.getElementById("details-" + id);
