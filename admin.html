@@ -143,7 +143,6 @@ button {
 
 <div id="loginBox">
     <h2>Admin Login</h2>
-    <!-- Username ki jagah Email kar diya hai -->
     <input type="email" id="adminUser" placeholder="Email Address">
     <input type="password" id="adminPass" placeholder="Password">
     <button onclick="checkLogin()" style="margin-top: 15px; font-size: 14px; padding: 10px;">Login</button>
@@ -225,7 +224,8 @@ button {
 // Naye Auth Imports shamil kiye gaye hain
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 import { getDatabase, ref, get, update, onValue, set, remove } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
-import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+// FIX: setPersistence aur browserLocalPersistence add kiya gaya hai
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCjw124Pc1wGpG1iNYGuKR9DmXo_OHCab8",
@@ -240,24 +240,27 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app); // Auth initialize kiya
 
-// Auto-Login Check: Agar admin pehle se login hai toh seedha panel dikhao
-onAuthStateChanged(auth, async (user) => {
-    if (user) {
-        // User login hai, par kya woh admin hai? Double check.
-        const userSnap = await get(ref(db, "users/" + user.uid));
-        if (userSnap.exists() && userSnap.val().isAdmin === true) {
-            document.getElementById("loginBox").style.display = "none";
-            document.getElementById("adminContent").style.display = "block";
+// FIX: Session ko local storage me save karne ke liye persistence add kiya taake refresh par logout na ho
+setPersistence(auth, browserLocalPersistence).then(() => {
+    // Auto-Login Check: Agar admin pehle se login hai toh seedha panel dikhao
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            // User login hai, par kya woh admin hai? Double check.
+            const userSnap = await get(ref(db, "users/" + user.uid));
+            if (userSnap.exists() && userSnap.val().isAdmin === true) {
+                document.getElementById("loginBox").style.display = "none";
+                document.getElementById("adminContent").style.display = "block";
+            } else {
+                // Agar admin nahi hai toh logout kar do
+                await signOut(auth);
+                document.getElementById("loginBox").style.display = "block";
+                document.getElementById("adminContent").style.display = "none";
+            }
         } else {
-            // Agar admin nahi hai toh logout kar do
-            await signOut(auth);
             document.getElementById("loginBox").style.display = "block";
             document.getElementById("adminContent").style.display = "none";
         }
-    } else {
-        document.getElementById("loginBox").style.display = "block";
-        document.getElementById("adminContent").style.display = "none";
-    }
+    });
 });
 
 // NAYA SECURE LOGIN FUNCTION
