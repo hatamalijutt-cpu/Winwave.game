@@ -170,6 +170,19 @@ button {
             <input type="number" id="amount" placeholder="Amount">
             <button onclick="addBalance()">Add Balance</button>
         </div>
+
+        <!-- NEW LOCK BALANCE CONTAINER ADDED HERE -->
+        <div class="form-card" style="flex: 1; min-width: 250px;">
+            <h3>Lock / Unlock Balance</h3>
+            <input type="text" id="lockUid" placeholder="Enter User UID">
+            <div style="display: flex; gap: 10px; margin-top: 5px;">
+                <button onclick="setBalanceLock(true)" style="background: #ef4444;">Lock Balance</button>
+                <button onclick="setBalanceLock(false)" style="background: #3b82f6;">Unlock Balance</button>
+            </div>
+            <div style="margin-top: 10px; font-size: 10px; color: #a3a3a3;">
+                Locking balance prevents the user from playing games.
+            </div>
+        </div>
     </div>
 
     <div style="display:flex;gap:10px;margin:15px 0; max-width: 400px;">
@@ -203,7 +216,9 @@ button {
         <div id="withdrawBox" class="grid-container"></div>
     </div>
 
-</div> <script>
+</div> 
+
+<script>
     // Check if user is already logged in when the page loads
     window.onload = function() {
         if (localStorage.getItem("isAdminLoggedIn") === "true") {
@@ -280,6 +295,28 @@ window.addBalance = async function(){
     const currentBalance = snap.val().balance || 0;
     await update(ref(db,"users/"+uid), { balance: currentBalance + amount });
     alert("Balance Added Successfully");
+}
+
+// NEW FUNCTION FOR BALANCE LOCK/UNLOCK
+window.setBalanceLock = async function(isLocked) {
+    const uid = document.getElementById("lockUid").value;
+    if(!uid) {
+        alert("Please enter User UID");
+        return;
+    }
+    const snap = await get(ref(db, "users/" + uid));
+    if(!snap.exists()){
+        alert("User Not Found");
+        return;
+    }
+    // Set isBalanceLocked to true (locked) or false (unlocked)
+    await update(ref(db, "users/" + uid), { isBalanceLocked: isLocked });
+    
+    if (isLocked) {
+        alert("Success: User's balance has been LOCKED. User cannot play games now.");
+    } else {
+        alert("Success: User's balance has been UNLOCKED.");
+    }
 }
 
 window.approveDeposit = async function(requestId){
