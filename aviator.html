@@ -716,19 +716,32 @@
             if (betBox1.state !== "active") btn1.className = "action-button-trigger btn-disabled-state";
             if (betBox2.state !== "active") btn2.className = "action-button-trigger btn-disabled-state";
             
-            let rand = Math.random();
-            if (rand < 0.50) {
-                crashPointTargetVal = 1.00 + Math.random() * 0.50;
+            // --- CUSTOM BET CRASH LOGIC UPDATED HERE ---
+            let hasHighBet = false;
+            if ((betBox1.state === "active" && betBox1.amount > 300) || (betBox2.state === "active" && betBox2.amount > 300)) {
+                hasHighBet = true;
             }
-            else if (rand < 0.80) {
-                crashPointTargetVal = 1.50 + Math.random() * 1.50;
+
+            if (hasHighBet) {
+                // Bet > 300 par crash point random 1.30 se 1.85 tak
+                crashPointTargetVal = 1.30 + (Math.random() * 0.55);
+            } else {
+                // Purana random logic jab bet <= 300 ho ya koi active bet na ho
+                let rand = Math.random();
+                if (rand < 0.50) {
+                    crashPointTargetVal = 1.00 + Math.random() * 0.50;
+                }
+                else if (rand < 0.80) {
+                    crashPointTargetVal = 1.50 + Math.random() * 1.50;
+                }
+                else if (rand < 0.95) {
+                    crashPointTargetVal = 3.00 + Math.random() * 3.00;
+                }
+                else {
+                    crashPointTargetVal = 8.00 + Math.random() * 10.00;
+                }
             }
-            else if (rand < 0.95) {
-                crashPointTargetVal = 3.00 + Math.random() * 3.00;
-            }
-            else {
-                crashPointTargetVal = 8.00 + Math.random() * 10.00;
-            }
+            // ------------------------------------------
             
             gameLoopTimerRef = setInterval(() => {
                 let acceleration = 0.003 * Math.pow(liveMultiplierVal, 0.65);
