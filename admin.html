@@ -144,6 +144,13 @@ button {
     <h3 style="margin-top: 15px; border-bottom: 2px solid #10b981; padding-bottom: 5px; display: inline-block;">
         Deposit Requests
     </h3>
+    
+    <!-- NEW DATE FILTER FOR DEPOSITS -->
+    <div style="margin-top: 10px; margin-bottom: 10px; display: flex; gap: 10px; max-width: 300px;">
+        <input type="date" id="depositDateFilter">
+        <button onclick="filterDeposits()" style="padding: 8px;">Filter Date</button>
+    </div>
+    
     <div id="requestBox" class="grid-container"></div> 
 </div>
 
@@ -269,11 +276,31 @@ window.rejectDeposit = async function(requestId){
     alert("Deposit Rejected");
 }
 
+// Deposit Requests Rendering and Filtering Logic
 const requestBox = document.getElementById("requestBox");
-onValue(ref(db, "deposit_requests"), (snapshot) => {
+let depositSnapshotData = null;
+
+// Set Default Date to Today (Karachi Time - Resets exactly at 12 AM)
+document.getElementById("depositDateFilter").value = new Date().toLocaleDateString("en-CA", {timeZone: "Asia/Karachi"});
+
+window.filterDeposits = function() {
+    if(depositSnapshotData) {
+        renderDeposits(depositSnapshotData);
+    }
+}
+
+function renderDeposits(snapshot) {
     requestBox.innerHTML = "";
+    const filterDate = document.getElementById("depositDateFilter").value;
+
     snapshot.forEach((child) => {
         const data = child.val();
+        
+        // Date Check (Raat 12 bje filter timezone update hoga)
+        if (filterDate && data.date) {
+            const depositDate = new Date(data.date).toLocaleDateString("en-CA", {timeZone: "Asia/Karachi"});
+            if (depositDate !== filterDate) return; // Ignore if date doesn't match
+        }
         
         // Screenshot Logic Updated (Inline Display)
         let screenshotHTML = "";
@@ -312,6 +339,11 @@ onValue(ref(db, "deposit_requests"), (snapshot) => {
         </div>
         `;
     });
+}
+
+onValue(ref(db, "deposit_requests"), (snapshot) => {
+    depositSnapshotData = snapshot;
+    renderDeposits(snapshot);
 });
 
 const withdrawBox = document.getElementById("withdrawBox");
