@@ -312,48 +312,29 @@
     </div>
 
     <script>
-        // Fake Prediction Generator Engine
-        function generateRandomMultiplier() {
-            let rand = Math.random();
-            let crashPoint = 1.0;
-            
-            // Following a similar logic curve to your actual game
-            if (rand < 0.50) {
-                crashPoint = 1.00 + Math.random() * 0.50;
-            } else if (rand < 0.80) {
-                crashPoint = 1.50 + Math.random() * 1.50;
-            } else if (rand < 0.95) {
-                crashPoint = 3.00 + Math.random() * 3.00;
-            } else {
-                crashPoint = 8.00 + Math.random() * 10.00;
-            }
-            
-            return crashPoint.toFixed(2) + "x";
-        }
-
-        let upcomingPrediction = generateRandomMultiplier();
-
         function updateSignals() {
-            // Move upcoming to live, and generate a new upcoming
             const primaryDOM = document.getElementById('primaryPrediction');
             const secondaryDOM = document.getElementById('secondaryPrediction');
             const pingDOM = document.getElementById('pingStatus');
             
-            // Shift values
-            primaryDOM.innerText = upcomingPrediction;
-            upcomingPrediction = generateRandomMultiplier();
-            secondaryDOM.innerText = upcomingPrediction;
+            // Aviator Game se data uthana (Real-time sync)
+            let liveVal = localStorage.getItem("aviator_live_prediction");
+            let nextVal = localStorage.getItem("aviator_next_prediction");
+            
+            // Agar game se data mil raha hai, toh 'x' laga kar dikhaye, warna default dikhaye
+            primaryDOM.innerText = liveVal ? liveVal + "x" : "--.--x";
+            secondaryDOM.innerText = nextVal ? nextVal + "x" : "--.--x";
 
-            // Randomize ping slightly to look active
+            // Ping ko live dikhane ke liye random numbers
             let fakePing = Math.floor(Math.random() * 15) + 8;
             pingDOM.innerText = fakePing + "ms";
         }
 
-        // Initialize first values
+        // Har 0.5 second (500ms) mein check karega ke Aviator game mein naya crash point kya aaya hai
+        setInterval(updateSignals, 500);
+        
+        // Pehli dafa page load hotay hi turant update karne ke liye
         updateSignals();
-
-        // Update predictions every 12 seconds (simulating average round time)
-        setInterval(updateSignals, 12000);
     </script>
 </body>
 </html>
