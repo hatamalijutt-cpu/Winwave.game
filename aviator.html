@@ -556,19 +556,30 @@
         const btn1 = document.getElementById('actionBtn1');
         const btn2 = document.getElementById('actionBtn2');
         let pastRoundsArray = [1.50, 2.44, 1.05, 5.20, 1.80, 12.30, 1.15, 3.40, 2.10, 1.01, 8.50, 1.34, 4.12, 1.95, 24.50];
-        document.addEventListener("DOMContentLoaded", function() {
+        
+        // Changed Initialization block
+        if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", initGame);
+        } else {
+            initGame();
+        }
+
+        function initGame() {
             loadWalletBalance();
             renderDropdownHistoryGrid();
             startCountdownTimerSequence();
             startLiveLogsSimulations();
-        });
+        }
+
+        // Changed loadWalletBalance function
         async function loadWalletBalance(){
             if(!currentUid) return;
             const snap = await get(ref(db,"users/"+currentUid));
             if(!snap.exists()) return;
-            userCurrentBalanceVal = snap.val().balance || 0;
+            userCurrentBalanceVal = parseFloat(snap.val().balance) || 0;
             userBalanceDOM.innerText = userCurrentBalanceVal.toFixed(2);
         }
+        
         window.toggleHistoryDropdown = function() {
             const dropdown = document.getElementById('historyDropdown');
             dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
