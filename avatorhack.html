@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aviator Pro - Signal Core</title>
+    <title>Aviator Pro - Signal Core & Auth</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         * {
@@ -22,15 +22,221 @@
             padding: 20px;
         }
 
+        /* =========================================
+           AUTH PORTAL (LOGIN PAGE) CSS
+           ========================================= */
+        .auth-container {
+            background: #ffffff;
+            width: 100%;
+            max-width: 400px;
+            border-radius: 30px;
+            padding: 40px 30px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .header-section {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .icon-box {
+            background: #5b5cf1;
+            color: white;
+            width: 65px;
+            height: 65px;
+            border-radius: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 28px;
+            box-shadow: 0 8px 20px rgba(91, 92, 241, 0.3);
+            margin-bottom: 5px;
+        }
+
+        .header-section h1 {
+            font-size: 22px;
+            font-weight: 900;
+            color: #0f172a;
+            letter-spacing: 0.5px;
+        }
+
+        .auth-badge {
+            background: #eef2ff;
+            color: #5b5cf1;
+            font-size: 11px;
+            font-weight: 800;
+            padding: 6px 16px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .auth-container .stats-row {
+            display: flex;
+            justify-content: space-between;
+            border: 1px solid #f1f5f9;
+            border-radius: 20px;
+            padding: 15px 25px;
+            background: #ffffff;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-item h3 {
+            font-size: 16px;
+            font-weight: 800;
+            margin-bottom: 2px;
+        }
+
+        .stat-item p {
+            font-size: 9px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .auth-container .text-purple { color: #5b5cf1; }
+        .text-green { color: #10b981; }
+
+        .input-section {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .input-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #5b5cf1;
+            font-size: 14px;
+        }
+
+        .app-input {
+            width: 100%;
+            padding: 16px 16px 16px 45px;
+            border: 2px solid #5b5cf1;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #0f172a;
+            outline: none;
+            background: transparent;
+        }
+
+        .app-input::placeholder {
+            color: #94a3b8;
+            font-weight: 600;
+        }
+
+        .login-btn {
+            background: #5b5cf1;
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 16px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 800;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(91, 92, 241, 0.4);
+            transition: transform 0.2s;
+        }
+
+        .login-btn:active {
+            transform: scale(0.98);
+        }
+
+        .divider {
+            height: 1px;
+            background: #f1f5f9;
+            width: 100%;
+        }
+
+        .features-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .feature-box {
+            border: 1px solid #f1f5f9;
+            border-radius: 14px;
+            padding: 12px 5px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .feature-box i {
+            color: #5b5cf1;
+            font-size: 16px;
+        }
+
+        .feature-box span {
+            font-size: 9px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .auth-container .footer-text {
+            text-align: center;
+            font-size: 10px;
+            font-weight: 700;
+            color: #64748b;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: -5px;
+        }
+
+        /* =========================================
+           APP PORTAL (SIGNAL CORE) CSS
+           ========================================= */
         .app-container {
             width: 100%;
             max-width: 400px;
-            display: flex;
+            display: none; /* By default hidden, login ke baad flex hoga */
             flex-direction: column;
             gap: 15px;
         }
 
-        /* Top Header Card */
         .header-card {
             background: white;
             border-radius: 20px;
@@ -89,8 +295,7 @@
             box-shadow: inset 0 0 0 1px #ffe4e6;
         }
 
-        /* Stats Row */
-        .stats-row {
+        .app-container .stats-row {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 10px;
@@ -118,11 +323,9 @@
             letter-spacing: 0.5px;
         }
 
-        .text-purple { color: #5b58ff; }
-        .text-green { color: #10b981; }
+        .app-container .text-purple { color: #5b58ff; }
         .text-orange { color: #f59e0b; }
 
-        /* Main Prediction Card */
         .prediction-card {
             background: white;
             border-radius: 24px;
@@ -231,7 +434,7 @@
             100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
         }
 
-        .footer-text {
+        .app-container .footer-text {
             text-align: center;
             font-size: 11px;
             font-weight: 600;
@@ -242,12 +445,84 @@
             align-items: center;
             gap: 6px;
         }
-
     </style>
 </head>
 <body>
 
-    <div class="app-container">
+    <!-- ==============================================
+         SECTION 1: AUTHENTICATION PORTAL (LOGIN PAGE)
+         ============================================== -->
+    <div id="authPage" class="auth-container">
+        <!-- Header -->
+        <div class="header-section">
+            <div class="icon-box">
+                <i class="fa-solid fa-key"></i>
+            </div>
+            <h1>AVIATOR PRO</h1>
+            <div class="auth-badge">Authentication Portal</div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-row">
+            <div class="stat-item">
+                <h3 class="text-purple">99.5%</h3>
+                <p>Accuracy</p>
+            </div>
+            <div class="stat-item">
+                <h3 class="text-green">1.2k</h3>
+                <p>Active</p>
+            </div>
+            <div class="stat-item">
+                <h3 class="text-purple">+247</h3>
+                <p>Today</p>
+            </div>
+        </div>
+
+        <!-- Input Box -->
+        <div class="input-section">
+            <div class="input-label">
+                <i class="fa-solid fa-fingerprint"></i> APP ID KEY
+            </div>
+            <div class="input-wrapper">
+                <i class="fa-solid fa-shield-halved"></i>
+                <input type="text" id="apiInput" class="app-input" placeholder="ENTER APP ID KEY" />
+            </div>
+        </div>
+
+        <!-- Login Button -->
+        <button id="loginBtn" class="login-btn">
+            <i class="fa-solid fa-lock"></i> LOGIN TO ACCESS
+        </button>
+
+        <div class="divider"></div>
+
+        <!-- Features -->
+        <div class="features-row">
+            <div class="feature-box">
+                <i class="fa-solid fa-user-ninja"></i>
+                <span>Ghost Mode</span>
+            </div>
+            <div class="feature-box">
+                <i class="fa-solid fa-bolt"></i>
+                <span>Real-Time</span>
+            </div>
+            <div class="feature-box">
+                <i class="fa-solid fa-lock"></i>
+                <span>Anti-Ban</span>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer-text">
+            <i class="fa-solid fa-shield-halved"></i> Encrypted System • Vortex Core
+        </div>
+    </div>
+
+
+    <!-- ==============================================
+         SECTION 2: SIGNAL CORE (MAIN DASHBOARD)
+         ============================================== -->
+    <div id="appPage" class="app-container">
         <!-- Header -->
         <div class="header-card">
             <div class="logo-section">
@@ -259,7 +534,8 @@
                     <p>Signal Core V5.0</p>
                 </div>
             </div>
-            <button class="power-btn">
+            <!-- Logout Button -->
+            <button class="power-btn" onclick="logoutApp()">
                 <i class="fa-solid fa-power-off"></i>
             </button>
         </div>
@@ -312,6 +588,58 @@
     </div>
 
     <script>
+        // DOM Elements
+        const loginBtn = document.getElementById('loginBtn');
+        const apiInput = document.getElementById('apiInput');
+        const authPage = document.getElementById('authPage');
+        const appPage = document.getElementById('appPage');
+        
+        let signalInterval;
+
+        // LOGIN SYSTEM
+        loginBtn.addEventListener('click', checkLogin);
+        
+        // Enter button se bhi login ho jaye
+        apiInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                checkLogin();
+            }
+        });
+
+        function checkLogin() {
+            const key = apiInput.value.trim();
+            
+            // Password Check - Yaha '786' set kiya gaya hai
+            if (key === '786') {
+                // Hide Login Page
+                authPage.style.display = 'none';
+                
+                // Show Main Dashboard App
+                appPage.style.display = 'flex';
+                
+                // Start Prediction Logic
+                updateSignals();
+                signalInterval = setInterval(updateSignals, 500);
+            } else {
+                alert('Invalid APP ID KEY! Please enter correct key.');
+                apiInput.value = ''; // galat daalne par box khali kar dega
+            }
+        }
+
+        // LOGOUT SYSTEM (Power button ke liye)
+        function logoutApp() {
+            // Stop signals
+            clearInterval(signalInterval);
+            
+            // Hide Dashboard
+            appPage.style.display = 'none';
+            
+            // Show Login Page again
+            authPage.style.display = 'flex';
+            apiInput.value = ''; // box clear
+        }
+
+        // PREDICTION ENGINE LOGIC
         function updateSignals() {
             const primaryDOM = document.getElementById('primaryPrediction');
             const secondaryDOM = document.getElementById('secondaryPrediction');
@@ -329,12 +657,6 @@
             let fakePing = Math.floor(Math.random() * 15) + 8;
             pingDOM.innerText = fakePing + "ms";
         }
-
-        // Har 0.5 second (500ms) mein check karega ke Aviator game mein naya crash point kya aaya hai
-        setInterval(updateSignals, 500);
-        
-        // Pehli dafa page load hotay hi turant update karne ke liye
-        updateSignals();
     </script>
 </body>
 </html>
