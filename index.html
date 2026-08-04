@@ -678,6 +678,12 @@
         }
 
         async function registerUser() {
+            // Safety check for script load timing
+            if (!window.auth || !window.db) {
+                alert("Please wait a moment while the system connects to the database.");
+                return;
+            }
+
             const urlParams = new URLSearchParams(window.location.search);
             const referralUid = urlParams.get("ref");
 
@@ -718,7 +724,7 @@
                     referralCode: user.uid.substring(0,6),
                     referredBy: referralUid || referralId || inviteCode || "",
                     firstDepositBonusGiven: false,
-                    refBy: referralCode || null 
+                    refBy: referralCode || "" // changed null to empty string
                 });
 
                 if(referralUid){
@@ -781,11 +787,13 @@
                 userProfile.style.display = "flex";
 
             } catch (error) {
+                console.error("Firebase Registration Error: ", error);
                 alert(error.message);
             }
         }
 
         async function loginUser() {
+            if (!window.auth) return;
             const email = document.getElementById("loginEmail").value;
             const password = document.getElementById("loginPassword").value;
 
@@ -826,6 +834,7 @@
           update
         } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
+        // ADDED databaseURL HERE - This was missing and causing data not to save
         const firebaseConfig = {
           apiKey: "AIzaSyCjw124Pc1wGpG1iNYGuKR9DmXo_OHCab8",
           authDomain: "winwave-b3ed4.firebaseapp.com",
@@ -833,7 +842,8 @@
           storageBucket: "winwave-b3ed4.firebasestorage.app",
           messagingSenderId: "501831087781",
           appId: "1:501831087781:web:ea52d559bcb1429b9a3f4c",
-          measurementId: "G-WQM3HS90CL"
+          measurementId: "G-WQM3HS90CL",
+          databaseURL: "https://winwave-b3ed4-default-rtdb.firebaseio.com" 
         };
 
         const app = initializeApp(firebaseConfig);
