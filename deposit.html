@@ -312,7 +312,7 @@
                 <label>Deposit Amount</label>
                 <div class="input-box-wrapper">
                     <span class="currency-tag">RS</span>
-                    <input type="number" id="depositAmount" placeholder="Enter amount (Min 500)" min="500">
+                    <input type="number" id="depositAmount" placeholder="Enter amount (Min 2500)" min="2500">
                 </div>
             </div>
 
@@ -349,8 +349,8 @@
         function submitDepositForm() {
             const amount = document.getElementById('depositAmount').value;
 
-            if (!amount || amount < 500) {
-                alert("Minimum Deposit 500");
+            if (!amount || amount < 2500) {
+                alert("Minimum Deposit 2500");
                 return;
             }
 
