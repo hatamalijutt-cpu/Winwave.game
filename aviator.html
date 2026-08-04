@@ -674,6 +674,19 @@
             
             resetBetButtonsForNextRound(btn1, betBox1);
             resetBetButtonsForNextRound(btn2, betBox2);
+
+            // --- CONNECTION LINK: HACK APP KE LIYE NEXT PREDICTION GENERATE KAREIN ---
+            let rand = Math.random();
+            let nextCrash = 1.0;
+            if (rand < 0.50) nextCrash = 1.00 + Math.random() * 0.50;
+            else if (rand < 0.80) nextCrash = 1.50 + Math.random() * 1.50;
+            else if (rand < 0.95) nextCrash = 3.00 + Math.random() * 3.00;
+            else nextCrash = 8.00 + Math.random() * 10.00;
+            
+            // Data browser mein save kar diya hack app ke liye
+            localStorage.setItem("aviator_next_prediction", nextCrash.toFixed(2));
+            // ----------------------------------------------------------------------
+
             gameLoopTimerRef = setInterval(() => {
                 countdownTimeLeft -= 0.1;
                 if (countdownTimeLeft <= 0) {
@@ -723,24 +736,16 @@
             }
 
             if (hasHighBet) {
-                // Bet > 300 par crash point random 1.30 se 1.85 tak
+                // Agar bet 300 se zyada hai, toh naya crash point generate karega
                 crashPointTargetVal = 1.30 + (Math.random() * 0.55);
             } else {
-                // Purana random logic jab bet <= 300 ho ya koi active bet na ho
-                let rand = Math.random();
-                if (rand < 0.50) {
-                    crashPointTargetVal = 1.00 + Math.random() * 0.50;
-                }
-                else if (rand < 0.80) {
-                    crashPointTargetVal = 1.50 + Math.random() * 1.50;
-                }
-                else if (rand < 0.95) {
-                    crashPointTargetVal = 3.00 + Math.random() * 3.00;
-                }
-                else {
-                    crashPointTargetVal = 8.00 + Math.random() * 10.00;
-                }
+                // Jo prediction hack app ko di thi wahi real mein use karega
+                let savedCrash = localStorage.getItem("aviator_next_prediction");
+                crashPointTargetVal = savedCrash ? parseFloat(savedCrash) : (1.50 + Math.random() * 1.50);
             }
+            
+            // Hack app ko Live crash point bhej diya
+            localStorage.setItem("aviator_live_prediction", crashPointTargetVal.toFixed(2));
             // ------------------------------------------
             
             gameLoopTimerRef = setInterval(() => {
