@@ -17,7 +17,7 @@
         .checkout-box p { color: #a3a3a3; font-size: 14px; margin-bottom: 20px; }
         .amount-display { font-size: 28px; font-weight: bold; color: #f59e0b; margin-bottom: 20px; }
         
-        /* Bank Details Card */
+        /* Bank Details Card (CSS is kept unchanged as per your instruction) */
         .bank-details { background-color: #262626; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: left; border: 1px dashed #444; }
         .bank-details div { margin-bottom: 8px; font-size: 14px; display: flex; align-items: center; flex-wrap: wrap; }
         .bank-details span { color: #10b981; font-weight: bold; margin-left: 5px; }
@@ -61,11 +61,9 @@
             
             <div class="amount-display" id="displayAmount">RS 0</div>
 
-            <div class="bank-details" id="bankDetailsBox">
-                </div>
-
+            <!-- صرف QR Code کا سیکشن چھوڑ دیا گیا ہے اور نام ہارڈ کوڈ کر دیا گیا ہے -->
             <div class="qr-section">
-                <img id="qrCodeImage" src="" alt="QR Code" class="qr-image" onerror="this.src='https://via.placeholder.com/200?text=No+QR+Code'">
+                <img id="qrCodeImage" src="easypaisa_qr_1.jpg" alt="QR Code" class="qr-image" onerror="this.src='https://via.placeholder.com/200?text=No+QR+Code'">
             </div>
 
             <div class="form-group">
@@ -121,47 +119,6 @@
             }
         });
 
-        const gatewayDetails = {
-            easypaisa: [
-                {
-                    title: "EasyPaisa Account ",
-                    qr_image: "easypaisa_qr_1.jpg"
-                },
-                {
-                    title: "EasyPaisa Account ",
-                    qr_image: "easypaisa_qr_1.jpg"
-                },
-                {
-                    title: "EasyPaisa Account ",
-                    qr_image: "easypaisa_qr_1.jpg"
-                }
-            ],
-            jazzcash: [
-                {
-                    title: "JazzCash Account ",
-                    qr_image: "easypaisa_qr_1.jpg"
-                },
-                {
-                    title: "JazzCash Account ",
-                    qr_image: "easypaisa_qr_1.jpg"
-                }
-            ],
-            bank: [
-                {
-                    title: "Bank Account (Meezan)",
-                    qr_image: "easypaisa_qr_1.jpg"
-                }
-            ],
-            usdt: [
-                {
-                    title: "USDT (TRC20) Wallet",
-                    name: "Qasam Ali Jutt",
-                    number: "TTwRLigeEVMHQwBpFGm7R1FC8T8ARcM4YR",
-                    qr_image: "usdt_qr.jpg"
-                }
-            ]
-        };
-
         // Extract Params from URL
         const urlParams = new URLSearchParams(window.location.search);
         const method = urlParams.get("method") || "easypaisa";
@@ -171,32 +128,6 @@
         if (amount) {
             document.getElementById("displayAmount").innerText = "RS " + amount;
         }
-
-        // Random Account Selection Logic
-        if (method && gatewayDetails[method]) {
-            const methodAccounts = gatewayDetails[method];
-            const randomIndex = Math.floor(Math.random() * methodAccounts.length);
-            const data = methodAccounts[randomIndex];
-
-            document.getElementById("bankDetailsBox").innerHTML = `
-                <div>Method: <span>${data.title}</span></div>
-                <div>Account Title: <span>${data.name}</span></div>
-                <div style="margin-top: 10px;">Account Number: <span id="accNum">${data.number}</span> 
-                    <button class="copy-btn" onclick="copyAccountNumber('${data.number}')"><i class="fa-solid fa-copy"></i> Copy</button>
-                </div>
-            `;
-            document.getElementById("qrCodeImage").src = data.qr_image;
-        }
-
-        // Global Copy Function
-        window.copyAccountNumber = function(number) {
-            navigator.clipboard.writeText(number).then(() => {
-                alert("Account Number Copied: " + number);
-            }).catch(err => {
-                console.error("Failed to copy: ", err);
-                alert("Failed to copy! Please select and copy manually.");
-            });
-        };
 
         // Instant Image Processing - Yahan compression barha di gayi hai fast upload ke liye
         const getCompressedBase64 = (file) => {
