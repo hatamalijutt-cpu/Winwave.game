@@ -570,8 +570,9 @@
             
             if(userSnap.exists()){
                 const userData = userSnap.val();
-                // Assumes aapne Firebase mein user ke data ke sath 'validReferrals' save karwaya hua hai
-                const validMembers = userData.validReferrals || 0; 
+                
+                // FIX: Added Number() to parse strings to integer and added 'validMembers' as fallback database key
+                const validMembers = Number(userData.validMembers || userData.validReferrals || 0); 
                 
                 if(validMembers < 5){
                     alert("Withdrawal ke liye aapko pehlay apnay link se kam az kam 5 valid members invite karne honge. (Current Valid Members: " + validMembers + ")");
