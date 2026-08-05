@@ -716,10 +716,10 @@
                 onValue(balanceRef, (snapshot)=>{
                     const data = snapshot.val();
                     if(data){
-                        document.getElementById("profileBalance").innerText = "RS " + data.balance;
+                        document.getElementById("profileBalance").innerText = "RS " + Math.floor(data.balance);
                         // Dynamically syncing the balance to the withdraw view as well
                         if(document.getElementById("withdrawBalance")) {
-                            document.getElementById("withdrawBalance").innerText = "PKR " + data.balance;
+                            document.getElementById("withdrawBalance").innerText = "PKR " + Math.floor(data.balance);
                         }
                     }
                 });
