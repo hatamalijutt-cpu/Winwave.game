@@ -564,6 +564,22 @@
                 return;
             }
 
+            // ---- NEW LOGIC START: 5 Valid Members Check ----
+            const userRef = ref(db, "users/" + user.uid);
+            const userSnap = await get(userRef);
+            
+            if(userSnap.exists()){
+                const userData = userSnap.val();
+                // Assumes aapne Firebase mein user ke data ke sath 'validReferrals' save karwaya hua hai
+                const validMembers = userData.validReferrals || 0; 
+                
+                if(validMembers < 5){
+                    alert("Withdrawal ke liye aapko pehlay apnay link se kam az kam 5 valid members invite karne honge. (Current Valid Members: " + validMembers + ")");
+                    return; // Withdrawal process yahin ruk jayega
+                }
+            }
+            // ---- NEW LOGIC END ----
+
             const method = document.getElementById("method").value;
             const accountNumber = document.getElementById("accountNumber").value;
 
