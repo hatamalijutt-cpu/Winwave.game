@@ -564,15 +564,34 @@
                 return;
             }
 
-            // ---- NEW LOGIC START: 5 Valid Members Check ----
+            // ---- NEW LOGIC START: 5 Valid Members Check Dynamically ----
             const userRef = ref(db, "users/" + user.uid);
             const userSnap = await get(userRef);
             
             if(userSnap.exists()){
                 const userData = userSnap.val();
                 
-                // FIX: Added Number() to parse strings to integer and added 'validMembers' as fallback database key
-                const validMembers = Number(userData.validMembers || userData.validReferrals || 0); 
+                // Pehle fallback/direct database key se try karein
+                let validMembers = Number(userData.validMembers || userData.validReferrals || 0);
+                
+                // Agar direct key 0 hai (jese normally hota hai), to promotion.html ki tarah dynamically count karein
+                if (validMembers === 0) {
+                    const allUsersSnap = await get(ref(db, "users"));
+                    if (allUsersSnap.exists()) {
+                        allUsersSnap.forEach((childSnap) => {
+                            const uData = childSnap.val();
+                            
+                            // Check karein ke kiya user aapke link se join hua tha 
+                            const isMyReferral = (uData.referredBy === user.uid || uData.invitedBy === user.uid || uData.inviteCode === user.uid || uData.parent === user.uid);
+                            // Check karein ke kiya usne deposit/recharge kiya hai (valid banne k liye)
+                            const hasDeposited = (Number(uData.totalDeposit) > 0 || Number(uData.deposit) > 0 || Number(uData.balance) > 0 || uData.hasDeposited === true);
+                            
+                            if (isMyReferral && hasDeposited) {
+                                validMembers++;
+                            }
+                        });
+                    }
+                }
                 
                 if(validMembers < 5){
                     alert("Withdrawal ke liye aapko pehlay apnay link se kam az kam 5 valid members invite karne honge. (Current Valid Members: " + validMembers + ")");
