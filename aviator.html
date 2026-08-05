@@ -331,7 +331,7 @@
                 <i class="fa-solid fa-plane-departure"></i> Aviator
             </div>
             <div class="balance-box">
-                RS <span id="userBalanceText">0.00</span>
+                RS <span id="userBalanceText">...</span>
             </div>
         </div>
         <div class="history-section">
@@ -397,7 +397,6 @@
     </div>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        // Added onValue here
         import { getDatabase, ref, get, update, runTransaction, onValue } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
         
         // 1. Firebase Config update
@@ -415,131 +414,82 @@
 
         async function giveReferralCommission(playerUid, lossAmount){
             try{
-                const playerSnap =
-                await get(ref(db,"users/" + playerUid));
-
+                const playerSnap = await get(ref(db,"users/" + playerUid));
                 if(!playerSnap.exists()) return;
 
-                const playerData =
-                playerSnap.val();
+                const playerData = playerSnap.val();
 
                 // Level 1
                 if(playerData.referredBy){
-
-                    const level1Uid =
-                    playerData.referredBy;
-
-                    const level1Commission =
-                    lossAmount * 0.005;
+                    const level1Uid = playerData.referredBy;
+                    const level1Commission = lossAmount * 0.005;
 
                     await runTransaction(
                         ref(db,"users/" + level1Uid + "/balance"),
-                        (balance)=>{
-                            return (balance || 0) + level1Commission;
-                        }
+                        (balance)=>{ return (balance || 0) + level1Commission; }
                     );
 
                     await runTransaction(
                         ref(db,"users/" + level1Uid + "/totalCommission"),
-                        (amount)=>{
-                            return (amount || 0) + level1Commission;
-                        }
+                        (amount)=>{ return (amount || 0) + level1Commission; }
                     );
 
-                    const level1Snap =
-                    await get(ref(db,"users/" + level1Uid));
-
+                    const level1Snap = await get(ref(db,"users/" + level1Uid));
                     if(level1Snap.exists()){
-
-                        const level1Data =
-                        level1Snap.val();
+                        const level1Data = level1Snap.val();
 
                         // Level 2
                         if(level1Data.referredBy){
-
-                            const level2Uid =
-                            level1Data.referredBy;
-
-                            const level2Commission =
-                            lossAmount * 0.003;
+                            const level2Uid = level1Data.referredBy;
+                            const level2Commission = lossAmount * 0.003;
 
                             await runTransaction(
                                 ref(db,"users/" + level2Uid + "/balance"),
-                                (balance)=>{
-                                    return (balance || 0) + level2Commission;
-                                }
+                                (balance)=>{ return (balance || 0) + level2Commission; }
                             );
 
                             await runTransaction(
                                 ref(db,"users/" + level2Uid + "/totalCommission"),
-                                (amount)=>{
-                                    return (amount || 0) + level2Commission;
-                                }
+                                (amount)=>{ return (amount || 0) + level2Commission; }
                             );
 
-                            const level2Snap =
-                            await get(ref(db,"users/" + level2Uid));
-
+                            const level2Snap = await get(ref(db,"users/" + level2Uid));
                             if(level2Snap.exists()){
-
-                                const level2Data =
-                                level2Snap.val();
+                                const level2Data = level2Snap.val();
 
                                 // Level 3
                                 if(level2Data.referredBy){
-
-                                    const level3Uid =
-                                    level2Data.referredBy;
-
-                                    const level3Commission =
-                                    lossAmount * 0.001;
+                                    const level3Uid = level2Data.referredBy;
+                                    const level3Commission = lossAmount * 0.001;
 
                                     await runTransaction(
                                         ref(db,"users/" + level3Uid + "/balance"),
-                                        (balance)=>{
-                                            return (balance || 0) + level3Commission;
-                                        }
+                                        (balance)=>{ return (balance || 0) + level3Commission; }
                                     );
 
                                     await runTransaction(
                                         ref(db,"users/" + level3Uid + "/totalCommission"),
-                                        (amount)=>{
-                                            return (amount || 0) + level3Commission;
-                                        }
+                                        (amount)=>{ return (amount || 0) + level3Commission; }
                                     );
-
                                 }
                             }
                         }
                     }
                 }
-
             }catch(error){
                 console.log(error);
             }
         }
 
         const currentUid = localStorage.getItem("uid");
-        // 6. UID check aur DB structure reference
         if (!currentUid) {
             alert("No UID found! Please login first.");
-            // Agar chahiye toh unhe login page par redirect kar sakte ho:
-            // window.location.href = "login.html";
         }
-        /* Database structure for reference:
-        {
-          "users": {
-            "USER_UID": {
-              "balance": 5000,
-              "name": "Ali"
-            }
-          }
-        }
-        */
+
         // Game states tracking engine parameters
         let currentGameState = "countdown"; 
         let liveMultiplierVal = 1.00;
-        let userCurrentBalanceVal = 0.00; // Balance set to 0.00 by default
+        let userCurrentBalanceVal = 0.00;
         let countdownTimeLeft = 8.0;
         let gameLoopTimerRef = null;
         let logsGenerationTimerRef = null;
@@ -548,6 +498,7 @@
         let graphPoints = "M 10,170";
         let betBox1 = { amount: 100, state: "idle" }; 
         let betBox2 = { amount: 100, state: "idle" };
+        
         const counterText = document.getElementById('multiplierLiveCounter');
         const statusLabel = document.getElementById('gameStatusLabel');
         const planeObject = document.getElementById('planeObject');
@@ -558,6 +509,7 @@
         const btn1 = document.getElementById('actionBtn1');
         const btn2 = document.getElementById('actionBtn2');
         let pastRoundsArray = [1.50, 2.44, 1.05, 5.20, 1.80, 12.30, 1.15, 3.40, 2.10, 1.01, 8.50, 1.34, 4.12, 1.95, 24.50];
+        
         document.addEventListener("DOMContentLoaded", function() {
             loadWalletBalance();
             renderDropdownHistoryGrid();
@@ -565,16 +517,26 @@
             startLiveLogsSimulations();
         });
         
-        // REPLACED: Updated this function with onValue for live balance sync
+        // NEW UPDATED FUNCTION: Direct Reference to balance field & strict number conversion
         function loadWalletBalance(){
             if(!currentUid) return;
-            const balanceRef = ref(db, "users/" + currentUid);
+            
+            // Direct reference to the specific balance field so it loads faster
+            const balanceRef = ref(db, "users/" + currentUid + "/balance");
+            
             onValue(balanceRef, (snapshot) => {
                 if(snapshot.exists()){
-                    const data = snapshot.val();
-                    userCurrentBalanceVal = data.balance || 0;
+                    // Number() use kar raha hu taake text (string) bug na aaye
+                    userCurrentBalanceVal = Number(snapshot.val()) || 0;
                     userBalanceDOM.innerText = userCurrentBalanceVal.toFixed(2);
+                    console.log("Balance Live Sync Success: ", userCurrentBalanceVal);
+                } else {
+                    userBalanceDOM.innerText = "0.00";
+                    console.log("Balance field does not exist for this UID.");
                 }
+            }, (error) => {
+                console.error("Firebase Database Rules/Read Error: ", error);
+                // Agar Firebase rules read allow nahi kar rahe toh console check karein
             });
         }
 
@@ -616,7 +578,6 @@
             let currentBtn = boxIndex === 1 ? btn1 : btn2;
             if (currentGameState === "countdown" && currentBox.state === "idle") {
                 if (userCurrentBalanceVal >= currentBox.amount) {
-                    // 3. Bet lagate waqt Firebase update karo
                     userCurrentBalanceVal -= currentBox.amount;
                     update(ref(db,"users/"+currentUid), {
                         balance: userCurrentBalanceVal
@@ -636,7 +597,6 @@
                     alert("Insufficient Balance! Please deposit first.");
                 }
             } else if (currentBox.state === "booked") {
-                // 4. Cancel Bet par Firebase update karo
                 userCurrentBalanceVal += currentBox.amount;
                 update(ref(db,"users/"+currentUid), {
                     balance: userCurrentBalanceVal
@@ -646,7 +606,6 @@
                 currentBtn.className = "action-button-trigger btn-bet-state";
                 currentBtn.innerText = "Place Bet";
             } else if (currentGameState === "running" && currentBox.state === "active") {
-                // 5. Cashout par Firebase update karo
                 let prize = currentBox.amount * liveMultiplierVal;
                 userCurrentBalanceVal += prize;
                 update(ref(db,"users/"+currentUid), {
@@ -658,12 +617,10 @@
                 currentBtn.innerText = `Won RS ${prize.toFixed(0)}`;
                 
                 if(boxIndex === 1){
-                    document.getElementById("liveProfit1").innerText =
-                        "RS " + prize.toFixed(0);
+                    document.getElementById("liveProfit1").innerText = "RS " + prize.toFixed(0);
                 }
                 if(boxIndex === 2){
-                    document.getElementById("liveProfit2").innerText =
-                        "RS " + prize.toFixed(0);
+                    document.getElementById("liveProfit2").innerText = "RS " + prize.toFixed(0);
                 }
             }
         }
@@ -684,7 +641,6 @@
             resetBetButtonsForNextRound(btn1, betBox1);
             resetBetButtonsForNextRound(btn2, betBox2);
 
-            // --- CONNECTION LINK: HACK APP KE LIYE NEXT PREDICTION GENERATE KAREIN ---
             let rand = Math.random();
             let nextCrash = 1.0;
             if (rand < 0.50) nextCrash = 1.00 + Math.random() * 0.50;
@@ -692,9 +648,7 @@
             else if (rand < 0.95) nextCrash = 3.00 + Math.random() * 3.00;
             else nextCrash = 8.00 + Math.random() * 10.00;
             
-            // Data browser mein save kar diya hack app ke liye
             localStorage.setItem("aviator_next_prediction", nextCrash.toFixed(2));
-            // ----------------------------------------------------------------------
 
             gameLoopTimerRef = setInterval(() => {
                 countdownTimeLeft -= 0.1;
@@ -707,11 +661,7 @@
             }, 100);
         }
         function resetBetButtonsForNextRound(btn, box) {
-            if (
-                box.state === "cashed" ||
-                box.state === "lost" ||
-                box.state === "idle"
-            ) {
+            if (box.state === "cashed" || box.state === "lost" || box.state === "idle") {
                 box.state = "idle";
                 btn.className = "action-button-trigger btn-bet-state";
                 btn.innerText = "Place Bet";
@@ -738,52 +688,38 @@
             if (betBox1.state !== "active") btn1.className = "action-button-trigger btn-disabled-state";
             if (betBox2.state !== "active") btn2.className = "action-button-trigger btn-disabled-state";
             
-            // --- CUSTOM BET CRASH LOGIC UPDATED HERE ---
             let hasHighBet = false;
             if ((betBox1.state === "active" && betBox1.amount > 300) || (betBox2.state === "active" && betBox2.amount > 300)) {
                 hasHighBet = true;
             }
 
             if (hasHighBet) {
-                // Agar bet 300 se zyada hai, toh naya crash point generate karega
                 crashPointTargetVal = 1.30 + (Math.random() * 0.55);
             } else {
-                // Jo prediction hack app ko di thi wahi real mein use karega
                 let savedCrash = localStorage.getItem("aviator_next_prediction");
                 crashPointTargetVal = savedCrash ? parseFloat(savedCrash) : (1.50 + Math.random() * 1.50);
             }
             
-            // Hack app ko Live crash point bhej diya
             localStorage.setItem("aviator_live_prediction", crashPointTargetVal.toFixed(2));
-            // ------------------------------------------
             
             gameLoopTimerRef = setInterval(() => {
                 let acceleration = 0.003 * Math.pow(liveMultiplierVal, 0.65);
                 liveMultiplierVal += acceleration;
                 counterText.innerText = liveMultiplierVal.toFixed(2) + "x";
                 
-                // Live Bet Amount Update
                 if (betBox1.state === "active") {
                     let liveAmount1 = betBox1.amount * liveMultiplierVal;
-                    document.getElementById("liveProfit1").innerText =
-                        "RS " + liveAmount1.toFixed(0);
+                    document.getElementById("liveProfit1").innerText = "RS " + liveAmount1.toFixed(0);
                 }
                 if (betBox2.state === "active") {
                     let liveAmount2 = betBox2.amount * liveMultiplierVal;
-                    document.getElementById("liveProfit2").innerText =
-                        "RS " + liveAmount2.toFixed(0);
+                    document.getElementById("liveProfit2").innerText = "RS " + liveAmount2.toFixed(0);
                 }
 
-                // NEW ANIMATION LOGIC:
-                // Ye equation animation ko crash point se completely azaad kar deti hai.
-                // Ab plane hamesha shuru mein same speed se uday ga, aur phir screen ke top right par smooth hover karega.
                 let factor = 1 - (1 / liveMultiplierVal); 
-                
-                // Plane ko div ke andar hi rakhne ke liye limit
                 if (factor > 0.98) factor = 0.98; 
 
                 let x = 15 + (factor * 340);
-                // Math.pow add kiya hai takay takeoff ki curve realistic lage
                 let y = 15 + (Math.pow(factor, 0.85) * 120); 
                 
                 planeObject.style.left = x + "px";
@@ -809,26 +745,15 @@
             document.getElementById("liveProfit1").innerText = "RS 0";
             document.getElementById("liveProfit2").innerText = "RS 0";
             
-            // LOST BETS HANDLE
             if (betBox1.state === "active") {
-
-                await giveReferralCommission(
-                    currentUid,
-                    betBox1.amount
-                );
-
+                await giveReferralCommission(currentUid, betBox1.amount);
                 betBox1.state = "lost";
                 btn1.className = "action-button-trigger btn-disabled-state";
                 btn1.innerText = "Lost";
                 document.getElementById("liveProfit1").innerText = "RS 0";
             }
             if (betBox2.state === "active") {
-
-                await giveReferralCommission(
-                    currentUid,
-                    betBox2.amount
-                );
-
+                await giveReferralCommission(currentUid, betBox2.amount);
                 betBox2.state = "lost";
                 btn2.className = "action-button-trigger btn-disabled-state";
                 btn2.innerText = "Lost";
