@@ -66,9 +66,10 @@
                 <img id="qrCodeImage" src="easypaisa_qr_1.jpg" alt="QR Code" class="qr-image" onerror="this.src='https://via.placeholder.com/200?text=No+QR+Code'">
             </div>
 
+            <!-- TRANSACTION ID FIELD UPDATED HERE -->
             <div class="form-group">
-                <label>Transaction ID / TRX ID</label>
-                <input type="text" id="trxId" class="input-field" placeholder="Enter 11 or 12 digit Trx ID" required>
+                <label>Transaction ID (Last 4 Digits)</label>
+                <input type="text" id="trxId" class="input-field" placeholder="Enter last 4 digits of Trx ID" maxlength="4" required>
             </div>
 
             <div class="form-group">
@@ -83,7 +84,8 @@
                 <strong><i class="fa-solid fa-circle-info" style="margin-left: 6px;"></i> ضروری ہدایت (ڈپازٹ کا طریقہ):</strong>
                 <ul>
                     <li>آپ اوپر دیے گئے <strong>اکاؤنٹ نمبر کو کاپی</strong> کریں یا پھر <strong>QR کوڈ کو اسکین</strong> کر کے پیمنٹ سینڈ کریں۔</li>
-                    <li>پیمنٹ بھیجنے کے بعد اپنی <strong>Transaction ID (TRX ID)</strong> درج کریں اور پیمنٹ کا <strong>اسکرین شاٹ</strong> اپلوڈ کر کے سبمٹ کریں۔</li>
+                    <!-- URDU INSTRUCTION UPDATED HERE -->
+                    <li>پیمنٹ بھیجنے کے بعد اپنی <strong>Transaction ID کے آخری 4 ہندسے</strong> درج کریں اور پیمنٹ کا <strong>اسکرین شاٹ</strong> اپلوڈ کر کے سبمٹ کریں۔</li>
                     <li>آپ کا ڈپازٹ صرف <strong>15 سیکنڈ</strong> کے اندر آپ کے اکاؤنٹ میں شامل کر دیا جائے گا!</li>
                 </ul>
             </div>
@@ -164,7 +166,8 @@
             const fileInput = document.getElementById("screenshotFile").files[0];
 
             if (!trxId || !fileInput) {
-                alert("Please enter Transaction ID and upload screenshot!");
+                // ALERT MESSAGE UPDATED HERE
+                alert("Please enter the last 4 digits of your Transaction ID and upload screenshot!");
                 return;
             }
 
