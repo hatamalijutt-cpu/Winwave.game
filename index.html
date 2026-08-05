@@ -878,7 +878,7 @@
                     const data = snapshot.val();
                     if (data) {
                         document.querySelector("#walletBox span").innerText =
-                            "RS " + data.balance;
+                            "RS " + Math.floor(data.balance);
                             
                         // YAHAN DATABASE SE LOCK KA STATUS CHECK HO RAHA HAI
                         if (data.isBalanceLocked === true) {
