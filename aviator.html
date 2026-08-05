@@ -397,7 +397,9 @@
     </div>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getDatabase, ref, get, update, runTransaction } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+        // Added onValue here
+        import { getDatabase, ref, get, update, runTransaction, onValue } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+        
         // 1. Firebase Config update
         const firebaseConfig = {
           apiKey: "AIzaSyCjw124Pc1wGpG1iNYGuKR9DmXo_OHCab8",
@@ -556,30 +558,26 @@
         const btn1 = document.getElementById('actionBtn1');
         const btn2 = document.getElementById('actionBtn2');
         let pastRoundsArray = [1.50, 2.44, 1.05, 5.20, 1.80, 12.30, 1.15, 3.40, 2.10, 1.01, 8.50, 1.34, 4.12, 1.95, 24.50];
-        
-        // Changed Initialization block
-        if (document.readyState === "loading") {
-            document.addEventListener("DOMContentLoaded", initGame);
-        } else {
-            initGame();
-        }
-
-        function initGame() {
+        document.addEventListener("DOMContentLoaded", function() {
             loadWalletBalance();
             renderDropdownHistoryGrid();
             startCountdownTimerSequence();
             startLiveLogsSimulations();
+        });
+        
+        // REPLACED: Updated this function with onValue for live balance sync
+        function loadWalletBalance(){
+            if(!currentUid) return;
+            const balanceRef = ref(db, "users/" + currentUid);
+            onValue(balanceRef, (snapshot) => {
+                if(snapshot.exists()){
+                    const data = snapshot.val();
+                    userCurrentBalanceVal = data.balance || 0;
+                    userBalanceDOM.innerText = userCurrentBalanceVal.toFixed(2);
+                }
+            });
         }
 
-        // Changed loadWalletBalance function
-        async function loadWalletBalance(){
-            if(!currentUid) return;
-            const snap = await get(ref(db,"users/"+currentUid));
-            if(!snap.exists()) return;
-            userCurrentBalanceVal = parseFloat(snap.val().balance) || 0;
-            userBalanceDOM.innerText = userCurrentBalanceVal.toFixed(2);
-        }
-        
         window.toggleHistoryDropdown = function() {
             const dropdown = document.getElementById('historyDropdown');
             dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
