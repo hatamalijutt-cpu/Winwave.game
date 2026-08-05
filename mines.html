@@ -309,6 +309,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js"; // <--- ADDED AUTH
         import {
           getDatabase,
           ref,
@@ -333,9 +334,10 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
+        const auth = getAuth(app); // <--- INITIALIZED AUTH
 
         // Get UID from LocalStorage
-        const uid = localStorage.getItem("uid");
+        let uid = localStorage.getItem("uid"); // <--- Changed from const to let
 
         // --- Custom Audio Engine (Web Audio API) ---
         let audioCtx = null;
@@ -410,17 +412,32 @@
         const multiplierEl = document.getElementById('currentMultiplier');
         const nextProfitEl = document.getElementById('nextProfit');
 
-        // Real-time Balance Fetching from Firebase
-        if (uid) {
-            const userRef = ref(db, "users/" + uid);
-            onValue(userRef, (snapshot) => {
-                if (snapshot.exists()) {
-                    const data = snapshot.val();
-                    balance = Number(data.balance || 0);
-                    updateUI();
-                }
-            });
-        }
+        // Real-time Balance Fetching from Firebase (FIXED WITH AUTH STATE)
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                uid = user.uid;
+                localStorage.setItem("uid", uid); // Sync for other pages
+                
+                const userRef = ref(db, "users/" + uid);
+                onValue(userRef, (snapshot) => {
+                    if (snapshot.exists()) {
+                        const data = snapshot.val();
+                        balance = Number(data.balance || 0);
+                        updateUI();
+                    }
+                });
+            } else if (uid) {
+                // Fallback in case auth takes a second but uid is already in localStorage
+                const userRef = ref(db, "users/" + uid);
+                onValue(userRef, (snapshot) => {
+                    if (snapshot.exists()) {
+                        const data = snapshot.val();
+                        balance = Number(data.balance || 0);
+                        updateUI();
+                    }
+                });
+            }
+        });
 
         // --- Commission System ---
         async function giveReferralCommission(playerUid, betAmt) {
