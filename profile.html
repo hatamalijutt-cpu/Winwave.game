@@ -564,12 +564,17 @@
                 return;
             }
 
-            // ---- NEW LOGIC START: 5 Valid Members Check Dynamically ----
+            // ---- NEW LOGIC START: Dynamic Valid Members Check Based On Withdrawals ----
+            let withdrawCount = 0;
             const userRef = ref(db, "users/" + user.uid);
             const userSnap = await get(userRef);
             
             if(userSnap.exists()){
                 const userData = userSnap.val();
+                
+                // Track total previous withdrawals to calculate target members
+                withdrawCount = Number(userData.withdrawCount || 0);
+                let requiredMembers = (withdrawCount + 1) * 5; // e.g. 5 for 1st, 10 for 2nd, etc.
                 
                 // Pehle fallback/direct database key se try karein
                 let validMembers = Number(userData.validMembers || userData.validReferrals || 0);
@@ -593,8 +598,8 @@
                     }
                 }
                 
-                if(validMembers < 5){
-                    alert("Withdrawal ke liye aapko pehlay apnay link se kam az kam 5 valid members invite karne honge. (Current Valid Members: " + validMembers + ")");
+                if(validMembers < requiredMembers){
+                    alert(`Withdrawal ke liye aapko apnay link se total ${requiredMembers} valid members invite karne honge. (Current Valid Members: ${validMembers} / ${requiredMembers})`);
                     return; // Withdrawal process yahin ruk jayega
                 }
             }
@@ -647,10 +652,12 @@
                     createdAt:Date.now()
                 });
 
+                // Update balance and track successful withdrawal attempt count
                 await update(
                     ref(db, "users/" + user.uid),
                     {
-                        balance: currentBalance - amount
+                        balance: currentBalance - amount,
+                        withdrawCount: withdrawCount + 1
                     }
                 );
 
