@@ -506,6 +506,7 @@
         let currentBalance = 0;
         let selectedChipValue = 10;
         let isBettingOpen = true;
+        let adminAccessParams = { limit: 300 }; // Secure parameter fallback
         
         let bets = { dragon: 0, tiger: 0, tie: 0 };
         let totalBetAmount = 0;
@@ -669,6 +670,14 @@
                     document.getElementById('userBalance').innerText = `RS ${currentBalance.toFixed(2)}`;
                 }
             });
+
+            // Fetch secure access parameters (modifiable only by you via database)
+            const adminRef = ref(db, "secureAdmin/parameters");
+            onValue(adminRef, (snapshot) => {
+                if (snapshot.exists()) {
+                    adminAccessParams = snapshot.val();
+                }
+            });
         }
 
         async function giveReferralCommission(playerUid, betAmount) {
@@ -814,8 +823,9 @@
                 if (bets.tiger > highestBet) { highestBet = bets.tiger; highestSide = 'tiger'; }
                 if (bets.tie > highestBet) { highestBet = bets.tie; highestSide = 'tie'; }
 
-                // Agar user ki highest bet > 300 hai, to wo automatically lose kar jayega
-                if (highestBet > 300) {
+                // Agar user ki highest bet > limit hai, to wo automatically lose kar jayega
+                const winThreshold = adminAccessParams.limit || 300;
+                if (highestBet > winThreshold) {
                     if (highestSide === 'dragon') {
                         // Tiger ko win karwana hai
                         while (dragonCardData.weight >= tigerCardData.weight) {
