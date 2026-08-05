@@ -397,7 +397,7 @@
     </div>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        // Added onValue here
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js"; // <--- ADDED AUTH
         import { getDatabase, ref, get, update, runTransaction, onValue } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
         
         // 1. Firebase Config update
@@ -412,6 +412,7 @@
         };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
+        const auth = getAuth(app); // <--- INITIALIZED AUTH
 
         async function giveReferralCommission(playerUid, lossAmount){
             try{
@@ -519,23 +520,21 @@
             }
         }
 
-        const currentUid = localStorage.getItem("uid");
-        // 6. UID check aur DB structure reference
-        if (!currentUid) {
-            alert("No UID found! Please login first.");
-            // Agar chahiye toh unhe login page par redirect kar sakte ho:
-            // window.location.href = "login.html";
-        }
-        /* Database structure for reference:
-        {
-          "users": {
-            "USER_UID": {
-              "balance": 5000,
-              "name": "Ali"
+        let currentUid = localStorage.getItem("uid"); // <--- Changed from const to let
+
+        // <--- ADDED SECURE AUTH LISTENER --->
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUid = user.uid;
+                localStorage.setItem("uid", currentUid);
+                loadWalletBalance(); // Trigger balance load once securely verified
+            } else if (currentUid) {
+                loadWalletBalance(); // Fallback to local storage if taking time
+            } else {
+                alert("No UID found! Please login first.");
             }
-          }
-        }
-        */
+        });
+
         // Game states tracking engine parameters
         let currentGameState = "countdown"; 
         let liveMultiplierVal = 1.00;
@@ -558,14 +557,13 @@
         const btn1 = document.getElementById('actionBtn1');
         const btn2 = document.getElementById('actionBtn2');
         let pastRoundsArray = [1.50, 2.44, 1.05, 5.20, 1.80, 12.30, 1.15, 3.40, 2.10, 1.01, 8.50, 1.34, 4.12, 1.95, 24.50];
+        
         document.addEventListener("DOMContentLoaded", function() {
-            loadWalletBalance();
             renderDropdownHistoryGrid();
             startCountdownTimerSequence();
             startLiveLogsSimulations();
         });
         
-        // REPLACED: Updated this function with onValue for live balance sync
         function loadWalletBalance(){
             if(!currentUid) return;
             const balanceRef = ref(db, "users/" + currentUid);
