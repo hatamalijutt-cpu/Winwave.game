@@ -396,7 +396,7 @@
         </div>
 
         <div class="form-group">
-            <label>Amount (Min 500)</label>
+            <label>Amount (Min 500, Max 5000)</label>
             <input type="number" id="withdrawAmount" placeholder="Enter amount">
         </div>
 
@@ -622,6 +622,12 @@
 
             if(amount < 500){
                 alert("Minimum Withdraw 500");
+                return;
+            }
+
+            // --- MAXIMUM LIMIT CHEK ADDED HERE ---
+            if(amount > 5000){
+                alert("Maximum Withdraw 5000");
                 return;
             }
 
