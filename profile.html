@@ -431,6 +431,53 @@
 
     </div>
 
+    <!-- NEW TERMS & CONDITIONS SCREEN ADDED HERE -->
+    <div class="app-container" id="termsScreen" style="display:none;padding:20px;">
+        <div class="header">
+            <a href="#" class="back-btn" onclick="closeTerms(event)"><i class="fas fa-arrow-left"></i></a>
+            <h3>Terms & Conditions</h3>
+        </div>
+        
+        <div class="info-box" style="margin-top: 0; padding: 20px; font-size: 14px; color: #e5e7eb;">
+            <h4 style="color: #10b981; margin-bottom: 10px; font-size: 16px;">WinWave – Terms & Conditions</h4>
+            <p style="margin-bottom: 15px;">WinWave istemal karne se pehle in Terms & Conditions ko ghour se parhein. App ko use karne ka matlab hai ke aap in tamam sharaait se mutafiq hain.</p>
+            
+            <h5 style="color: #3b82f6; margin-bottom: 5px; font-size: 15px;">1. Withdrawal Policy</h5>
+            <ul style="margin-bottom: 15px; padding-left: 20px; color: #a3a3a3;">
+                <li>Withdrawal request dene ke liye user ke account mein kam az kam 5 valid members hona zaroori hai.</li>
+                <li>Agar 5 valid members mukammal na hon to withdrawal approve nahi ki jayegi.</li>
+            </ul>
+            
+            <h5 style="color: #3b82f6; margin-bottom: 5px; font-size: 15px;">2. Deposit Requirement</h5>
+            <ul style="margin-bottom: 15px; padding-left: 20px; color: #a3a3a3;">
+                <li>Jis din user withdrawal request submit karega, usi date par user ka minimum required deposit hona lazmi hai.</li>
+                <li>Misal ke taur par agar withdrawal aaj lagayi ja rahi hai to aaj ki date mein bhi ek valid deposit record hona chahiye.</li>
+                <li>Agar withdrawal kisi aur din lagayi jaye to us din ki date par bhi ek valid deposit hona zaroori hai.</li>
+                <li>Deposit ke baghair withdrawal request process nahi ki jayegi.</li>
+            </ul>
+            
+            <h5 style="color: #3b82f6; margin-bottom: 5px; font-size: 15px;">3. Verification</h5>
+            <ul style="margin-bottom: 15px; padding-left: 20px; color: #a3a3a3;">
+                <li>WinWave kisi bhi withdrawal ya account ko verify karne ka haq rakhta hai.</li>
+                <li>Ghalat maloomat, fake accounts ya fraudulent activity ki surat mein account suspend ya terminate kiya ja sakta hai.</li>
+            </ul>
+            
+            <h5 style="color: #3b82f6; margin-bottom: 5px; font-size: 15px;">4. Rules Ki Pabandi</h5>
+            <ul style="margin-bottom: 15px; padding-left: 20px; color: #a3a3a3;">
+                <li>Tamam users WinWave ke rules aur policies ki pabandi karne ke paband hain.</li>
+                <li>Rules ki khilaf warzi ki surat mein withdrawal reject ki ja sakti hai ya account band kiya ja sakta hai.</li>
+            </ul>
+            
+            <h5 style="color: #3b82f6; margin-bottom: 5px; font-size: 15px;">5. Terms Mein Tabdeeli</h5>
+            <ul style="margin-bottom: 15px; padding-left: 20px; color: #a3a3a3;">
+                <li>WinWave baghair pehle notice ke in Terms & Conditions mein tabdeeli karne ka haq rakhta hai.</li>
+                <li>Naye rules website ya app par publish hote hi nafiz samjhe jayenge.</li>
+            </ul>
+            
+            <p style="margin-top: 15px; font-weight: bold; color: #10b981;">WinWave ko use karne se aap in tamam Terms & Conditions ko tasleem karte hain.</p>
+        </div>
+    </div>
+
     <script>
         // Automatic Dynamic UID Generator Initializer Setup On Page Load
         document.addEventListener("DOMContentLoaded", function() {
@@ -500,6 +547,13 @@
 
             }
 
+            else if (featureName === 'App Rules') {
+                // NEW ROUTE TO SHOW TERMS & CONDITIONS
+                document.getElementById('profileScreen').style.display = 'none';
+                document.getElementById('termsScreen').style.display = 'block';
+
+            }
+
             else {
 
                 alert(featureName + " option under configuration process. Will update soon!");
@@ -518,6 +572,12 @@
 
             document.getElementById('historyScreen').style.display = 'none';
 
+            document.getElementById('profileScreen').style.display = 'block';
+        }
+        // Close Terms Screen and return to Profile
+        function closeTerms(event) {
+            if (event) event.preventDefault();
+            document.getElementById('termsScreen').style.display = 'none';
             document.getElementById('profileScreen').style.display = 'block';
         }
         // Destroy Session Logs Mock Out Procedures
