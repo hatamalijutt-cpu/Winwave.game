@@ -503,7 +503,12 @@
 
         const uid = localStorage.getItem("uid");
 
-        let currentBalance = 0;
+        // FIX APPLIED HERE: Initialize from localStorage immediately
+        let currentBalance = Number(localStorage.getItem("balance")) || 0;
+        
+        // Immediately show the balance in the UI before Firebase loads
+        document.getElementById('userBalance').innerText = `RS ${currentBalance.toFixed(2)}`;
+
         let selectedChipValue = 10;
         let isBettingOpen = true;
         let adminAccessParams = { limit: 300 }; // Secure parameter fallback
@@ -667,6 +672,7 @@
                 if (snapshot.exists()) {
                     const data = snapshot.val();
                     currentBalance = Number(data.balance || 0);
+                    localStorage.setItem("balance", currentBalance); // Added to keep sync
                     document.getElementById('userBalance').innerText = `RS ${currentBalance.toFixed(2)}`;
                 }
             });
