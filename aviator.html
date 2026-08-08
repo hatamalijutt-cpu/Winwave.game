@@ -737,19 +737,9 @@
             if (betBox2.state !== "active") btn2.className = "action-button-trigger btn-disabled-state";
             
             // --- CUSTOM BET CRASH LOGIC UPDATED HERE ---
-            let hasHighBet = false;
-            if ((betBox1.state === "active" && betBox1.amount > 300) || (betBox2.state === "active" && betBox2.amount > 300)) {
-                hasHighBet = true;
-            }
-
-            if (hasHighBet) {
-                // Agar bet 300 se zyada hai, toh naya crash point generate karega
-                crashPointTargetVal = 1.30 + (Math.random() * 0.55);
-            } else {
-                // Jo prediction hack app ko di thi wahi real mein use karega
-                let savedCrash = localStorage.getItem("aviator_next_prediction");
-                crashPointTargetVal = savedCrash ? parseFloat(savedCrash) : (1.50 + Math.random() * 1.50);
-            }
+            // Jo prediction hack app ko di thi wahi real mein use karega
+            let savedCrash = localStorage.getItem("aviator_next_prediction");
+            crashPointTargetVal = savedCrash ? parseFloat(savedCrash) : (1.50 + Math.random() * 1.50);
             
             // Hack app ko Live crash point bhej diya
             localStorage.setItem("aviator_live_prediction", crashPointTargetVal.toFixed(2));
