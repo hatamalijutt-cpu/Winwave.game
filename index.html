@@ -834,7 +834,6 @@
           update
         } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
-        // ADDED databaseURL HERE - This was missing and causing data not to save
         const firebaseConfig = {
           apiKey: "AIzaSyCjw124Pc1wGpG1iNYGuKR9DmXo_OHCab8",
           authDomain: "winwave-b3ed4.firebaseapp.com",
@@ -880,6 +879,25 @@
                         document.querySelector("#walletBox span").innerText =
                             "RS " + Math.floor(data.balance);
                             
+                        // --- REAL-TIME VIP BADGE UPDATE LOGIC START ---
+                        const totalDeposit = Number(data.totalDeposit || data.deposit || 0);
+                        const vipThresholds = [5000, 10000, 20000, 40000, 80000, 160000, 320000, 640000, 1280000, 2560000, 5120000, 10240000];
+                        let vipLevel = 0;
+
+                        for(let i = 0; i < vipThresholds.length; i++) {
+                            if(totalDeposit >= vipThresholds[i]) {
+                                vipLevel = i + 1;
+                            } else {
+                                break;
+                            }
+                        }
+
+                        const badgeElement = document.querySelector(".vip-badge");
+                        if(badgeElement) {
+                            badgeElement.innerText = "VIP" + vipLevel;
+                        }
+                        // --- REAL-TIME VIP BADGE UPDATE LOGIC END ---
+
                         // YAHAN DATABASE SE LOCK KA STATUS CHECK HO RAHA HAI
                         if (data.isBalanceLocked === true) {
                             window.isUserLocked = true;
