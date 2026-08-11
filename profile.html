@@ -126,6 +126,53 @@
         .copy-uid-icon:hover {
             color: #10b981;
         }
+
+        /* VIP Level Card Section */
+        .vip-info-card {
+            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+            margin: -5px 15px 15px 15px;
+            padding: 15px 20px;
+            border-radius: 14px;
+            border: 1px solid #374151;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        .vip-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .vip-badge-box {
+            background: rgba(245, 158, 11, 0.15);
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            color: #f59e0b;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+        }
+        .vip-progress-wrapper {
+            width: 100%;
+            height: 8px;
+            background-color: #374151;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 6px;
+        }
+        .vip-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #f59e0b, #10b981);
+            border-radius: 4px;
+            transition: width 0.4s ease;
+        }
+        .vip-progress-text {
+            font-size: 11px;
+            color: #9ca3af;
+            text-align: right;
+        }
+
         /* Wallet Statistics Quick Panel */
         .wallet-stats-grid {
             display: grid;
@@ -280,6 +327,24 @@
                 </div>
             </div>
         </div>
+
+        <!-- NEW VIP LEVEL CONTAINER ADDED HERE -->
+        <div class="vip-info-card">
+            <div class="vip-card-header">
+                <div class="vip-badge-box">
+                    <i class="fa-solid fa-crown" style="color: #f59e0b; margin-right: 6px;"></i>
+                    <span id="vipLevelBadge">VIP 0</span>
+                </div>
+                <div style="font-size: 12px; color: #cbd5e1;">
+                    Total Deposit: <strong id="vipDepositText" style="color: #10b981;">PKR 0</strong>
+                </div>
+            </div>
+            <div class="vip-progress-wrapper">
+                <div class="vip-progress-bar" id="vipProgressBar" style="width: 0%;"></div>
+            </div>
+            <div class="vip-progress-text" id="nextVipInfo">Next: VIP 1 (0/5000)</div>
+        </div>
+
         <div class="wallet-stats-grid">
             <div class="stat-box">
                 <div class="stat-label"><i class="fa-solid fa-wallet" style="color: #10b981;"></i> Current Balance</div>
@@ -829,6 +894,38 @@
                         // Dynamically syncing the balance to the withdraw view as well
                         if(document.getElementById("withdrawBalance")) {
                             document.getElementById("withdrawBalance").innerText = "PKR " + Math.floor(data.balance);
+                        }
+
+                        // --- VIP LEVEL DYNAMIC CALCULATION LOGIC ---
+                        const totalDeposit = Number(data.totalDeposit || data.deposit || 0);
+                        const vipThresholds = [5000, 10000, 20000, 40000, 80000, 160000, 320000, 640000, 1280000, 2560000, 5120000, 10240000];
+                        let vipLevel = 0;
+
+                        for(let i = 0; i < vipThresholds.length; i++) {
+                            if(totalDeposit >= vipThresholds[i]) {
+                                vipLevel = i + 1;
+                            } else {
+                                break;
+                            }
+                        }
+
+                        const vipBadge = document.getElementById("vipLevelBadge");
+                        const vipDeposit = document.getElementById("vipDepositText");
+                        const vipBar = document.getElementById("vipProgressBar");
+                        const vipNext = document.getElementById("nextVipInfo");
+
+                        if(vipBadge) vipBadge.innerText = "VIP " + vipLevel;
+                        if(vipDeposit) vipDeposit.innerText = "PKR " + totalDeposit.toLocaleString();
+
+                        if(vipLevel < 12) {
+                            let nextReq = vipThresholds[vipLevel];
+                            let prevReq = vipLevel === 0 ? 0 : vipThresholds[vipLevel - 1];
+                            let percent = Math.min(100, Math.max(0, ((totalDeposit - prevReq) / (nextReq - prevReq)) * 100));
+                            if(vipBar) vipBar.style.width = percent + "%";
+                            if(vipNext) vipNext.innerText = `Next: VIP ${vipLevel + 1} (${totalDeposit.toLocaleString()}/${nextReq.toLocaleString()})`;
+                        } else {
+                            if(vipBar) vipBar.style.width = "100%";
+                            if(vipNext) vipNext.innerText = "Max VIP 12 Reached!";
                         }
                     }
                 });
