@@ -725,28 +725,32 @@
 
                 // Track total previous withdrawals to calculate target members
                 withdrawCount = Number(userData.withdrawCount || 0);
-                let requiredMembers = (withdrawCount + 1) * 5; 
                 
-                let validMembers = Number(userData.validMembers || userData.validReferrals || 0);
-                
-                if (validMembers === 0) {
-                    const allUsersSnap = await get(ref(db, "users"));
-                    if (allUsersSnap.exists()) {
-                        allUsersSnap.forEach((childSnap) => {
-                            const uData = childSnap.val();
-                            const isMyReferral = (uData.referredBy === user.uid || uData.invitedBy === user.uid || uData.inviteCode === user.uid || uData.parent === user.uid);
-                            const hasDeposited = (Number(uData.totalDeposit) > 0 || Number(uData.deposit) > 0 || Number(uData.balance) > 0 || uData.hasDeposited === true);
-                            
-                            if (isMyReferral && hasDeposited) {
-                                validMembers++;
-                            }
-                        });
+                // --- MEMBER REQUIREMENT LOGIC ONLY FOR VIP LEVEL 0 TO 6 ---
+                if (currentVipLevel <= 6) {
+                    let requiredMembers = (withdrawCount + 1) * 5; 
+                    
+                    let validMembers = Number(userData.validMembers || userData.validReferrals || 0);
+                    
+                    if (validMembers === 0) {
+                        const allUsersSnap = await get(ref(db, "users"));
+                        if (allUsersSnap.exists()) {
+                            allUsersSnap.forEach((childSnap) => {
+                                const uData = childSnap.val();
+                                const isMyReferral = (uData.referredBy === user.uid || uData.invitedBy === user.uid || uData.inviteCode === user.uid || uData.parent === user.uid);
+                                const hasDeposited = (Number(uData.totalDeposit) > 0 || Number(uData.deposit) > 0 || Number(uData.balance) > 0 || uData.hasDeposited === true);
+                                
+                                if (isMyReferral && hasDeposited) {
+                                    validMembers++;
+                                }
+                            });
+                        }
                     }
-                }
-                
-                if(validMembers < requiredMembers){
-                    alert(`Withdrawal ke liye aapko apnay link se total ${requiredMembers} valid members invite karne honge. (Current Valid Members: ${validMembers} / ${requiredMembers})`);
-                    return; 
+                    
+                    if(validMembers < requiredMembers){
+                        alert(`Withdrawal ke liye aapko apnay link se total ${requiredMembers} valid members invite karne honge. (Current Valid Members: ${validMembers} / ${requiredMembers})`);
+                        return; 
+                    }
                 }
             }
 
