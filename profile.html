@@ -689,6 +689,9 @@
                 return;
             }
 
+            let maxWithdrawLimit = 5000; // VIP 0 ke liye default limit
+            let currentVipLevel = 0;
+
             // ---- NEW LOGIC START: Dynamic Valid Members Check Based On Withdrawals ----
             let withdrawCount = 0;
             const userRef = ref(db, "users/" + user.uid);
@@ -697,23 +700,41 @@
             if(userSnap.exists()){
                 const userData = userSnap.val();
                 
+                // --- VIP LEVEL LIMIT LOGIC START ---
+                const totalDeposit = Number(userData.totalDeposit || userData.deposit || 0);
+                const vipThresholds = [5000, 10000, 20000, 40000, 80000, 160000, 320000, 640000, 1280000, 2560000, 5120000, 10240000];
+                
+                for(let i = 0; i < vipThresholds.length; i++) {
+                    if(totalDeposit >= vipThresholds[i]) {
+                        currentVipLevel = i + 1;
+                    } else {
+                        break;
+                    }
+                }
+                
+                // Aapke bataye gaye VIP limits
+                if (currentVipLevel === 1) maxWithdrawLimit = 10000;
+                else if (currentVipLevel === 2) maxWithdrawLimit = 13000;
+                else if (currentVipLevel === 3) maxWithdrawLimit = 15000;
+                else if (currentVipLevel >= 4 && currentVipLevel <= 8) maxWithdrawLimit = 16000;
+                else if (currentVipLevel === 9) maxWithdrawLimit = 20000;
+                else if (currentVipLevel === 10) maxWithdrawLimit = 25000;
+                else if (currentVipLevel === 11) maxWithdrawLimit = 30000;
+                else if (currentVipLevel >= 12) maxWithdrawLimit = Infinity; // Unlimited
+                // --- VIP LEVEL LIMIT LOGIC END ---
+
                 // Track total previous withdrawals to calculate target members
                 withdrawCount = Number(userData.withdrawCount || 0);
-                let requiredMembers = (withdrawCount + 1) * 5; // e.g. 5 for 1st, 10 for 2nd, etc.
+                let requiredMembers = (withdrawCount + 1) * 5; 
                 
-                // Pehle fallback/direct database key se try karein
                 let validMembers = Number(userData.validMembers || userData.validReferrals || 0);
                 
-                // Agar direct key 0 hai (jese normally hota hai), to promotion.html ki tarah dynamically count karein
                 if (validMembers === 0) {
                     const allUsersSnap = await get(ref(db, "users"));
                     if (allUsersSnap.exists()) {
                         allUsersSnap.forEach((childSnap) => {
                             const uData = childSnap.val();
-                            
-                            // Check karein ke kiya user aapke link se join hua tha 
                             const isMyReferral = (uData.referredBy === user.uid || uData.invitedBy === user.uid || uData.inviteCode === user.uid || uData.parent === user.uid);
-                            // Check karein ke kiya usne deposit/recharge kiya hai (valid banne k liye)
                             const hasDeposited = (Number(uData.totalDeposit) > 0 || Number(uData.deposit) > 0 || Number(uData.balance) > 0 || uData.hasDeposited === true);
                             
                             if (isMyReferral && hasDeposited) {
@@ -725,10 +746,9 @@
                 
                 if(validMembers < requiredMembers){
                     alert(`Withdrawal ke liye aapko apnay link se total ${requiredMembers} valid members invite karne honge. (Current Valid Members: ${validMembers} / ${requiredMembers})`);
-                    return; // Withdrawal process yahin ruk jayega
+                    return; 
                 }
             }
-            // ---- NEW LOGIC END ----
 
             const method = document.getElementById("method").value;
             const accountNumber = document.getElementById("accountNumber").value;
@@ -750,9 +770,9 @@
                 return;
             }
 
-            // --- MAXIMUM LIMIT CHEK ADDED HERE ---
-            if(amount > 5000){
-                alert("Maximum Withdraw 5000");
+            // --- MAXIMUM LIMIT CHEK BASED ON VIP LEVEL ---
+            if(amount > maxWithdrawLimit){
+                alert(`VIP ${currentVipLevel} ke liye maximum withdrawal limit ${maxWithdrawLimit} hai.`);
                 return;
             }
 
@@ -783,7 +803,6 @@
                     createdAt:Date.now()
                 });
 
-                // Update balance and track successful withdrawal attempt count
                 await update(
                     ref(db, "users/" + user.uid),
                     {
